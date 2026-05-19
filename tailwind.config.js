@@ -1,0 +1,70 @@
+/** @type {import('tailwindcss').Config} */
+export default {
+  content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
+  darkMode: 'class',
+  theme: {
+    extend: {
+      colors: {
+        primary: {
+          50:  '#fdf3ee',
+          100: '#fae4d8',
+          200: '#f5c7aa',
+          300: '#eea06f',
+          400: '#e57a47',
+          500: '#d65d2d',
+          600: '#b74720',
+          700: '#96361a',
+          800: '#7a2c18',
+          900: '#662718',
+          950: '#36120b',
+        },
+        accent: {
+          50:  '#fffaf0',
+          100: '#fef0cb',
+          200: '#fde08b',
+          300: '#f9ce58',
+          400: '#f3bc2f',
+          500: '#e4a911',
+          600: '#c88a0f',
+        },
+        brand: {
+          wine: '#7f1313',
+          gold: '#f3bc2f',
+          ink: '#131313',
+          sand: '#f7f1e8',
+        },
+      },
+      fontFamily: {
+        sans: ['Manrope', 'sans-serif'],
+        display: ['Playfair Display', 'serif'],
+        mono: ['JetBrains Mono', 'monospace'],
+      },
+      animation: {
+        'fade-in':     'fadeIn 0.5s ease-in-out',
+        'slide-up':    'slideUp 0.5s ease-out',
+        'slide-down':  'slideDown 0.3s ease-out',
+        'scale-in':    'scaleIn 0.3s ease-out',
+        'float':       'float 3s ease-in-out infinite',
+        'pulse-slow':  'pulse 3s ease-in-out infinite',
+        'shimmer':     'shimmer 1.5s infinite',
+        'bounce-slow': 'bounce 2s infinite',
+      },
+      keyframes: {
+        fadeIn:  { from: { opacity: 0 },              to: { opacity: 1 } },
+        slideUp: { from: { transform: 'translateY(30px)', opacity: 0 }, to: { transform: 'translateY(0)', opacity: 1 } },
+        slideDown: { from: { transform: 'translateY(-10px)', opacity: 0 }, to: { transform: 'translateY(0)', opacity: 1 } },
+        scaleIn: { from: { transform: 'scale(0.9)', opacity: 0 }, to: { transform: 'scale(1)', opacity: 1 } },
+        float:   { '0%, 100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(-10px)' } },
+        shimmer: { '0%': { backgroundPosition: '-200% 0' }, '100%': { backgroundPosition: '200% 0' } },
+      },
+      backdropBlur: { xs: '2px' },
+      boxShadow: {
+        'card':       '0 18px 60px rgba(17, 17, 17, 0.07)',
+        'card-hover': '0 24px 80px rgba(17, 17, 17, 0.14)',
+        'primary':    '0 18px 40px rgba(127, 19, 19, 0.22)',
+        'glow':       '0 0 40px rgba(243, 188, 47, 0.22)',
+      },
+    },
+  },
+  plugins: [],
+}

@@ -1,0 +1,117 @@
+import { Outlet, NavLink, useNavigate, Link } from 'react-router-dom'
+import { useDispatch, useSelector } from 'react-redux'
+import { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import {
+  HiViewGrid, HiUsers, HiBriefcase, HiClipboardList,
+  HiMail, HiNewspaper, HiCog, HiCurrencyRupee,
+  HiStar, HiLogout, HiMenu, HiMoon, HiSun, HiCollection,
+} from 'react-icons/hi'
+import { logoutUser, selectUser } from '../../redux/slices/authSlice'
+import { toggleTheme, selectTheme } from '../../redux/slices/uiSlice'
+
+const ADMIN_NAV = [
+  { to: '/admin',             icon: HiViewGrid,      label: 'Dashboard',    end: true },
+  { to: '/admin/users',       icon: HiUsers,         label: 'Users' },
+  { to: '/admin/jobs',        icon: HiBriefcase,     label: 'Jobs' },
+  { to: '/admin/applications',icon: HiClipboardList, label: 'Applications' },
+  { to: '/admin/contacts',    icon: HiMail,          label: 'Contacts' },
+  { to: '/admin/blogs',       icon: HiNewspaper,     label: 'Blogs' },
+  { to: '/admin/services',    icon: HiCollection,    label: 'Services' },
+  { to: '/admin/payments',    icon: HiCurrencyRupee, label: 'Payments' },
+  { to: '/admin/testimonials',icon: HiStar,          label: 'Testimonials' },
+]
+
+export default function AdminLayout() {
+  const [open, setOpen] = useState(false)
+  const dispatch = useDispatch()
+  const navigate = useNavigate()
+  const user     = useSelector(selectUser)
+  const theme    = useSelector(selectTheme)
+
+  const handleLogout = async () => {
+    await dispatch(logoutUser())
+    navigate('/')
+  }
+
+  const Sidebar = () => (
+    <div className="flex flex-col h-full bg-slate-900">
+      <div className="px-6 py-5 border-b border-slate-700">
+        <Link to="/" className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-lg bg-primary-600 flex items-center justify-center">
+            <span className="text-white font-bold">P</span>
+          </div>
+          <div>
+            <span className="font-display font-bold text-white">ProLink</span>
+            <span className="block text-[10px] text-slate-400 uppercase tracking-widest">Admin Panel</span>
+          </div>
+        </Link>
+      </div>
+
+      <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
+        {ADMIN_NAV.map(({ to, icon: Icon, label, end }) => (
+          <NavLink key={to} to={to} end={end}
+            className={({ isActive }) => `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+              isActive ? 'bg-primary-600 text-white shadow-primary'
+                       : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+            }`}
+            onClick={() => setOpen(false)}>
+            <Icon className="w-4 h-4 flex-shrink-0" />{label}
+          </NavLink>
+        ))}
+      </nav>
+
+      <div className="px-3 pb-4 border-t border-slate-700 pt-3 space-y-1">
+        <div className="flex items-center gap-3 px-3 py-2 rounded-xl bg-slate-800 mb-2">
+          <div className="w-8 h-8 rounded-full bg-primary-600 flex items-center justify-center flex-shrink-0">
+            <span className="text-white text-sm font-bold">{user?.firstName?.[0]}</span>
+          </div>
+          <div className="min-w-0">
+            <p className="text-sm font-bold text-white truncate">{user?.firstName}</p>
+            <p className="text-xs text-slate-400 capitalize">{user?.role?.replace('_', ' ')}</p>
+          </div>
+        </div>
+        <button onClick={() => dispatch(toggleTheme())}
+          className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm text-slate-400 hover:bg-slate-800 hover:text-white">
+          {theme === 'dark' ? <HiSun className="w-4 h-4" /> : <HiMoon className="w-4 h-4" />}
+          {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
+        </button>
+        <button onClick={handleLogout}
+          className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm text-red-400 hover:bg-red-900/20 hover:text-red-300">
+          <HiLogout className="w-4 h-4" /> Logout
+        </button>
+      </div>
+    </div>
+  )
+
+  return (
+    <div className="flex h-screen bg-slate-100 dark:bg-slate-950 overflow-hidden">
+      <div className="hidden lg:block w-60 flex-shrink-0"><Sidebar /></div>
+
+      <AnimatePresence>
+        {open && (
+          <>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="fixed inset-0 z-40 bg-black/60 lg:hidden" onClick={() => setOpen(false)} />
+            <motion.div initial={{ x: -260 }} animate={{ x: 0 }} exit={{ x: -260 }}
+              className="fixed left-0 top-0 bottom-0 z-50 w-64 lg:hidden shadow-2xl">
+              <Sidebar />
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <header className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 px-4 sm:px-6 py-3.5 flex items-center gap-4">
+          <button onClick={() => setOpen(true)} className="lg:hidden p-2 rounded-lg text-slate-500">
+            <HiMenu className="w-5 h-5" />
+          </button>
+          <span className="text-sm font-semibold text-slate-500">Admin Panel</span>
+        </header>
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6">
+          <Outlet />
+        </main>
+      </div>
+    </div>
+  )
+}
