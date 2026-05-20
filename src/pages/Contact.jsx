@@ -7,12 +7,15 @@ import { HiMail, HiPhone, HiLocationMarker, HiClock } from 'react-icons/hi'
 import { FaWhatsapp } from 'react-icons/fa'
 import { contactAPI } from '../services/api'
 import toast from 'react-hot-toast'
+import { optionalIndianMobileSchema, sanitizeIndianMobileInput } from '../utils/phoneValidation'
 
 export default function Contact() {
   const formik = useFormik({
     initialValues: { name: '', email: '', phone: '', subject: '', service: '', message: '' },
     validationSchema: Yup.object({
       name:    Yup.string().required('Name required'),
+      phone: optionalIndianMobileSchema('Phone number must be a valid 10-digit mobile number'),
+      // phone:   Yup.string().matches(/^\d{10}$/, 'Invalid phone number').notRequired(),
       email:   Yup.string().email('Invalid email').required('Email required'),
       subject: Yup.string().required('Subject required'),
       message: Yup.string().min(20, 'Min 20 characters').required('Message required'),
@@ -26,14 +29,14 @@ export default function Contact() {
     },
   })
 
-  const SERVICES = ['Job Consultancy','Campus Drive', 'HR Outsourcing', 'Background Verification', 'Other']
+  const SERVICES = ['Job Consultancy', 'Campus Drive', 'Background Verification', 'Other']
     // const SERVICES = ['Job Consultancy', 'CV Writing', 'Campus Drive', 'House Keeping', 'Catering Services', 'Event Management', 'Plant Set-Up', 'HR Outsourcing', 'Background Verification', 'Other']
 
   return (
     <>
       <Helmet>
         <title>Contact Us | ProLink Consultancy</title>
-        <meta name="description" content="Get in touch with ProLink Consultancy for job placement, CV writing, campus drives, event management and all HR services." />
+        <meta name="description" content="Get in touch with ProLink Consultancy for Job Consultancy, Campus Drive, and Background Verification services." />
       </Helmet>
 
       <div className="pt-16">
@@ -51,7 +54,7 @@ export default function Contact() {
             {/* Info cards */}
             <div className="space-y-5">
               {[
-                { icon: HiPhone, label: 'Call Us', value: '+91 98765 43210', sub: 'Mon–Sat, 9AM–6PM', href: 'tel:+919876543210', color: 'blue' },
+                { icon: HiPhone, label: 'Call Us', value: '+91 9437174876', sub: 'Mon–Sat, 9AM–6PM', href: 'tel:+919437174876', color: 'blue' },
                 { icon: HiMail, label: 'Email Us', value: 'info@prolinkconsultancy.com', sub: 'We reply within 24 hrs', href: 'mailto:info@prolinkconsultancy.com', color: 'violet' },
                 { icon: HiLocationMarker, label: 'Visit Us', value: '123 Business District', sub: 'Chennai, TN 600001', color: 'green' },
               ].map(({ icon: Icon, label, value, sub, href, color }) => (
@@ -94,9 +97,29 @@ export default function Contact() {
                   {['name', 'email', 'phone'].map(n => (
                     <div key={n} className={n === 'email' ? 'sm:col-span-1' : ''}>
                       <label className="label capitalize">{n === 'phone' ? 'Phone (optional)' : n}</label>
-                      <input {...formik.getFieldProps(n)} type={n === 'email' ? 'email' : n === 'phone' ? 'tel' : 'text'}
+                      {/* <input {...formik.getFieldProps(n)} type={n === 'email' ? 'email' : n === 'phone' ? 'tel' : 'text'}
                         placeholder={n === 'name' ? 'Your full name' : n === 'email' ? 'you@example.com' : '98765 43210'}
-                        className={`input-field ${formik.touched[n] && formik.errors[n] ? 'border-red-400' : ''}`} />
+                        className={`input-field ${formik.touched[n] && formik.errors[n] ? 'border-red-400' : ''}`} /> */}
+                        <input
+                          {...formik.getFieldProps(n)}
+                          type={n === 'email' ? 'email' : n === 'phone' ? 'tel' : 'text'}
+                          placeholder={
+                            n === 'name'
+                              ? 'Your full name'
+                              : n === 'email'
+                              ? 'you@example.com'
+                              : '9876543210'
+                          }
+                          maxLength={n === 'phone' ? 10 : undefined}
+                          onInput={(e) => {
+                            if (n === 'phone') {
+                              e.target.value = sanitizeIndianMobileInput(e.target.value)
+                            }
+                          }}
+                          className={`input-field ${
+                            formik.touched[n] && formik.errors[n] ? 'border-red-400' : ''
+                          }`}
+                        />
                       {formik.touched[n] && formik.errors[n] && <p className="mt-1 text-xs text-red-500">{formik.errors[n]}</p>}
                     </div>
                   ))}

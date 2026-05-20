@@ -12,19 +12,14 @@ import { selectUnreadCount } from '../../redux/slices/notificationSlice'
 import Logo from '../../assets/logo.jpeg'
 
 const TOP_BAR_CONTACT = [
-  { icon: HiPhone, label: '+91 98765 43210', href: 'tel:+919876543210' },
+  { icon: HiPhone, label: '+91 98765 43210', href: 'tel:+919437174876' },
   { icon: HiMail,  label: 'info@prolinkconsultancy.com', href: 'mailto:info@prolinkconsultancy.com' },
 ]
 
 const services = [
   { name: 'Job Consultancy',        href: '/services/job-consultancy',         desc: 'Executive & mid-level placements' },
-  // { name: 'CV Writing',             href: '/cv-writing',                        desc: 'Premium profile positioning' },
   { name: 'Campus Drive',           href: '/campus-drive',                      desc: 'Structured volume hiring' },
-  // { name: 'Event Management',       href: '/events',                            desc: 'Corporate event coordination' },
-  // { name: 'Catering Services',      href: '/catering',                          desc: 'End-to-end catering support' },
-  { name: 'HR Outsourcing',         href: '/services/hr-outsourcing',           desc: 'Managed HR operations' },
   { name: 'Background Verification',href: '/services/background-verification',  desc: 'Trust-led candidate checks' },
-  // { name: 'Plant Set-Up',           href: '/services/plant-setup',              desc: 'Workforce for new facilities' },
 ]
 
 const navLinks = [
@@ -94,7 +89,7 @@ export default function Navbar() {
               ))}
             </div>
             <div className="flex items-center gap-4 text-xs text-stone-400">
-              <span>Mon–Sat, 9:00–18:00</span>
+              <span>Mon–Sat, 9:00 am – 6:00 pm</span>
               <span className="w-px h-3 bg-stone-700" />
               <span className="text-amber-400 font-semibold tracking-wide">Chennai, Tamil Nadu</span>
             </div>

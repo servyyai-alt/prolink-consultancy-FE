@@ -18,6 +18,12 @@ const SERVICE_DETAIL_FALLBACKS = {
   },
 }
 
+const SERVICE_META_IMAGES = {
+  'background-verification': '/og/prolink-services.svg',
+  'campus-drive': '/og/prolink-campus.svg',
+  'job-consultancy': '/og/prolink-services.svg',
+}
+
 export default function ServiceDetail() {
   const { slug } = useParams()
   const { data, isLoading } = useQuery({ queryKey: ['service', slug], queryFn: () => serviceAPI.getService(slug) })
@@ -33,17 +39,57 @@ export default function ServiceDetail() {
     : serviceData
   const ServiceIcon = getServiceIcon(slug)
 
-  const formik = useFormik({
-    initialValues: { name:'', email:'', phone:'', message:'' },
-    validationSchema: Yup.object({ name: Yup.string().required(), email: Yup.string().email().required(), message: Yup.string().min(10).required() }),
-    onSubmit: async (v, { resetForm }) => {
-      try {
-        await contactAPI.submit({ ...v, subject: `Inquiry: ${service?.name}`, service: service?.name })
-        toast.success('Inquiry submitted! We will contact you soon.')
-        resetForm()
-      } catch { toast.error('Failed. Please try again.') }
-    },
-  })
+  // const formik = useFormik({
+  //   initialValues: { name:'', email:'', phone:'', message:'' },
+  //   validationSchema: Yup.object({ name: Yup.string().required(),  email: Yup.string().email().required(), message: Yup.string().min(10).required() }),
+  //   onSubmit: async (v, { resetForm }) => {
+  //     try {
+  //       await contactAPI.submit({ ...v, subject: `Inquiry: ${service?.name}`, service: service?.name })
+  //       toast.success('Inquiry submitted! We will contact you soon.')
+  //       resetForm()
+  //     } catch { toast.error('Failed. Please try again.') }
+  //   },
+  // })
+
+      const formik = useFormik({
+      initialValues: {
+        name: '',
+        email: '',
+        phone: '',
+        message: '',
+      },
+    
+      validationSchema: Yup.object({
+        name: Yup.string()
+          .min(3, 'Name must be at least 3 characters')
+          .required('Name is required'),
+    
+        email: Yup.string()
+          .email('Enter a valid email')
+          .required('Email is required'),
+    
+        phone: requiredIndianMobileSchema('Phone number is required', 'Enter a valid 10-digit phone number'),
+    
+        message: Yup.string()
+          .min(10, 'Message must be at least 10 characters')
+          .required('Message is required'),
+      }),
+    
+      onSubmit: async (v, { resetForm }) => {
+        try {
+          await contactAPI.submit({
+            ...v,
+            subject: `Inquiry: ${service?.name}`,
+            service: service?.name,
+          })
+    
+          toast.success('Inquiry submitted! We will contact you soon.')
+          resetForm()
+        } catch {
+          toast.error('Failed. Please try again.')
+        }
+      },
+    })
 
   if (isLoading) return <div className="pt-20 min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center"><div className="w-10 h-10 border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin" /></div>
 
@@ -136,7 +182,16 @@ export default function ServiceDetail() {
                 <form onSubmit={formik.handleSubmit} className="space-y-4">
                   {[{n:'name',l:'Your Name',t:'text',p:'Full name'},{n:'email',l:'Email',t:'email',p:'you@example.com'},{n:'phone',l:'Phone',t:'tel',p:'98765 43210'}].map(({n,l,t,p}) => (
                     <div key={n}><label className="label text-sm">{l}</label>
-                      <input {...formik.getFieldProps(n)} type={t} placeholder={p} className={`input-field text-sm ${formik.touched[n]&&formik.errors[n]?'border-red-400':''}`} />
+                      <input
+                        {...formik.getFieldProps(n)}
+                        type={t}
+                        placeholder={p}
+                        maxLength={n === 'phone' ? 10 : undefined}
+                        onInput={(e) => {
+                          if (n === 'phone') e.target.value = sanitizeIndianMobileInput(e.target.value)
+                        }}
+                        className={`input-field text-sm ${formik.touched[n]&&formik.errors[n]?'border-red-400':''}`}
+                      />
                       {formik.touched[n]&&formik.errors[n]&&<p className="mt-1 text-xs text-red-500">{formik.errors[n]}</p>}
                     </div>
                   ))}

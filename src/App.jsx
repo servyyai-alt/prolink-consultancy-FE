@@ -24,6 +24,8 @@ const CvWriting     = lazy(() => import('./pages/CvWriting'))
 const CampusDrive   = lazy(() => import('./pages/CampusDrive'))
 const Events        = lazy(() => import('./pages/Events'))
 const Catering      = lazy(() => import('./pages/Catering'))
+const Terms         = lazy(() => import('./pages/Terms'))
+const Privacy       = lazy(() => import('./pages/Privacy'))
 
 // Auth pages
 const Login         = lazy(() => import('./pages/auth/Login'))
@@ -91,6 +93,8 @@ export default function App() {
           <Route path="/campus-drive" element={<CampusDrive />} />
           <Route path="/events"    element={<Events />} />
           <Route path="/catering"  element={<Catering />} />
+          <Route path="/terms" element={<Terms />} />
+          <Route path="/privacy" element={<Privacy />} />
         </Route>
 
         {/* Auth Routes */}

@@ -102,8 +102,21 @@ const authSlice = createSlice({
     builder.addCase(registerUser.pending,   (state) => { state.isLoading = true; state.error = null })
     builder.addCase(registerUser.fulfilled, (state, { payload }) => {
       state.isLoading = false
-      state.pendingEmail = payload.data?.email
-      toast.success('Account created! Check your email for OTP.')
+      const authData = payload?.data || payload
+
+      // OTP flow is temporarily bypassed. Keep the old pending-email flow commented for later reuse.
+      // state.pendingEmail = payload.data?.email
+      if (authData?.user && authData?.accessToken) {
+        state.user = authData.user
+        state.accessToken = authData.accessToken
+        state.pendingEmail = null
+        localStorage.setItem(TOKEN_KEY, authData.accessToken)
+        if (authData.refreshToken) localStorage.setItem(REFRESH_KEY, authData.refreshToken)
+        localStorage.setItem(USER_KEY, JSON.stringify(authData.user))
+        toast.success('Account created successfully!')
+      } else {
+        toast.success('Registration submitted successfully. Please sign in.')
+      }
     })
     builder.addCase(registerUser.rejected,  (state, { payload }) => {
       state.isLoading = false; state.error = payload; toast.error(payload)

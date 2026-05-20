@@ -8,6 +8,7 @@ import { HiCamera, HiUpload, HiPlus, HiX, HiCheckCircle } from 'react-icons/hi'
 import { userAPI } from '../../services/api'
 import { updateUser, selectUser } from '../../redux/slices/authSlice'
 import toast from 'react-hot-toast'
+import { optionalIndianMobileSchema, sanitizeIndianMobileInput } from '../../utils/phoneValidation'
 
 const SKILL_SUGGESTIONS = ['JavaScript', 'Python', 'React', 'Node.js', 'Java', 'SQL', 'Excel', 'Sales', 'Marketing', 'HR', 'Project Management', 'AutoCAD', 'Tally', 'Leadership']
 
@@ -40,7 +41,7 @@ export default function JSProfile() {
     validationSchema: Yup.object({
       firstName: Yup.string().required('Required'),
       lastName:  Yup.string().required('Required'),
-      phone:     Yup.string().matches(/^[6-9]\d{9}$/, 'Invalid phone').nullable(),
+      phone:     optionalIndianMobileSchema('Invalid phone number'),
     }),
     onSubmit: async (values) => {
       setSaving(true)
@@ -123,7 +124,16 @@ export default function JSProfile() {
       ) : Tag === 'textarea' ? (
         <textarea {...formik.getFieldProps(name)} rows={rows || 4} placeholder={placeholder} className={`input-field resize-none ${formik.touched[name] && formik.errors[name] ? 'border-red-400' : ''}`} />
       ) : (
-        <input {...formik.getFieldProps(name)} type={type} placeholder={placeholder} className={`input-field ${formik.touched[name] && formik.errors[name] ? 'border-red-400' : ''}`} />
+        <input
+          {...formik.getFieldProps(name)}
+          type={type}
+          placeholder={placeholder}
+          maxLength={name === 'phone' ? 10 : undefined}
+          onInput={(e) => {
+            if (name === 'phone') e.target.value = sanitizeIndianMobileInput(e.target.value)
+          }}
+          className={`input-field ${formik.touched[name] && formik.errors[name] ? 'border-red-400' : ''}`}
+        />
       )}
       {formik.touched[name] && formik.errors[name] && <p className="mt-1 text-xs text-red-500">{formik.errors[name]}</p>}
     </div>

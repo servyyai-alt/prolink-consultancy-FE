@@ -70,14 +70,8 @@ export const USER_ROLES = [
 // ── Services ──────────────────────────────────────────────────────────────────
 export const SERVICES = [
   { slug: 'job-consultancy',        name: 'Job Consultancy',          icon: '💼' },
-  { slug: 'cv-writing',             name: 'CV Writing',               icon: '📄' },
   { slug: 'campus-drive',           name: 'Campus Drive',             icon: '🎓' },
-  { slug: 'housekeeping',           name: 'House Keeping',            icon: '🏠' },
-  { slug: 'catering',               name: 'Catering Services',        icon: '🍽️' },
-  { slug: 'event-management',       name: 'Event Management',         icon: '🎉' },
-  { slug: 'plant-setup',            name: 'Plant Set-Up',             icon: '🏭' },
   { slug: 'background-verification',name: 'Background Verification',  icon: '🔍' },
-  { slug: 'hr-outsourcing',         name: 'HR Outsourcing',           icon: '👥' },
 ]
 
 // ── Subscription plans ────────────────────────────────────────────────────────

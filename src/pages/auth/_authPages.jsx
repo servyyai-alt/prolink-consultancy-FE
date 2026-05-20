@@ -14,6 +14,7 @@ import toast from 'react-hot-toast'
 import logo from '../../assets/logo.jpeg'
 import authImage from '../../assets/login.jpg'
 import registerImage from '../../assets/register.jpg'
+import { optionalIndianMobileSchema, sanitizeIndianMobileInput } from '../../utils/phoneValidation'
 // import registerImage from '../../assets/web-logo.jpeg'
 
 const AuthShell = ({
@@ -171,7 +172,7 @@ export function Register() {
       firstName:       Yup.string().min(2).required('First name required'),
       lastName:        Yup.string().min(2).required('Last name required'),
       email:           Yup.string().email('Invalid email').required('Email required'),
-      phone:           Yup.string().matches(/^[6-9]\d{9}$/, 'Invalid Indian phone number'),
+      phone:           optionalIndianMobileSchema('Invalid Indian phone number'),
       password:        Yup.string().min(8, 'Min 8 characters').matches(/(?=.*[A-Z])(?=.*[0-9])/, 'Must have uppercase + number').required(),
       confirmPassword: Yup.string().oneOf([Yup.ref('password')], 'Passwords must match').required(),
       role:            Yup.string().oneOf(['job_seeker', 'employer']).required(),
@@ -179,7 +180,17 @@ export function Register() {
     onSubmit: async (values) => {
       const { confirmPassword, ...data } = values
       const result = await dispatch(registerUser(data))
-      if (!result.error) navigate('/verify-otp')
+      if (!result.error) {
+        const registeredUser = result.payload?.data?.user || result.payload?.user
+        const registeredRole = registeredUser?.role
+
+        // OTP flow is temporarily bypassed. Keep this redirect commented for later reuse.
+        // navigate('/verify-otp')
+        if (['admin', 'super_admin', 'recruiter'].includes(registeredRole)) navigate('/admin')
+        else if (registeredRole === 'employer') navigate('/employer')
+        else if (registeredRole) navigate('/dashboard')
+        else navigate('/login')
+      }
     },
   })
 
@@ -215,8 +226,16 @@ export function Register() {
 
         <div>
           <label className="label">Phone (optional)</label>
-          <input {...f('phone')} type="tel" placeholder="98765 43210"
-            className={`input-field ${e('phone') ? 'border-red-400' : ''}`} />
+          <input
+            {...f('phone')}
+            type="tel"
+            placeholder="9876543210"
+            maxLength={10}
+            onInput={(e) => {
+              e.target.value = sanitizeIndianMobileInput(e.target.value)
+            }}
+            className={`input-field ${e('phone') ? 'border-red-400' : ''}`}
+          />
           {e('phone') && <p className="mt-1 text-xs text-red-500">{e('phone')}</p>}
         </div>
 

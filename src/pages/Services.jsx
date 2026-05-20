@@ -8,27 +8,21 @@ import { getServiceIcon } from '../constants/serviceIcons'
 
 const FALLBACK = [
   { slug: 'job-consultancy', name: 'Job Consultancy', shortDescription: 'End-to-end recruitment solutions' },
-  { slug: 'cv-writing', name: 'CV Writing', shortDescription: 'ATS-optimised resumes that get you shortlisted' },
   { slug: 'campus-drive', name: 'Campus Drive', shortDescription: 'College-to-company placement drives' },
-  { slug: 'housekeeping', name: 'House Keeping', shortDescription: 'Professional housekeeping staff placement' },
-  { slug: 'catering', name: 'Catering Services', shortDescription: 'Indoor & outdoor catering for all occasions' },
-  { slug: 'event-management', name: 'Event Management', shortDescription: 'Corporate and personal event planning' },
-  { slug: 'plant-setup', name: 'Plant Set-Up', shortDescription: 'Industrial staffing for plant operations' },
   { slug: 'background-verification', name: 'Background Verification', shortDescription: 'Comprehensive background checks' },
-  { slug: 'hr-outsourcing', name: 'HR Outsourcing', shortDescription: 'Full-spectrum HR services for businesses' },
 ]
 
+const ALLOWED_SERVICE_SLUGS = ['job-consultancy', 'campus-drive', 'background-verification']
+
 const getServiceRoute = (slug) => (
-  slug === 'cv-writing' ? '/cv-writing'
-    : slug === 'campus-drive' ? '/campus-drive'
-    : slug === 'catering' ? '/catering'
-    : slug === 'event-management' ? '/events'
+  slug === 'campus-drive' ? '/campus-drive'
     : `/services/${slug}`
 )
 
 export default function Services() {
   const { data } = useQuery({ queryKey: ['services'], queryFn: serviceAPI.getServices })
-  const services = data?.data?.data?.services || FALLBACK
+  const services = (data?.data?.data?.services || FALLBACK)
+    .filter((service) => ALLOWED_SERVICE_SLUGS.includes(service.slug))
 
   return (
     <>
@@ -40,7 +34,7 @@ export default function Services() {
         <div className="bg-gradient-to-r from-primary-700 to-primary-900 py-16">
           <div className="page-container text-center">
             <h1 className="text-4xl font-display font-bold text-white mb-3">Our Services</h1>
-            <p className="text-primary-200 text-lg max-w-2xl mx-auto">Comprehensive consultancy services for candidates and businesses across India</p>
+            <p className="text-primary-200 text-lg max-w-2xl mx-auto">Focused consultancy services for hiring, campus recruitment, and candidate verification across India</p>
           </div>
         </div>
         <div className="page-container py-16">

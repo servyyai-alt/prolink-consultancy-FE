@@ -6,6 +6,7 @@ import * as Yup from 'yup'
 import { userAPI } from '../../services/api'
 import { updateUser, selectUser } from '../../redux/slices/authSlice'
 import toast from 'react-hot-toast'
+import { optionalIndianMobileSchema, sanitizeIndianMobileInput } from '../../utils/phoneValidation'
 
 export default function EmpProfile() {
   const dispatch = useDispatch()
@@ -28,6 +29,7 @@ export default function EmpProfile() {
     },
     validationSchema: Yup.object({
       firstName: Yup.string().required(),
+      phone: optionalIndianMobileSchema('Invalid phone number'),
       'company.name': Yup.string().required('Company name required'),
     }),
     onSubmit: async (values) => {
@@ -61,7 +63,16 @@ export default function EmpProfile() {
       ) : Tag === 'textarea' ? (
         <textarea {...formik.getFieldProps(name)} rows={rows||4} placeholder={placeholder} className="input-field resize-none" />
       ) : (
-        <input {...formik.getFieldProps(name)} type={type} placeholder={placeholder} className={`input-field ${formik.touched[name]&&formik.errors[name]?'border-red-400':''}`} />
+        <input
+          {...formik.getFieldProps(name)}
+          type={type}
+          placeholder={placeholder}
+          maxLength={name === 'phone' ? 10 : undefined}
+          onInput={(e) => {
+            if (name === 'phone') e.target.value = sanitizeIndianMobileInput(e.target.value)
+          }}
+          className={`input-field ${formik.touched[name]&&formik.errors[name]?'border-red-400':''}`}
+        />
       )}
       {formik.touched[name]&&formik.errors[name]&&<p className="mt-1 text-xs text-red-500">{formik.errors[name]}</p>}
     </div>

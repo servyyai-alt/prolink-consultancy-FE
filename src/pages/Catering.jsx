@@ -15,7 +15,12 @@ const MENUS = [
 export default function Catering() {
   const formik = useFormik({
     initialValues: { name:'', email:'', phone:'', eventDate:'', guests:'', menuType:'', venue:'', message:'' },
-    validationSchema: Yup.object({ name:Yup.string().required(), email:Yup.string().email().required(), phone:Yup.string().required(), guests:Yup.number().min(10).required() }),
+    validationSchema: Yup.object({
+      name: Yup.string().required('Name is required'),
+      email: Yup.string().email('Enter a valid email').required('Email is required'),
+      phone: requiredIndianMobileSchema('Phone number is required'),
+      guests: Yup.number().min(10, 'Minimum 10 guests required').required('Guest count is required'),
+    }),
     onSubmit: async (v, { resetForm }) => {
       try {
         await cateringAPI.submitInquiry({ ...v, subject:`Catering Inquiry — ${v.menuType}`, service:'Catering Services', message:`Guests: ${v.guests}, Venue: ${v.venue}, Date: ${v.eventDate}. ${v.message}` })
@@ -66,7 +71,16 @@ export default function Catering() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {[{n:'name',l:'Name',p:'Your name'},{n:'email',l:'Email',t:'email',p:'you@example.com'},{n:'phone',l:'Phone',t:'tel',p:'98765 43210'},{n:'guests',l:'Guest Count',t:'number',p:'Min. 10'},{n:'venue',l:'Venue / Location',p:'Venue name or area'},{n:'eventDate',l:'Event Date',t:'date',p:''}].map(({n,l,p,t='text'}) => (
                     <div key={n}><label className="label">{l}</label>
-                      <input {...formik.getFieldProps(n)} type={t} placeholder={p} className={`input-field ${formik.touched[n]&&formik.errors[n]?'border-red-400':''}`} />
+                      <input
+                        {...formik.getFieldProps(n)}
+                        type={t}
+                        placeholder={p}
+                        maxLength={n === 'phone' ? 10 : undefined}
+                        onInput={(e) => {
+                          if (n === 'phone') e.target.value = sanitizeIndianMobileInput(e.target.value)
+                        }}
+                        className={`input-field ${formik.touched[n]&&formik.errors[n]?'border-red-400':''}`}
+                      />
                       {formik.touched[n]&&formik.errors[n]&&<p className="mt-1 text-xs text-red-500">{formik.errors[n]}</p>}
                     </div>
                   ))}

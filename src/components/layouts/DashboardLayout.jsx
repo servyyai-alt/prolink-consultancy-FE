@@ -11,6 +11,7 @@ import { logoutUser, selectUser } from '../../redux/slices/authSlice'
 import { toggleTheme, selectTheme } from '../../redux/slices/uiSlice'
 import { selectUnreadCount } from '../../redux/slices/notificationSlice'
 import { Link } from 'react-router-dom'
+import Logo from '../../assets/logo.jpeg'
 
 const JOB_SEEKER_NAV = [
   { to: '/dashboard',             icon: HiViewGrid,     label: 'Overview',     end: true },
@@ -44,14 +45,29 @@ export default function DashboardLayout({ variant = 'jobseeker' }) {
   const Sidebar = ({ mobile = false }) => (
     <div className={`flex flex-col h-full bg-white dark:bg-slate-900 ${mobile ? '' : 'border-r border-slate-100 dark:border-slate-800'}`}>
       {/* Logo */}
-      <div className="px-6 py-5 border-b border-slate-100 dark:border-slate-800">
+      <Link to="/" className="flex items-center gap-2.5">
+       <div className="relative overflow-hidden rounded-xl">
+        <img
+          src={Logo}
+          alt="ProLink Consultancy"
+          className="
+            h-16
+            w-auto
+            object-contain
+            transition-all duration-300
+            group-hover:scale-105
+          "
+        />
+       </div>
+       </Link>
+      {/* <div className="px-6 py-5 border-b border-slate-100 dark:border-slate-800">
         <Link to="/" className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center">
             <span className="text-white font-bold text-base">P</span>
           </div>
           <span className="font-display font-bold text-lg text-slate-900 dark:text-white">ProLink</span>
         </Link>
-      </div>
+      </div> */}
 
       {/* User info */}
       <div className="px-4 py-4 border-b border-slate-100 dark:border-slate-800">

@@ -11,7 +11,12 @@ const STATS = [{ v:'500+', l:'Colleges Partnered' },{ v:'200+', l:'Companies Hir
 export default function CampusDrive() {
   const formik = useFormik({
     initialValues: { name:'', email:'', phone:'', collegeName:'', message:'' },
-    validationSchema: Yup.object({ name:Yup.string().required(), email:Yup.string().email().required(), collegeName:Yup.string().required() }),
+    validationSchema: Yup.object({
+      name: Yup.string().required('Name is required'),
+      email: Yup.string().email('Enter a valid email').required('Email is required'),
+      phone: requiredIndianMobileSchema('Phone number is required'),
+      collegeName: Yup.string().required('College name is required'),
+    }),
     onSubmit: async (v, { resetForm }) => {
       try {
         await contactAPI.submit({ ...v, subject:'Campus Drive Registration', service:'Campus Drive' })
@@ -75,7 +80,16 @@ export default function CampusDrive() {
                 <form onSubmit={formik.handleSubmit} className="space-y-4">
                   {[{n:'name',l:'Contact Person',p:'Your name'},{n:'email',l:'Email',p:'you@college.edu',t:'email'},{n:'phone',l:'Phone',p:'98765 43210',t:'tel'},{n:'collegeName',l:'College / University Name',p:'e.g. IIT Madras'}].map(({n,l,p,t='text'}) => (
                     <div key={n}><label className="label">{l}</label>
-                      <input {...formik.getFieldProps(n)} type={t} placeholder={p} className={`input-field ${formik.touched[n]&&formik.errors[n]?'border-red-400':''}`} />
+                      <input
+                        {...formik.getFieldProps(n)}
+                        type={t}
+                        placeholder={p}
+                        maxLength={n === 'phone' ? 10 : undefined}
+                        onInput={(e) => {
+                          if (n === 'phone') e.target.value = sanitizeIndianMobileInput(e.target.value)
+                        }}
+                        className={`input-field ${formik.touched[n]&&formik.errors[n]?'border-red-400':''}`}
+                      />
                       {formik.touched[n]&&formik.errors[n]&&<p className="mt-1 text-xs text-red-500">{formik.errors[n]}</p>}
                     </div>
                   ))}
