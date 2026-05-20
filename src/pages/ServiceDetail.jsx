@@ -7,11 +7,31 @@ import { serviceAPI, contactAPI } from '../services/api'
 import { useFormik } from 'formik'
 import * as Yup from 'yup'
 import toast from 'react-hot-toast'
+import { getServiceIcon } from '../constants/serviceIcons'
+
+const SERVICE_DETAIL_FALLBACKS = {
+  'background-verification': {
+    description: 'Our Background Verification service helps organizations make confident hiring decisions through structured, compliant, and timely checks. We verify employment history, education credentials, identity records, address details, and other role-specific requirements to reduce hiring risk and protect workplace integrity. With clear reporting, fast turnaround, and a trust-first process, ProLink supports employers in building reliable teams without slowing down recruitment.',
+  },
+  'hr-outsourcing': {
+    description: 'Our HR Outsourcing service is designed for businesses that want dependable HR operations without building a large in-house team. ProLink supports recruitment coordination, onboarding, attendance workflows, payroll inputs, employee documentation, policy execution, and day-to-day HR administration. Whether you are a growing startup or an established company scaling across locations, we help streamline people operations, improve compliance, and free your leadership team to focus on business growth.',
+  },
+}
 
 export default function ServiceDetail() {
   const { slug } = useParams()
   const { data, isLoading } = useQuery({ queryKey: ['service', slug], queryFn: () => serviceAPI.getService(slug) })
-  const service = data?.data?.data?.service
+  const serviceData = data?.data?.data?.service
+  const service = serviceData
+    ? {
+        ...SERVICE_DETAIL_FALLBACKS[slug],
+        ...serviceData,
+        description: serviceData.description && serviceData.description !== '...'
+          ? serviceData.description
+          : SERVICE_DETAIL_FALLBACKS[slug]?.description || serviceData.description,
+      }
+    : serviceData
+  const ServiceIcon = getServiceIcon(slug)
 
   const formik = useFormik({
     initialValues: { name:'', email:'', phone:'', message:'' },
@@ -44,7 +64,9 @@ export default function ServiceDetail() {
           <div className="page-container">
             <Link to="/services" className="inline-flex items-center gap-1.5 text-primary-200 hover:text-white mb-6 text-sm transition-colors"><HiArrowLeft className="w-4 h-4" />All Services</Link>
             <div className="flex items-center gap-4">
-              <div className="text-5xl">{service.icon}</div>
+              <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-white/12 text-white ring-1 ring-white/20 backdrop-blur-sm">
+                <ServiceIcon className="h-10 w-10" strokeWidth={1.9} />
+              </div>
               <div>
                 <h1 className="text-3xl md:text-4xl font-display font-bold text-white">{service.name}</h1>
                 <p className="text-primary-200 mt-1">{service.shortDescription}</p>

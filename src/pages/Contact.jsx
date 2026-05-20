@@ -26,7 +26,8 @@ export default function Contact() {
     },
   })
 
-  const SERVICES = ['Job Consultancy', 'CV Writing', 'Campus Drive', 'House Keeping', 'Catering Services', 'Event Management', 'Plant Set-Up', 'HR Outsourcing', 'Background Verification', 'Other']
+  const SERVICES = ['Job Consultancy','Campus Drive', 'HR Outsourcing', 'Background Verification', 'Other']
+    // const SERVICES = ['Job Consultancy', 'CV Writing', 'Campus Drive', 'House Keeping', 'Catering Services', 'Event Management', 'Plant Set-Up', 'HR Outsourcing', 'Background Verification', 'Other']
 
   return (
     <>

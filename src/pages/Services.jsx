@@ -4,18 +4,27 @@ import { Helmet } from 'react-helmet-async'
 import { motion } from 'framer-motion'
 import { HiArrowRight } from 'react-icons/hi'
 import { serviceAPI } from '../services/api'
+import { getServiceIcon } from '../constants/serviceIcons'
 
 const FALLBACK = [
-  { slug: 'job-consultancy', name: 'Job Consultancy', icon: '💼', shortDescription: 'End-to-end recruitment solutions' },
-  { slug: 'cv-writing', name: 'CV Writing', icon: '📄', shortDescription: 'ATS-optimised resumes that get you shortlisted' },
-  { slug: 'campus-drive', name: 'Campus Drive', icon: '🎓', shortDescription: 'College-to-company placement drives' },
-  { slug: 'housekeeping', name: 'House Keeping', icon: '🏠', shortDescription: 'Professional housekeeping staff placement' },
-  { slug: 'catering', name: 'Catering Services', icon: '🍽️', shortDescription: 'Indoor & outdoor catering for all occasions' },
-  { slug: 'event-management', name: 'Event Management', icon: '🎉', shortDescription: 'Corporate and personal event planning' },
-  { slug: 'plant-setup', name: 'Plant Set-Up', icon: '🏭', shortDescription: 'Industrial staffing for plant operations' },
-  { slug: 'background-verification', name: 'Background Verification', icon: '🔍', shortDescription: 'Comprehensive background checks' },
-  { slug: 'hr-outsourcing', name: 'HR Outsourcing', icon: '👥', shortDescription: 'Full-spectrum HR services for businesses' },
+  { slug: 'job-consultancy', name: 'Job Consultancy', shortDescription: 'End-to-end recruitment solutions' },
+  { slug: 'cv-writing', name: 'CV Writing', shortDescription: 'ATS-optimised resumes that get you shortlisted' },
+  { slug: 'campus-drive', name: 'Campus Drive', shortDescription: 'College-to-company placement drives' },
+  { slug: 'housekeeping', name: 'House Keeping', shortDescription: 'Professional housekeeping staff placement' },
+  { slug: 'catering', name: 'Catering Services', shortDescription: 'Indoor & outdoor catering for all occasions' },
+  { slug: 'event-management', name: 'Event Management', shortDescription: 'Corporate and personal event planning' },
+  { slug: 'plant-setup', name: 'Plant Set-Up', shortDescription: 'Industrial staffing for plant operations' },
+  { slug: 'background-verification', name: 'Background Verification', shortDescription: 'Comprehensive background checks' },
+  { slug: 'hr-outsourcing', name: 'HR Outsourcing', shortDescription: 'Full-spectrum HR services for businesses' },
 ]
+
+const getServiceRoute = (slug) => (
+  slug === 'cv-writing' ? '/cv-writing'
+    : slug === 'campus-drive' ? '/campus-drive'
+    : slug === 'catering' ? '/catering'
+    : slug === 'event-management' ? '/events'
+    : `/services/${slug}`
+)
 
 export default function Services() {
   const { data } = useQuery({ queryKey: ['services'], queryFn: serviceAPI.getServices })
@@ -35,22 +44,30 @@ export default function Services() {
           </div>
         </div>
         <div className="page-container py-16">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {services.map((s, i) => (
-              <motion.div key={s.slug || s._id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }}>
-                <Link to={s.slug === 'cv-writing' ? '/cv-writing' : s.slug === 'campus-drive' ? '/campus-drive' : s.slug === 'catering' ? '/catering' : s.slug === 'event-management' ? '/events' : `/services/${s.slug}`}
-                  className="card-hover p-7 flex flex-col gap-4 h-full group">
-                  <div className="text-4xl">{s.icon}</div>
-                  <div className="flex-1">
-                    <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2 group-hover:text-primary-600 transition-colors">{s.name}</h3>
-                    <p className="text-slate-500 text-sm leading-relaxed">{s.shortDescription}</p>
-                  </div>
-                  <span className="text-primary-600 text-sm font-semibold flex items-center gap-1 group-hover:gap-2 transition-all">
-                    Learn more <HiArrowRight className="w-4 h-4" />
-                  </span>
-                </Link>
-              </motion.div>
-            ))}
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {services.map((service, i) => {
+              const Icon = getServiceIcon(service.slug)
+
+              return (
+                <motion.div key={service.slug || service._id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }}>
+                  <Link
+                    to={getServiceRoute(service.slug)}
+                    className="card-hover group flex h-full flex-col gap-4 p-7"
+                  >
+                    <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary-50 text-primary-700 shadow-sm ring-1 ring-primary-100 transition-colors group-hover:bg-primary-600 group-hover:text-white group-hover:ring-primary-600 dark:bg-primary-900/20 dark:text-primary-300 dark:ring-primary-800">
+                      <Icon className="h-7 w-7" strokeWidth={1.9} />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="mb-2 text-lg font-bold text-slate-900 transition-colors group-hover:text-primary-600 dark:text-white">{service.name}</h3>
+                      <p className="text-sm leading-relaxed text-slate-500">{service.shortDescription}</p>
+                    </div>
+                    <span className="flex items-center gap-1 text-sm font-semibold text-primary-600 transition-all group-hover:gap-2">
+                      Learn more <HiArrowRight className="h-4 w-4" />
+                    </span>
+                  </Link>
+                </motion.div>
+              )
+            })}
           </div>
         </div>
       </div>

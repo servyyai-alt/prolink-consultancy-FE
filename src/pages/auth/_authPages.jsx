@@ -11,27 +11,48 @@ import {
 import { authAPI } from '../../services/api'
 import { HiEye, HiEyeOff, HiMail, HiLockClosed, HiUser, HiPhone } from 'react-icons/hi'
 import toast from 'react-hot-toast'
+import logo from '../../assets/logo.jpeg'
+import authImage from '../../assets/login.jpg'
+import registerImage from '../../assets/register.jpg'
+// import registerImage from '../../assets/web-logo.jpeg'
 
-const AuthShell = ({ children, title, subtitle }) => (
+const AuthShell = ({
+  children,
+  title,
+  subtitle,
+  image = authImage,
+  panelTitle = <>Your gateway to <span className="text-primary-300">10,000+</span> opportunities</>,
+  panelPoints = ['Free job applications', 'ATS-optimised resumes', 'Real-time interview tracking', 'Pan-India company network'],
+}) => (
   <div className="min-h-screen flex bg-slate-50 dark:bg-slate-950">
     {/* Left panel */}
-    <div className="hidden lg:flex flex-col justify-between w-5/12 bg-gradient-to-br from-primary-700 via-primary-800 to-slate-900 p-12 relative overflow-hidden">
-      <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-5" />
+    <div className="hidden lg:flex flex-col justify-between w-1/2 p-12 relative overflow-hidden isolate">
+      <img
+        src={image}
+        alt=""
+        className="absolute inset-0 h-full w-full object-cover scale-[1.06]"
+      />
+      <div className="absolute inset-0 bg-slate-950/35" />
+      <div className="absolute inset-0 bg-gradient-to-br from-slate-950/45 via-slate-950/20 to-primary-950/55" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,255,255,0.24),transparent_34%),radial-gradient(circle_at_bottom_right,rgba(59,130,246,0.22),transparent_30%)]" />
       <motion.div animate={{ scale: [1, 1.15, 1] }} transition={{ duration: 8, repeat: Infinity }}
         className="absolute -top-20 -right-20 w-80 h-80 bg-primary-500/20 rounded-full blur-3xl" />
-      <Link to="/" className="relative flex items-center gap-2.5">
-        <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center">
-          <span className="text-white font-display font-bold text-lg">P</span>
-        </div>
-        <span className="font-display font-bold text-xl text-white">ProLink</span>
+      <Link to="/" className="relative inline-flex items-center self-start rounded-[28px] border border-white/20 bg-white/12 px-5 py-4 shadow-[0_20px_60px_rgba(15,23,42,0.28)] backdrop-blur-xl">
+        <div className="absolute inset-0 rounded-[28px] bg-gradient-to-r from-white/18 to-transparent opacity-70" />
+        <img
+          src={logo}
+          alt="ProLink Consultancy"
+          className="relative h-16 w-auto object-contain drop-shadow-[0_10px_24px_rgba(15,23,42,0.35)]"
+        />
       </Link>
-      <div className="relative">
-        <h2 className="text-3xl font-display font-bold text-white mb-4 leading-tight">
-          Your gateway to <span className="text-primary-300">10,000+</span> opportunities
-        </h2>
+      <div className="relative max-w-xl rounded-[32px] border border-white/15 bg-black/15 p-8 backdrop-blur-md">
+        <div className="mb-5 inline-flex rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.28em] text-white/80">
+          ProLink Consultancy
+        </div>
+        <h2 className="text-4xl font-display font-bold text-white mb-4 leading-tight drop-shadow-[0_8px_26px_rgba(15,23,42,0.4)]">{panelTitle}</h2>
         <div className="space-y-3">
-          {['Free job applications', 'ATS-optimised resumes', 'Real-time interview tracking', 'Pan-India company network'].map(f => (
-            <div key={f} className="flex items-center gap-2.5 text-primary-200 text-sm">
+          {panelPoints.map(f => (
+            <div key={f} className="flex items-center gap-3 text-white/90 text-sm">
               <div className="w-5 h-5 rounded-full bg-primary-500/40 flex items-center justify-center flex-shrink-0">✓</div>{f}
             </div>
           ))}
@@ -44,11 +65,12 @@ const AuthShell = ({ children, title, subtitle }) => (
     <div className="flex-1 flex items-center justify-center p-6">
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-md">
         <div className="lg:hidden flex justify-center mb-8">
-          <Link to="/" className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-primary-600 flex items-center justify-center">
-              <span className="text-white font-display font-bold text-lg">P</span>
-            </div>
-            <span className="font-display font-bold text-xl text-slate-900 dark:text-white">ProLink</span>
+          <Link to="/" className="inline-flex items-center rounded-[24px] border border-slate-200 bg-white/90 px-4 py-3 shadow-lg shadow-slate-200/70 backdrop-blur dark:border-slate-800 dark:bg-slate-900/90 dark:shadow-black/20">
+            <img
+              src={logo}
+              alt="ProLink Consultancy"
+              className="h-14 w-auto object-contain"
+            />
           </Link>
         </div>
         <h1 className="text-2xl font-display font-bold text-slate-900 dark:text-white mb-1">{title}</h1>
@@ -86,7 +108,13 @@ export function Login() {
   })
 
   return (
-    <AuthShell title="Welcome back 👋" subtitle="Sign in to your ProLink account">
+    <AuthShell
+      title="Welcome back "
+      subtitle="Sign in to your ProLink account"
+      image={authImage}
+      panelTitle={<>Step into your next <span className="text-primary-300">career move</span></>}
+      panelPoints={['Free job applications', 'ATS-optimised resumes', 'Real-time interview tracking', 'Pan-India company network']}
+    >
       <form onSubmit={formik.handleSubmit} className="space-y-4">
         <div>
           <label className="label">Email Address</label>
@@ -132,6 +160,7 @@ export function Login() {
 // ── REGISTER ─────────────────────────────────────────────────────────────────
 export function Register() {
   const [showPass, setShowPass] = useState(false)
+  const [showConfirmPass, setShowConfirmPass] = useState(false)
   const dispatch  = useDispatch()
   const navigate  = useNavigate()
   const { isLoading } = useSelector(selectAuth)
@@ -158,7 +187,13 @@ export function Register() {
   const e = (name) => formik.touched[name] && formik.errors[name]
 
   return (
-    <AuthShell title="Create your account 🚀" subtitle="Join 10,000+ professionals on ProLink">
+    <AuthShell
+      title="Create your account"
+      subtitle="Join 10,000+ professionals on ProLink"
+      image={registerImage}
+      panelTitle={<>Build your profile for <span className="text-primary-300">better opportunities</span></>}
+      panelPoints={['Quick account setup', 'Employer and job seeker access', 'Track interviews in one place', 'Connect with trusted companies']}
+    >
       <form onSubmit={formik.handleSubmit} className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
           {['firstName', 'lastName'].map(n => (
@@ -188,7 +223,7 @@ export function Register() {
         <div>
           <label className="label">I am a…</label>
           <div className="grid grid-cols-2 gap-3">
-            {[{ value: 'job_seeker', label: '🔍 Job Seeker' }, { value: 'employer', label: '🏢 Employer' }].map(({ value, label }) => (
+            {[{ value: 'job_seeker', label: ' Job Seeker' }, { value: 'employer', label: ' Employer' }].map(({ value, label }) => (
               <button key={value} type="button" onClick={() => formik.setFieldValue('role', value)}
                 className={`py-3 px-4 rounded-xl border-2 text-sm font-semibold transition-all ${
                   formik.values.role === value
@@ -214,9 +249,35 @@ export function Register() {
 
         <div>
           <label className="label">Confirm Password</label>
-          <input {...f('confirmPassword')} type="password" placeholder="Confirm your password"
-            className={`input-field ${e('confirmPassword') ? 'border-red-400' : ''}`} />
-          {e('confirmPassword') && <p className="mt-1 text-xs text-red-500">{e('confirmPassword')}</p>}
+        
+          <div className="relative">
+            <input
+              {...f('confirmPassword')}
+              type={showConfirmPass ? 'text' : 'password'}
+              placeholder="Confirm your password"
+              className={`input-field pr-10 ${
+                e('confirmPassword') ? 'border-red-400' : ''
+              }`}
+            />
+        
+            <button
+              type="button"
+              onClick={() => setShowConfirmPass(!showConfirmPass)}
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400"
+            >
+              {showConfirmPass ? (
+                <HiEyeOff className="w-4 h-4" />
+              ) : (
+                <HiEye className="w-4 h-4" />
+              )}
+            </button>
+          </div>
+        
+          {e('confirmPassword') && (
+            <p className="mt-1 text-xs text-red-500">
+              {e('confirmPassword')}
+            </p>
+          )}
         </div>
 
         <button type="submit" disabled={isLoading} className="btn-primary w-full py-3.5">
