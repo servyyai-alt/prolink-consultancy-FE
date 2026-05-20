@@ -54,7 +54,8 @@ const AuthShell = ({
         <div className="space-y-3">
           {panelPoints.map(f => (
             <div key={f} className="flex items-center gap-3 text-white/90 text-sm">
-              <div className="w-5 h-5 rounded-full bg-primary-500/40 flex items-center justify-center flex-shrink-0">✓</div>{f}
+              {/* <div className="w-5 h-5 rounded-full bg-primary-500/40 flex items-center justify-center flex-shrink-0">✓</div> */}
+              {f}
             </div>
           ))}
         </div>
@@ -409,7 +410,7 @@ export function ForgotPassword() {
   })
 
   return (
-    <AuthShell title="Reset your password 🔐" subtitle="Enter your email and we'll send a reset link">
+    <AuthShell title="Reset your password " subtitle="Enter your email and we'll send a reset link">
       {sent ? (
         <div className="text-center py-6">
           <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4 text-3xl">📬</div>
