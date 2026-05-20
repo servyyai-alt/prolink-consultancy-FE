@@ -1,17 +1,7 @@
 import React from 'react'
-import SeoHelmet from '../components/common/SeoHelmet'
 
 export default function Privacy() {
   return (
-    <>
-      <SeoHelmet
-        title="Privacy Policy | ProLink Consultancy"
-        description="Read how ProLink Consultancy collects, uses, and protects your personal data across our recruitment and consultancy services."
-        image="/og/prolink-legal.svg"
-        imageAlt="Privacy policy for ProLink Consultancy"
-        path="/privacy"
-        themeColor="#334155"
-      />
     <main className="min-h-[70vh] py-20 bg-white dark:bg-brand-ink text-ink dark:text-sand">
       <div className="container mx-auto px-6 lg:px-0">
         <div className="max-w-3xl mx-auto">
@@ -51,6 +41,5 @@ export default function Privacy() {
         </div>
       </div>
     </main>
-    </>
   )
 }

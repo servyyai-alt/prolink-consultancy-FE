@@ -1,17 +1,7 @@
 import React from 'react'
-import SeoHelmet from '../components/common/SeoHelmet'
 
 export default function Terms() {
   return (
-    <>
-      <SeoHelmet
-        title="Terms & Conditions | ProLink Consultancy"
-        description="Read the ProLink Consultancy terms and conditions for using our platform, recruitment services, and related resources."
-        image="/og/prolink-legal.svg"
-        imageAlt="Terms and conditions for ProLink Consultancy"
-        path="/terms"
-        themeColor="#334155"
-      />
     <main className="min-h-[70vh] py-20 bg-white dark:bg-brand-ink text-ink dark:text-sand">
       <div className="container mx-auto px-6 lg:px-0">
         <div className="max-w-3xl mx-auto">
@@ -50,6 +40,5 @@ export default function Terms() {
         </div>
       </div>
     </main>
-    </>
   )
 }
