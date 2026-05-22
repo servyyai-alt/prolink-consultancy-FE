@@ -100,7 +100,7 @@ export default function Navbar() {
       {/* ── Main navbar ── */}
       <header className={`sticky top-0 left-0 right-0 z-50 transition-all duration-300 ${
         scrolled
-          ? 'bg-white/95 dark:bg-stone-950/95 backdrop-blur-xl shadow-[0_2px_20px_rgba(0,0,0,0.08)] border-b border-stone-200/70 dark:border-stone-800/70'
+          ? 'bg-white dark:bg-stone-950/95 backdrop-blur-xl shadow-[0_2px_20px_rgba(0,0,0,0.08)] border-b border-stone-200/70 dark:border-stone-800/70'
           : 'bg-white dark:bg-stone-950 border-b border-stone-200/60 dark:border-stone-800/60'
       }`}>
         <div className="page-container">

@@ -168,6 +168,7 @@ export const notificationAPI = {
 export const adminAPI = {
   getDashboard:      ()       => api.get('/admin/dashboard-stats'),
   getUsers:          (params) => api.get('/admin/users', { params }),
+  createUser:        (data)   => api.post('/admin/users', data),
   toggleBlock:       (id)     => api.patch(`/admin/users/${id}/block`),
   changeRole:        (id, data) => api.patch(`/admin/users/${id}/role`, data),
   getContacts:       (params) => api.get('/admin/contacts', { params }),
