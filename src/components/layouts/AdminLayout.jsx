@@ -9,6 +9,8 @@ import {
 } from 'react-icons/hi'
 import { logoutUser, selectUser } from '../../redux/slices/authSlice'
 import { toggleTheme, selectTheme } from '../../redux/slices/uiSlice'
+import ConfirmDialog from '../common/ConfirmDialog'
+import Logo from '../../assets/logo.jpeg'
 
 const ADMIN_NAV = [
   { to: '/admin',             icon: HiViewGrid,      label: 'Dashboard',    end: true },
@@ -18,12 +20,13 @@ const ADMIN_NAV = [
   { to: '/admin/contacts',    icon: HiMail,          label: 'Contacts' },
   { to: '/admin/blogs',       icon: HiNewspaper,     label: 'Blogs' },
   { to: '/admin/services',    icon: HiCollection,    label: 'Services' },
-  { to: '/admin/payments',    icon: HiCurrencyRupee, label: 'Payments' },
+  // { to: '/admin/payments',    icon: HiCurrencyRupee, label: 'Payments' },
   { to: '/admin/testimonials',icon: HiStar,          label: 'Testimonials' },
 ]
 
 export default function AdminLayout() {
   const [open, setOpen] = useState(false)
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const user     = useSelector(selectUser)
@@ -32,12 +35,13 @@ export default function AdminLayout() {
   const handleLogout = async () => {
     await dispatch(logoutUser())
     navigate('/')
+    setShowLogoutConfirm(false)
   }
 
   const Sidebar = () => (
     <div className="flex flex-col h-full bg-slate-900">
       <div className="px-6 py-5 border-b border-slate-700">
-        <Link to="/" className="flex items-center gap-2.5">
+        {/* <Link to="/" className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-lg bg-primary-600 flex items-center justify-center">
             <span className="text-white font-bold">P</span>
           </div>
@@ -45,7 +49,22 @@ export default function AdminLayout() {
             <span className="font-display font-bold text-white">ProLink</span>
             <span className="block text-[10px] text-slate-400 uppercase tracking-widest">Admin Panel</span>
           </div>
-        </Link>
+        </Link> */}
+              <Link to="/" className="flex items-center gap-2.5">
+               <div className="relative overflow-hidden rounded-xl">
+                <img
+                  src={Logo}
+                  alt="ProLink Consultancy"
+                  className="
+                    h-16
+                    w-auto
+                    object-contain
+                    transition-all duration-300
+                    group-hover:scale-105
+                  "
+                />
+               </div>
+               </Link>
       </div>
 
       <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
@@ -76,7 +95,7 @@ export default function AdminLayout() {
           {theme === 'dark' ? <HiSun className="w-4 h-4" /> : <HiMoon className="w-4 h-4" />}
           {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
         </button>
-        <button onClick={handleLogout}
+        <button onClick={() => setShowLogoutConfirm(true)}
           className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm text-red-400 hover:bg-red-900/20 hover:text-red-300">
           <HiLogout className="w-4 h-4" /> Logout
         </button>
@@ -112,6 +131,15 @@ export default function AdminLayout() {
           <Outlet />
         </main>
       </div>
+
+      <ConfirmDialog
+        isOpen={showLogoutConfirm}
+        onClose={() => setShowLogoutConfirm(false)}
+        onConfirm={handleLogout}
+        title="Logout Confirmation"
+        message="Are you sure you want to log out of the admin panel?"
+        confirmLabel="Logout"
+      />
     </div>
   )
 }

@@ -11,6 +11,7 @@ import { logoutUser, selectUser } from '../../redux/slices/authSlice'
 import { toggleTheme, selectTheme } from '../../redux/slices/uiSlice'
 import { selectUnreadCount } from '../../redux/slices/notificationSlice'
 import { Link } from 'react-router-dom'
+import ConfirmDialog from '../common/ConfirmDialog'
 import Logo from '../../assets/logo.jpeg'
 
 const JOB_SEEKER_NAV = [
@@ -30,6 +31,7 @@ const EMPLOYER_NAV = [
 
 export default function DashboardLayout({ variant = 'jobseeker' }) {
   const [open, setOpen] = useState(false)
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
   const dispatch  = useDispatch()
   const navigate  = useNavigate()
   const user      = useSelector(selectUser)
@@ -40,6 +42,7 @@ export default function DashboardLayout({ variant = 'jobseeker' }) {
   const handleLogout = async () => {
     await dispatch(logoutUser())
     navigate('/')
+    setShowLogoutConfirm(false)
   }
 
   const Sidebar = ({ mobile = false }) => (
@@ -107,7 +110,7 @@ export default function DashboardLayout({ variant = 'jobseeker' }) {
           {theme === 'dark' ? <HiSun className="w-4 h-4" /> : <HiMoon className="w-4 h-4" />}
           {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
         </button>
-        <button onClick={handleLogout}
+        <button onClick={() => setShowLogoutConfirm(true)}
           className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm font-semibold text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all">
           <HiLogout className="w-4 h-4" /> Logout
         </button>
@@ -162,6 +165,15 @@ export default function DashboardLayout({ variant = 'jobseeker' }) {
           <Outlet />
         </main>
       </div>
+
+      <ConfirmDialog
+        isOpen={showLogoutConfirm}
+        onClose={() => setShowLogoutConfirm(false)}
+        onConfirm={handleLogout}
+        title="Logout Confirmation"
+        message="Are you sure you want to log out of your account?"
+        confirmLabel="Logout"
+      />
     </div>
   )
 }

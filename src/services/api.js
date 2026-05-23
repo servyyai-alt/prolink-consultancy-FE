@@ -169,8 +169,10 @@ export const notificationAPI = {
 export const adminAPI = {
   getDashboard:      ()       => api.get('/admin/dashboard-stats'),
   getUsers:          (params) => api.get('/admin/users', { params }),
+  createUser:        (data)   => api.post('/admin/users', data),
   toggleBlock:       (id)     => api.patch(`/admin/users/${id}/block`),
   changeRole:        (id, data) => api.patch(`/admin/users/${id}/role`, data),
+  deleteUser:        (id)     => api.delete(`/admin/users/${id}`),
   getContacts:       (params) => api.get('/admin/contacts', { params }),
   getPayments:       (params) => api.get('/admin/payments', { params }),
   getApplications:   (params) => api.get('/admin/applications', { params }),
@@ -178,6 +180,8 @@ export const adminAPI = {
   getServices:       (params) => api.get('/admin/services', { params }),
   getTestimonials:   (params) => api.get('/admin/testimonials', { params }),
   approveTestimonial:(id)     => api.patch(`/admin/testimonials/${id}/approve`),
+  updateTestimonial: (id, data) => api.patch(`/admin/testimonials/${id}`, data),
+  deleteTestimonial: (id)     => api.delete(`/admin/testimonials/${id}`),
 }
 
 export const paymentAPI = {

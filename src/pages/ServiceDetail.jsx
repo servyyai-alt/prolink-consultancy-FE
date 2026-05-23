@@ -8,6 +8,7 @@ import { useFormik } from 'formik'
 import * as Yup from 'yup'
 import toast from 'react-hot-toast'
 import { getServiceIcon } from '../constants/serviceIcons'
+import { requiredIndianMobileSchema, sanitizeIndianMobileInput } from '../utils/phoneValidation'
 
 const SERVICE_DETAIL_FALLBACKS = {
   'background-verification': {
@@ -16,12 +17,6 @@ const SERVICE_DETAIL_FALLBACKS = {
   'hr-outsourcing': {
     description: 'Our HR Outsourcing service is designed for businesses that want dependable HR operations without building a large in-house team. ProLink supports recruitment coordination, onboarding, attendance workflows, payroll inputs, employee documentation, policy execution, and day-to-day HR administration. Whether you are a growing startup or an established company scaling across locations, we help streamline people operations, improve compliance, and free your leadership team to focus on business growth.',
   },
-}
-
-const SERVICE_META_IMAGES = {
-  'background-verification': '/og/prolink-services.svg',
-  'campus-drive': '/og/prolink-campus.svg',
-  'job-consultancy': '/og/prolink-services.svg',
 }
 
 export default function ServiceDetail() {
@@ -103,7 +98,7 @@ export default function ServiceDetail() {
     <>
       <Helmet>
         <title>{service.name} | ProLink Consultancy</title>
-        <meta name="description" content={service.shortDescription} />
+        <meta name="description" content={service.metaDescription || service.shortDescription || service.description} />
       </Helmet>
       <div className="pt-16">
         <div className="bg-gradient-to-r from-primary-700 to-primary-900 py-16">
@@ -137,6 +132,24 @@ export default function ServiceDetail() {
                       <div key={f.title} className="card p-5 flex gap-3">
                         <HiCheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
                         <div><p className="font-bold text-slate-900 dark:text-white text-sm">{f.title}</p><p className="text-slate-500 text-xs mt-0.5">{f.description}</p></div>
+                      </div>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+              {service.process?.length > 0 && (
+                <motion.div initial={{ opacity:0, y:16 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.08 }}>
+                  <h2 className="text-xl font-display font-bold text-slate-900 dark:text-white mb-5">How It Works</h2>
+                  <div className="space-y-4">
+                    {service.process.map((step, index) => (
+                      <div key={`${step.title}-${index}`} className="card p-5 flex gap-4">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-primary-50 text-primary-700 font-bold dark:bg-primary-900/20 dark:text-primary-300">
+                          {step.step || index + 1}
+                        </div>
+                        <div>
+                          <p className="font-bold text-slate-900 dark:text-white text-sm">{step.title}</p>
+                          <p className="text-slate-500 text-sm mt-1">{step.description}</p>
+                        </div>
                       </div>
                     ))}
                   </div>

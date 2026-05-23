@@ -5,6 +5,7 @@ import { motion } from 'framer-motion'
 import { HiArrowRight } from 'react-icons/hi'
 import { serviceAPI } from '../services/api'
 import { getServiceIcon } from '../constants/serviceIcons'
+import { getServiceRoute } from '../utils/serviceRoutes'
 
 const FALLBACK = [
   { slug: 'job-consultancy', name: 'Job Consultancy', shortDescription: 'End-to-end recruitment solutions' },
@@ -12,17 +13,9 @@ const FALLBACK = [
   { slug: 'background-verification', name: 'Background Verification', shortDescription: 'Comprehensive background checks' },
 ]
 
-const ALLOWED_SERVICE_SLUGS = ['job-consultancy', 'campus-drive', 'background-verification']
-
-const getServiceRoute = (slug) => (
-  slug === 'campus-drive' ? '/campus-drive'
-    : `/services/${slug}`
-)
-
 export default function Services() {
   const { data } = useQuery({ queryKey: ['services'], queryFn: serviceAPI.getServices })
-  const services = (data?.data?.data?.services || FALLBACK)
-    .filter((service) => ALLOWED_SERVICE_SLUGS.includes(service.slug))
+  const services = data?.data?.data?.services?.length ? data.data.data.services : FALLBACK
 
   return (
     <>
@@ -53,7 +46,7 @@ export default function Services() {
                     </div>
                     <div className="flex-1">
                       <h3 className="mb-2 text-lg font-bold text-slate-900 transition-colors group-hover:text-primary-600 dark:text-white">{service.name}</h3>
-                      <p className="text-sm leading-relaxed text-slate-500">{service.shortDescription}</p>
+                      <p className="text-sm leading-relaxed text-slate-500">{service.shortDescription || service.description}</p>
                     </div>
                     <span className="flex items-center gap-1 text-sm font-semibold text-primary-600 transition-all group-hover:gap-2">
                       Learn more <HiArrowRight className="h-4 w-4" />

@@ -40,7 +40,7 @@ export default function EmpOverview() {
           className="bg-gradient-to-r from-violet-600 to-primary-700 rounded-2xl p-6 text-white relative overflow-hidden">
           <div className="absolute -right-10 -top-10 w-40 h-40 bg-white/10 rounded-full" />
           <div className="relative">
-            <h2 className="text-xl font-display font-bold">Welcome, {user?.company?.name || user?.firstName}! 🏢</h2>
+            <h2 className="text-xl font-display font-bold">Welcome, {user?.company?.name || user?.firstName}! </h2>
             <p className="text-violet-200 text-sm mt-1">Manage your job postings and find the best talent.</p>
             <div className="flex flex-wrap gap-3 mt-4">
               <Link to="/employer/post-job" className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 rounded-xl text-sm font-semibold transition-colors">

@@ -6,6 +6,7 @@ import { motion } from 'framer-motion'
 import { HiEye, HiPencil, HiTrash, HiUserGroup, HiPlusCircle } from 'react-icons/hi'
 import { jobAPI } from '../../services/api'
 import { Pagination, Badge, EmptyState } from '../../components/ui/index'
+import ConfirmDialog from '../../components/common/ConfirmDialog'
 import toast from 'react-hot-toast'
 
 const STATUS_COLOR = { active:'success', paused:'warning', closed:'gray', draft:'primary', expired:'danger' }
@@ -13,6 +14,7 @@ const STATUS_COLOR = { active:'success', paused:'warning', closed:'gray', draft:
 export default function EmpMyJobs() {
   const [page, setPage]   = useState(1)
   const [status, setStatus] = useState('')
+  const [jobToDelete, setJobToDelete] = useState(null)
   const qc = useQueryClient()
 
   const { data, isLoading } = useQuery({
@@ -81,7 +83,7 @@ export default function EmpMyJobs() {
                     className="flex items-center gap-1.5 px-3 py-1.5 bg-primary-50 dark:bg-primary-900/20 text-primary-600 text-xs font-bold rounded-lg hover:bg-primary-100 transition-colors">
                     <HiUserGroup className="w-3.5 h-3.5" /> Applicants
                   </Link>
-                  <button onClick={() => { if (confirm('Delete this job?')) deleteMutation.mutate(job._id) }}
+                  <button onClick={() => setJobToDelete(job)}
                     className="p-2 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
                     <HiTrash className="w-4 h-4" />
                   </button>
@@ -92,6 +94,21 @@ export default function EmpMyJobs() {
         )}
         {pagination && <Pagination currentPage={page} totalPages={pagination.totalPages} onPageChange={setPage} />}
       </div>
+
+      <ConfirmDialog
+        isOpen={!!jobToDelete}
+        onClose={() => setJobToDelete(null)}
+        onConfirm={() => {
+          if (!jobToDelete) return
+          deleteMutation.mutate(jobToDelete._id, {
+            onSuccess: () => setJobToDelete(null),
+          })
+        }}
+        title="Delete Job"
+        message={jobToDelete ? `Are you sure you want to delete "${jobToDelete.title}"? This will close the job and hide it from candidates.` : ''}
+        confirmLabel="Delete"
+        isLoading={deleteMutation.isPending}
+      />
     </>
   )
 }
