@@ -21,6 +21,38 @@ const STEPS = ['Basic Info', 'Job Details', 'Skills & Salary', 'Preview']
 const ADMIN_ROLES = ['admin', 'super_admin', 'recruiter']
 
 const websiteRegex = /^(https?:\/\/)?([\w-])+\.{1}[a-zA-Z]{2,}(\/.*)?$/i
+const STEP_FIELDS = [
+  ['title', 'category', 'type', 'locationType', 'location', 'openings', 'education'],
+  ['description', 'requirements', 'responsibilities', 'deadline'],
+  ['experience.min', 'experience.max', 'salary.min', 'salary.max', 'company.name', 'company.website', 'company.description'],
+]
+
+const getNestedValue = (obj, path) => path.split('.').reduce((next, key) => next?.[key], obj)
+
+const setNestedValue = (obj, path, value) => {
+  const keys = path.split('.')
+  let target = obj
+
+  keys.forEach((key, index) => {
+    if (index === keys.length - 1) {
+      target[key] = value
+      return
+    }
+
+    target[key] = target[key] || {}
+    target = target[key]
+  })
+}
+
+const touchFields = (fields) => fields.reduce((acc, field) => {
+  setNestedValue(acc, field, true)
+  return acc
+}, {})
+
+const getStepForField = (field) => {
+  const index = STEP_FIELDS.findIndex((fields) => fields.includes(field))
+  return index === -1 ? 0 : index
+}
 
 const F = ({
   name,
@@ -152,7 +184,7 @@ export default function EmpPostJob() {
         max: Yup.number().min(Yup.ref('min'), 'Max experience must be greater than min experience').required('Maximum experience required'),
       }),
       salary: Yup.object({
-        min: Yup.number().min(1, 'Minimum salary should be greater than 1LPA').required('Minimum salary required'),
+        min: Yup.number().min(10000, 'Minimum salary must be at least Rs.10,000 per year').required('Minimum salary required'),
         max: Yup.number().min(Yup.ref('min'), 'Maximum salary must be greater than minimum salary').required('Maximum salary required'),
       }),
       company: Yup.object({
@@ -163,7 +195,19 @@ export default function EmpPostJob() {
     }),
     onSubmit: async (values) => {
       try {
+        const errors = await formik.validateForm()
+        const allFields = STEP_FIELDS.flat()
+        const firstErrorField = allFields.find((field) => getNestedValue(errors, field))
+
+        if (firstErrorField) {
+          formik.setTouched(touchFields(allFields), true)
+          setStep(getStepForField(firstErrorField))
+          toast.error(getNestedValue(errors, firstErrorField))
+          return
+        }
+
         if (skills.length === 0) {
+          setStep(2)
           toast.error('Please add at least one skill')
           return
         }
@@ -295,24 +339,12 @@ export default function EmpPostJob() {
   }
 
   const validateStep = async () => {
-    let fields = []
-
-    if (step === 0) {
-      fields = ['title', 'category', 'type', 'locationType', 'location', 'openings', 'education']
-    }
-
-    if (step === 1) {
-      fields = ['description', 'requirements', 'responsibilities', 'deadline']
-    }
-
-    if (step === 2) {
-      fields = ['experience.min', 'experience.max', 'salary.min', 'salary.max', 'company.name', 'company.description']
-    }
+    const fields = STEP_FIELDS[step] || []
 
     const errors = await formik.validateForm()
     fields.forEach((field) => formik.setFieldTouched(field, true))
 
-    const hasError = (field) => field.split('.').reduce((obj, key) => obj?.[key], errors)
+    const hasError = (field) => getNestedValue(errors, field)
     const stepErrors = fields.filter((field) => hasError(field))
 
     if (step === 2 && skills.length === 0) {
@@ -322,6 +354,8 @@ export default function EmpPostJob() {
 
     if (stepErrors.length === 0) {
       setStep((prev) => prev + 1)
+    } else {
+      toast.error(hasError(stepErrors[0]))
     }
   }
 

@@ -76,7 +76,7 @@ export default function App() {
 
   useEffect(() => {
     if (isLoggedIn) dispatch(getMe())
-  }, [])
+  }, [dispatch, isLoggedIn])
 
   return (
     <Suspense fallback={<PageLoader />}>

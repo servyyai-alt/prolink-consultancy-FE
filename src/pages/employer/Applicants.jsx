@@ -9,7 +9,8 @@ import { Pagination, Badge, Modal, EmptyState } from '../../components/ui/index'
 import toast from 'react-hot-toast'
 
 const STATUS_COLOR = { applied:'primary', screening:'warning', shortlisted:'success', interview_scheduled:'purple', offered:'success', hired:'success', rejected:'danger', withdrawn:'gray' }
-const NEXT_STATUSES = { applied:['screening','shortlisted','rejected'], screening:['shortlisted','rejected'], shortlisted:['interview_scheduled','rejected'], interview_scheduled:['interviewed','rejected'], interviewed:['offered','rejected'], offered:['hired','rejected'] }
+const STATUS_LABEL = { applied:'Applied', screening:'Screening', shortlisted:'Shortlisted', interview_scheduled:'Interview Scheduled', offered:'Offered', hired:'Hired', rejected:'Rejected', withdrawn:'Withdrawn' }
+const NEXT_STATUSES = { applied:['screening','rejected'], screening:['shortlisted','rejected'], shortlisted:['interview_scheduled','rejected'], interview_scheduled:['offered','rejected'], offered:['hired','rejected'] }
 
 export default function EmpApplicants() {
   const [searchParams] = useSearchParams()
@@ -37,14 +38,23 @@ export default function EmpApplicants() {
 
   const statusMutation = useMutation({
     mutationFn: ({ id, status, note }) => applicationAPI.updateStatus(id, { status, note }),
-    onSuccess: () => { qc.invalidateQueries(['job-applicants']); toast.success('Status updated'); setSelected(null) },
-    onError: () => toast.error('Update failed'),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['job-applicants'] })
+      toast.success('Status updated')
+      setSelected(null)
+    },
+    onError: (err) => toast.error(err?.response?.data?.message || 'Update failed'),
   })
 
   const interviewMutation = useMutation({
     mutationFn: ({ id, ...data }) => applicationAPI.scheduleInterview(id, data),
-    onSuccess: () => { qc.invalidateQueries(['job-applicants']); toast.success('Interview scheduled!'); setScheduleModal(null) },
-    onError: () => toast.error('Failed to schedule'),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['job-applicants'] })
+      toast.success('Interview scheduled!')
+      setScheduleModal(null)
+      setInterview({ scheduledAt:'', type:'video', link:'', notes:'' })
+    },
+    onError: (err) => toast.error(err?.response?.data?.message || 'Failed to schedule'),
   })
 
   return (
@@ -67,7 +77,7 @@ export default function EmpApplicants() {
             className="input-field sm:w-48 text-sm">
             <option value="">All Statuses</option>
             {['applied','screening','shortlisted','interview_scheduled','offered','hired','rejected'].map(s => (
-              <option key={s} value={s}>{s.replace(/_/g,' ')}</option>
+              <option key={s} value={s}>{STATUS_LABEL[s]}</option>
             ))}
           </select>
         </div>
@@ -93,7 +103,7 @@ export default function EmpApplicants() {
                         <p className="font-bold text-slate-900 dark:text-white">{app.applicant?.firstName} {app.applicant?.lastName}</p>
                         <p className="text-sm text-slate-500">{app.applicant?.profile?.headline || app.applicant?.email}</p>
                       </div>
-                      <Badge variant={STATUS_COLOR[app.status]||'gray'} className="capitalize flex-shrink-0">{app.status?.replace(/_/g,' ')}</Badge>
+                      <Badge variant={STATUS_COLOR[app.status]||'gray'} className="capitalize flex-shrink-0">{STATUS_LABEL[app.status] || app.status?.replace(/_/g,' ')}</Badge>
                     </div>
                     {app.applicant?.profile?.skills?.length > 0 && (
                       <div className="flex flex-wrap gap-1.5 mt-2">
@@ -121,7 +131,7 @@ export default function EmpApplicants() {
                             nextStatus === 'rejected' ? 'text-red-600 bg-red-50 hover:bg-red-100 dark:bg-red-900/20' :
                             'text-green-600 bg-green-50 hover:bg-green-100 dark:bg-green-900/20'
                           }`}>
-                          → {nextStatus.replace(/_/g,' ')}
+                          Move to {STATUS_LABEL[nextStatus] || nextStatus.replace(/_/g,' ')}
                         </button>
                       ))}
                     </div>
@@ -152,9 +162,9 @@ export default function EmpApplicants() {
           <div className="flex gap-3 pt-2">
             <button onClick={() => setScheduleModal(null)} className="flex-1 py-3 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 font-semibold text-sm">Cancel</button>
             <button onClick={() => interviewMutation.mutate({ id: scheduleModal, ...interview })}
-              disabled={!interview.scheduledAt || interviewMutation.isLoading}
+              disabled={!interview.scheduledAt || interviewMutation.isPending}
               className="flex-1 btn-primary py-3 disabled:opacity-50">
-              {interviewMutation.isLoading ? 'Scheduling…' : 'Schedule Interview'}
+              {interviewMutation.isPending ? 'Scheduling…' : 'Schedule Interview'}
             </button>
           </div>
         </div>

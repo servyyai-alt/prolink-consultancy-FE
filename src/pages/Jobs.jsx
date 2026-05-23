@@ -200,23 +200,38 @@ export default function Jobs() {
             {/* Job Listings */}
             <div className="flex-1 min-w-0">
               {/* Top bar */}
-              <div className="flex items-center justify-between mb-5 bg-white dark:bg-slate-800 rounded-xl px-4 py-3 shadow-sm">
-                <p className="text-sm text-slate-500">
-                  {isLoading ? '...' : <><span className="font-bold text-slate-900 dark:text-white">{pagination?.total || 0}</span> jobs found</>}
-                </p>
-                <div className="flex items-center gap-3">
-                  <button onClick={() => setFiltersOpen(true)} className="lg:hidden btn-ghost text-sm py-1.5 px-3">
-                    <HiFilter className="w-4 h-4" /> Filters
-                  </button>
-                  <select value={filters.sort} onChange={e => updateFilter('sort', e.target.value)}
-                    className="text-sm bg-transparent border-none outline-none text-slate-600 dark:text-slate-300 font-medium cursor-pointer">
-                    <option value="-createdAt">Newest First</option>
-                    <option value="createdAt">Oldest First</option>
-                    <option value="-salary.max">Highest Salary</option>
-                    <option value="-views">Most Viewed</option>
-                  </select>
-                </div>
-              </div>
+              <div className="flex items-center justify-between mb-5 bg-white dark:bg-slate-800 rounded-xl px-4 py-3 shadow-sm relative z-10">
+  <p className="text-sm text-slate-500">
+    {isLoading ? '...' : (
+      <>
+        <span className="font-bold text-slate-900 dark:text-white">
+          {pagination?.total || 0}
+        </span>{" "}
+        jobs found
+      </>
+    )}
+  </p>
+
+  <div className="flex items-center gap-3 relative z-20">
+    <button
+      onClick={() => setFiltersOpen(true)}
+      className="lg:hidden btn-ghost text-sm py-1.5 px-3"
+    >
+      <HiFilter className="w-4 h-4" /> Filters
+    </button>
+
+    <select
+      value={filters.sort}
+      onChange={(e) => updateFilter("sort", e.target.value)}
+      className="text-sm bg-transparent border-none outline-none text-slate-600 dark:text-slate-300 font-medium cursor-pointer relative z-30"
+    >
+      <option value="-createdAt">Newest First</option>
+      <option value="createdAt">Oldest First</option>
+      <option value="-salary.max">Highest Salary</option>
+      <option value="-views">Most Viewed</option>
+    </select>
+  </div>
+</div>
 
               {isLoading ? (
                 <div className="grid grid-cols-1 gap-4">

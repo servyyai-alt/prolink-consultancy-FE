@@ -10,7 +10,7 @@ import { Badge } from '../../components/ui/index'
 
 const APP_STATUS_COLOR = {
   applied: 'primary', screening: 'warning', shortlisted: 'teal', interview_scheduled: 'purple',
-  interviewed: 'purple', offered: 'success', hired: 'success', rejected: 'danger', withdrawn: 'gray',
+  offered: 'success', hired: 'success', rejected: 'danger', withdrawn: 'gray',
 }
 
 const CardLink = ({ to, icon: Icon, color, label, value, desc }) => (
@@ -35,6 +35,11 @@ export default function JSOverview() {
     queryFn: () => applicationAPI.getMyApplications({ page: 1, limit: 5 }),
   })
 
+  const { data: interviewsData } = useQuery({
+    queryKey: ['my-interviews-count'],
+    queryFn: () => applicationAPI.getMyApplications({ status: 'interview_scheduled', limit: 1 }),
+  })
+
   const { data: savedData } = useQuery({
     queryKey: ['saved-jobs'],
     queryFn: () => userAPI.getSavedJobs(),
@@ -43,6 +48,7 @@ export default function JSOverview() {
   const applications = appsData?.data?.data || []
   const savedJobs    = savedData?.data?.data?.savedJobs || []
   const totalApps    = appsData?.data?.pagination?.total || 0
+  const totalInterviews = interviewsData?.data?.pagination?.total || 0
 
   const profileCompletion = (() => {
     if (!user) return 0
@@ -115,7 +121,7 @@ export default function JSOverview() {
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
           <CardLink to="/dashboard/applications" icon={HiBriefcase}    color="bg-primary-50 dark:bg-primary-900/20 text-primary-600"  label="Applications"  value={totalApps}           desc="Total submitted" />
           <CardLink to="/dashboard/saved-jobs"   icon={HiBookmark}     color="bg-amber-50 dark:bg-amber-900/20 text-amber-600"         label="Saved Jobs"    value={savedJobs.length}    desc="Jobs bookmarked" />
-          <CardLink to="/dashboard/interviews"   icon={HiCalendar}     color="bg-violet-50 dark:bg-violet-900/20 text-violet-600"      label="Interviews"    value={applications.filter(a => a.status === 'interview_scheduled').length} desc="Scheduled" />
+          <CardLink to="/dashboard/interviews"   icon={HiCalendar}     color="bg-violet-50 dark:bg-violet-900/20 text-violet-600"      label="Interviews"    value={totalInterviews} desc="Scheduled" />
         </div>
 
         {/* Recent applications */}
