@@ -1,3 +1,246 @@
+// import React, {
+//   useMemo,
+//   useState,
+//   useCallback,
+// } from 'react'
+
+// import {
+//   Outlet,
+//   useNavigate,
+//   Link,
+// } from 'react-router-dom'
+
+// import {
+//   useDispatch,
+//   useSelector,
+// } from 'react-redux'
+
+// import {
+//   motion,
+//   AnimatePresence,
+// } from 'framer-motion'
+
+// import {
+//   HiViewGrid,
+//   HiUser,
+//   HiBriefcase,
+//   HiBookmark,
+//   HiCalendar,
+//   HiMenu,
+//   HiBell,
+//   HiPlusCircle,
+//   HiUserGroup,
+// } from 'react-icons/hi'
+
+// import Sidebar from './Sidebar'
+
+// import {
+//   logoutUser,
+//   selectUser,
+// } from '../../redux/slices/authSlice'
+
+// import {
+//   toggleTheme,
+//   selectTheme,
+// } from '../../redux/slices/uiSlice'
+
+// import { selectUnreadCount }
+//   from '../../redux/slices/notificationSlice'
+
+// import ConfirmDialog from '../common/ConfirmDialog'
+
+// const JOB_SEEKER_NAV = [
+//   {
+//     to: '/dashboard',
+//     icon: HiViewGrid,
+//     label: 'Overview',
+//     end: true,
+//   },
+//   {
+//     to: '/dashboard/profile',
+//     icon: HiUser,
+//     label: 'My Profile',
+//   },
+//   {
+//     to: '/dashboard/applications',
+//     icon: HiBriefcase,
+//     label: 'Applications',
+//   },
+//   {
+//     to: '/dashboard/saved-jobs',
+//     icon: HiBookmark,
+//     label: 'Saved Jobs',
+//   },
+//   {
+//     to: '/dashboard/interviews',
+//     icon: HiCalendar,
+//     label: 'Interviews',
+//   },
+// ]
+
+// const EMPLOYER_NAV = [
+//   {
+//     to: '/employer',
+//     icon: HiViewGrid,
+//     label: 'Overview',
+//     end: true,
+//   },
+//   {
+//     to: '/employer/post-job',
+//     icon: HiPlusCircle,
+//     label: 'Post a Job',
+//   },
+//   {
+//     to: '/employer/my-jobs',
+//     icon: HiBriefcase,
+//     label: 'My Jobs',
+//   },
+//   {
+//     to: '/employer/applicants',
+//     icon: HiUserGroup,
+//     label: 'Applicants',
+//   },
+//   {
+//     to: '/employer/profile',
+//     icon: HiUser,
+//     label: 'Company Profile',
+//   },
+// ]
+
+// const DashboardLayout = ({
+//   variant = 'jobseeker',
+// }) => {
+//   const dispatch = useDispatch()
+//   const navigate = useNavigate()
+
+//   const user = useSelector(selectUser)
+//   const theme = useSelector(selectTheme)
+//   const unread = useSelector(selectUnreadCount)
+
+//   const [open, setOpen] = useState(false)
+
+//   const [showLogoutConfirm, setShowLogoutConfirm] =
+//     useState(false)
+
+//   const dark = theme === 'dark'
+
+//   const navLinks = useMemo(() => {
+//     return variant === 'employer'
+//       ? EMPLOYER_NAV
+//       : JOB_SEEKER_NAV
+//   }, [variant])
+
+//   const closeSidebar = useCallback(() => {
+//     setOpen(false)
+//   }, [])
+
+//   const toggleThemeHandler = useCallback(() => {
+//     dispatch(toggleTheme())
+//   }, [dispatch])
+
+//   const logoutHandler = useCallback(async () => {
+//     await dispatch(logoutUser())
+//     navigate('/')
+//   }, [dispatch, navigate])
+
+//   return (
+//     <div className="flex h-screen overflow-hidden bg-slate-50 dark:bg-slate-950">
+//       {/* Desktop Sidebar */}
+//       <div className="hidden lg:block w-64 flex-shrink-0">
+//         <Sidebar
+//           navLinks={navLinks}
+//           user={user}
+//           theme={theme}
+//           dark={dark}
+//           onToggleTheme={toggleThemeHandler}
+//           onLogout={() => setShowLogoutConfirm(true)}
+//           onClose={closeSidebar}
+//         />
+//       </div>
+
+//       {/* Mobile Sidebar */}
+//       <AnimatePresence>
+//         {open && (
+//           <>
+//             <motion.div
+//               initial={{ opacity: 0 }}
+//               animate={{ opacity: 1 }}
+//               exit={{ opacity: 0 }}
+//               onClick={closeSidebar}
+//               className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+//             />
+
+//             <motion.div
+//               initial={{ x: -280 }}
+//               animate={{ x: 0 }}
+//               exit={{ x: -280 }}
+//               transition={{ duration: 0.25 }}
+//               className="fixed left-0 top-0 bottom-0 z-50 w-72 lg:hidden"
+//             >
+//               <Sidebar
+//                 mobile
+//                 navLinks={navLinks}
+//                 user={user}
+//                 theme={theme}
+//                 dark={dark}
+//                 onToggleTheme={toggleThemeHandler}
+//                 onLogout={() => setShowLogoutConfirm(true)}
+//                 onClose={closeSidebar}
+//               />
+//             </motion.div>
+//           </>
+//         )}
+//       </AnimatePresence>
+
+//       {/* Main */}
+//       <div className="flex-1 flex flex-col overflow-hidden">
+//         <header className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-4 sm:px-6 py-3 flex items-center justify-between">
+//           <button
+//             onClick={() => setOpen(true)}
+//             className="lg:hidden p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"
+//           >
+//             <HiMenu className="w-5 h-5" />
+//           </button>
+
+//           <div className="flex-1" />
+
+//           <Link
+//             to={
+//               variant === 'employer'
+//                 ? '/employer/applicants'
+//                 : '/dashboard/applications'
+//             }
+//             className="relative p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"
+//           >
+//             <HiBell className="w-5 h-5" />
+
+//             {unread > 0 && (
+//               <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 rounded-full text-white text-[10px] font-bold flex items-center justify-center">
+//                 {unread > 9 ? '9+' : unread}
+//               </span>
+//             )}
+//           </Link>
+//         </header>
+
+//         <main className="flex-1 overflow-y-auto p-4 sm:p-6">
+//           <Outlet />
+//         </main>
+//       </div>
+
+//       <ConfirmDialog
+//         isOpen={showLogoutConfirm}
+//         onClose={() => setShowLogoutConfirm(false)}
+//         onConfirm={logoutHandler}
+//         title="Logout Confirmation"
+//         message="Are you sure you want to logout?"
+//         confirmLabel="Logout"
+//       />
+//     </div>
+//   )
+// }
+
+// export default DashboardLayout
+
 import { Outlet, NavLink, useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { useState } from 'react'

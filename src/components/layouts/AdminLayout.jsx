@@ -1,3 +1,203 @@
+// import React, {
+//   useState,
+//   useCallback,
+// } from 'react'
+
+// import {
+//   Outlet,
+//   useNavigate,
+// } from 'react-router-dom'
+
+// import {
+//   useDispatch,
+//   useSelector,
+// } from 'react-redux'
+
+// import {
+//   motion,
+//   AnimatePresence,
+// } from 'framer-motion'
+
+// import {
+//   HiViewGrid,
+//   HiUsers,
+//   HiBriefcase,
+//   HiClipboardList,
+//   HiMail,
+//   HiNewspaper,
+//   HiCollection,
+//   HiStar,
+//   HiMenu,
+// } from 'react-icons/hi'
+
+// import Sidebar from './Sidebar'
+
+// import {
+//   logoutUser,
+//   selectUser,
+// } from '../../redux/slices/authSlice'
+
+// import {
+//   toggleTheme,
+//   selectTheme,
+// } from '../../redux/slices/uiSlice'
+
+// import ConfirmDialog from '../common/ConfirmDialog'
+
+// const ADMIN_NAV = [
+//   {
+//     to: '/admin',
+//     icon: HiViewGrid,
+//     label: 'Dashboard',
+//     end: true,
+//   },
+//   {
+//     to: '/admin/users',
+//     icon: HiUsers,
+//     label: 'Users',
+//   },
+//   {
+//     to: '/admin/jobs',
+//     icon: HiBriefcase,
+//     label: 'Jobs',
+//   },
+//   {
+//     to: '/admin/applications',
+//     icon: HiClipboardList,
+//     label: 'Applications',
+//   },
+//   {
+//     to: '/admin/contacts',
+//     icon: HiMail,
+//     label: 'Contacts',
+//   },
+//   {
+//     to: '/admin/blogs',
+//     icon: HiNewspaper,
+//     label: 'Blogs',
+//   },
+//   {
+//     to: '/admin/services',
+//     icon: HiCollection,
+//     label: 'Services',
+//   },
+//   {
+//     to: '/admin/testimonials',
+//     icon: HiStar,
+//     label: 'Testimonials',
+//   },
+// ]
+
+// const AdminLayout = () => {
+//   const dispatch = useDispatch()
+//   const navigate = useNavigate()
+
+//   const user = useSelector(selectUser)
+//   const theme = useSelector(selectTheme)
+
+//   const [open, setOpen] = useState(false)
+
+//   const [showLogoutConfirm, setShowLogoutConfirm] =
+//     useState(false)
+
+//   const dark = theme === 'dark'
+
+//   const closeSidebar = useCallback(() => {
+//     setOpen(false)
+//   }, [])
+
+//   const toggleThemeHandler = useCallback(() => {
+//     dispatch(toggleTheme())
+//   }, [dispatch])
+
+//   const logoutHandler = useCallback(async () => {
+//     await dispatch(logoutUser())
+//     navigate('/')
+//   }, [dispatch, navigate])
+
+//   return (
+//     <div className="flex h-screen overflow-hidden bg-slate-100 dark:bg-slate-950">
+//       {/* Desktop Sidebar */}
+//       <div className="hidden lg:block w-64 flex-shrink-0">
+//         <Sidebar
+//           navLinks={ADMIN_NAV}
+//           user={user}
+//           theme={theme}
+//           dark
+//           onToggleTheme={toggleThemeHandler}
+//           onLogout={() => setShowLogoutConfirm(true)}
+//           onClose={closeSidebar}
+//         />
+//       </div>
+
+//       {/* Mobile Sidebar */}
+//       <AnimatePresence>
+//         {open && (
+//           <>
+//             <motion.div
+//               initial={{ opacity: 0 }}
+//               animate={{ opacity: 1 }}
+//               exit={{ opacity: 0 }}
+//               onClick={closeSidebar}
+//               className="fixed inset-0 bg-black/60 z-40 lg:hidden"
+//             />
+
+//             <motion.div
+//               initial={{ x: -280 }}
+//               animate={{ x: 0 }}
+//               exit={{ x: -280 }}
+//               transition={{ duration: 0.25 }}
+//               className="fixed left-0 top-0 bottom-0 z-50 w-72 lg:hidden"
+//             >
+//               <Sidebar
+//                 mobile
+//                 navLinks={ADMIN_NAV}
+//                 user={user}
+//                 theme={theme}
+//                 dark
+//                 onToggleTheme={toggleThemeHandler}
+//                 onLogout={() => setShowLogoutConfirm(true)}
+//                 onClose={closeSidebar}
+//               />
+//             </motion.div>
+//           </>
+//         )}
+//       </AnimatePresence>
+
+//       {/* Main */}
+//       <div className="flex-1 flex flex-col overflow-hidden">
+//         <header className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-4 sm:px-6 py-3 flex items-center gap-4">
+//           <button
+//             onClick={() => setOpen(true)}
+//             className="lg:hidden p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"
+//           >
+//             <HiMenu className="w-5 h-5" />
+//           </button>
+
+//           <h1 className="text-sm font-semibold text-slate-500">
+//             Admin Panel
+//           </h1>
+//         </header>
+
+//         <main className="flex-1 overflow-y-auto p-4 sm:p-6">
+//           <Outlet />
+//         </main>
+//       </div>
+
+//       <ConfirmDialog
+//         isOpen={showLogoutConfirm}
+//         onClose={() => setShowLogoutConfirm(false)}
+//         onConfirm={logoutHandler}
+//         title="Logout Confirmation"
+//         message="Are you sure you want to logout?"
+//         confirmLabel="Logout"
+//       />
+//     </div>
+//   )
+// }
+
+// export default AdminLayout
+
 import { Outlet, NavLink, useNavigate, Link } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { useState } from 'react'
