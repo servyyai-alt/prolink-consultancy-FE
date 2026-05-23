@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
 import { useFormik } from 'formik'
@@ -89,6 +90,11 @@ export default function EmpPostJob() {
   const role = useSelector(selectRole)
   const user = useSelector(selectUser)
   const isAdminFlow = ADMIN_ROLES.includes(role)
+
+  const location = useLocation()
+  const params = new URLSearchParams(location.search)
+  const editSlug = params.get('slug')
+  const [editingJobId, setEditingJobId] = useState(null)
 
   const [step, setStep] = useState(0)
   const [skills, setSkills] = useState([])
@@ -195,9 +201,15 @@ export default function EmpPostJob() {
           },
         }
 
-        await jobAPI.createJob(payload)
-        toast.success('Job posted successfully!')
-        navigate(isAdminFlow ? '/admin/jobs' : '/employer/my-jobs')
+        if (editingJobId) {
+          await jobAPI.updateJob(editingJobId, payload)
+          toast.success('Job updated successfully!')
+          navigate(isAdminFlow ? '/admin/jobs' : '/employer/my-jobs')
+        } else {
+          await jobAPI.createJob(payload)
+          toast.success('Job posted successfully!')
+          navigate(isAdminFlow ? '/admin/jobs' : '/employer/my-jobs')
+        }
       } catch (err) {
         if (err?.response?.status === 401) {
           toast.error('Your session has expired. Please sign in again.')
@@ -213,6 +225,47 @@ export default function EmpPostJob() {
       }
     },
   })
+
+  useEffect(() => {
+    let mounted = true
+    const fetchJob = async () => {
+      if (!editSlug) return
+      try {
+        const { data } = await jobAPI.getJob(editSlug)
+        if (!mounted) return
+        const job = data.data.job
+        if (!job) return
+        setEditingJobId(job._id)
+        setSkills(job.skills || [])
+        formik.setValues({
+          title: job.title || '',
+          description: job.description || '',
+          requirements: job.requirements || '',
+          responsibilities: job.responsibilities || '',
+          category: job.category || '',
+          type: job.type || 'full_time',
+          locationType: job.locationType || 'onsite',
+          location: job.location || '',
+          experience: { min: job.experience?.min || 0, max: job.experience?.max || 5 },
+          salary: { min: job.salary?.min || '', max: job.salary?.max || '', isVisible: job.salary?.isVisible !== false },
+          openings: job.openings || 1,
+          education: job.education || '',
+          deadline: job.deadline ? new Date(job.deadline).toISOString().split('T')[0] : '',
+          featured: !!job.featured,
+          urgent: !!job.urgent,
+          company: {
+            name: job.company?.name || user?.company?.name || '',
+            website: job.company?.website || user?.company?.website || '',
+            description: job.company?.description || user?.company?.description || '',
+          },
+        })
+      } catch (e) {
+        // ignore
+      }
+    }
+    fetchJob()
+    return () => { mounted = false }
+  }, [editSlug])
 
   const addSkill = (value) => {
     const nextSkill = value.trim()

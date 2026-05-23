@@ -172,6 +172,7 @@ export const adminAPI = {
   createUser:        (data)   => api.post('/admin/users', data),
   toggleBlock:       (id)     => api.patch(`/admin/users/${id}/block`),
   changeRole:        (id, data) => api.patch(`/admin/users/${id}/role`, data),
+  approveUser:       (id, data) => api.patch(`/admin/users/${id}/approve`, data),
   deleteUser:        (id)     => api.delete(`/admin/users/${id}`),
   getContacts:       (params) => api.get('/admin/contacts', { params }),
   getPayments:       (params) => api.get('/admin/payments', { params }),

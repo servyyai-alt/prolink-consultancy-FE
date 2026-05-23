@@ -5,7 +5,7 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Helmet } from 'react-helmet-async'
-import { HiSearch, HiTrash, HiEye, HiPlus } from 'react-icons/hi'
+import { HiSearch, HiTrash, HiEye, HiPlus, HiPencil } from 'react-icons/hi'
 import { jobAPI } from '../../services/api'
 import { Pagination, Badge } from '../../components/ui/index'
 import ConfirmDialog from '../../components/common/ConfirmDialog'
@@ -89,6 +89,10 @@ export function AdminJobs() {
                             <Link to={`/jobs/${job.slug}`} target="_blank"
                               className="p-1.5 rounded-lg text-slate-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors">
                               <HiEye className="w-4 h-4" />
+                            </Link>
+                            <Link to={`/admin/jobs/create?slug=${job.slug}`}
+                              className="p-1.5 rounded-lg text-slate-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors">
+                              <HiPencil className="w-4 h-4" />
                             </Link>
                             <button onClick={() => setJobToDelete(job)}
                               className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
