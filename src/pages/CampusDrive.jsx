@@ -5,6 +5,7 @@ import * as Yup from 'yup'
 import { contactAPI } from '../services/api'
 import toast from 'react-hot-toast'
 import { HiCheckCircle, HiAcademicCap, HiBriefcase, HiCalendar } from 'react-icons/hi'
+import { requiredIndianMobileSchema, sanitizeIndianMobileInput } from '../utils/phoneValidation'
 
 const STATS = [{ v:'500+', l:'Colleges Partnered' },{ v:'200+', l:'Companies Hiring' },{ v:'15,000+', l:'Students Placed' },{ v:'92%', l:'Placement Rate' }]
 

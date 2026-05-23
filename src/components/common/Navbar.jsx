@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
-import { Link, NavLink, useNavigate } from 'react-router-dom'
+import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
+import { useQuery } from '@tanstack/react-query'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   HiMenu, HiX, HiChevronDown, HiBell, HiMoon, HiSun,
@@ -9,6 +10,9 @@ import {
 import { selectIsLoggedIn, selectUser, logoutUser } from '../../redux/slices/authSlice'
 import { toggleTheme, selectTheme } from '../../redux/slices/uiSlice'
 import { selectUnreadCount } from '../../redux/slices/notificationSlice'
+import { serviceAPI } from '../../services/api'
+import { getServiceRoute } from '../../utils/serviceRoutes'
+import ConfirmDialog from './ConfirmDialog'
 import Logo from '../../assets/logo.jpeg'
 
 const TOP_BAR_CONTACT = [
@@ -16,10 +20,10 @@ const TOP_BAR_CONTACT = [
   { icon: HiMail,  label: 'info@prolinkconsultancy.com', href: 'mailto:info@prolinkconsultancy.com' },
 ]
 
-const services = [
-  { name: 'Job Consultancy',        href: '/services/job-consultancy',         desc: 'Executive & mid-level placements' },
-  { name: 'Campus Drive',           href: '/campus-drive',                      desc: 'Structured volume hiring' },
-  { name: 'Background Verification',href: '/services/background-verification',  desc: 'Trust-led candidate checks' },
+const fallbackServices = [
+  { slug: 'job-consultancy', name: 'Job Consultancy', shortDescription: 'Executive & mid-level placements' },
+  { slug: 'campus-drive', name: 'Campus Drive', shortDescription: 'Structured volume hiring' },
+  { slug: 'background-verification', name: 'Background Verification', shortDescription: 'Trust-led candidate checks' },
 ]
 
 const navLinks = [
@@ -35,15 +39,19 @@ export default function Navbar() {
   const [mobileOpen,   setMobileOpen]   = useState(false)
   const [servicesOpen, setServicesOpen] = useState(false)
   const [profileOpen,  setProfileOpen]  = useState(false)
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
   const dropdownRef = useRef(null)
   const profileRef  = useRef(null)
 
   const dispatch    = useDispatch()
   const navigate    = useNavigate()
+  const location    = useLocation()
   const isLoggedIn  = useSelector(selectIsLoggedIn)
   const user        = useSelector(selectUser)
   const theme       = useSelector(selectTheme)
   const unreadCount = useSelector(selectUnreadCount)
+  const { data } = useQuery({ queryKey: ['services'], queryFn: serviceAPI.getServices })
+  const services = data?.data?.data?.services?.length ? data.data.data.services : fallbackServices
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40)
@@ -60,10 +68,17 @@ export default function Navbar() {
     return () => document.removeEventListener('mousedown', handler)
   }, [])
 
+  useEffect(() => {
+    setServicesOpen(false)
+    setMobileOpen(false)
+    setProfileOpen(false)
+  }, [location.pathname])
+
   const handleLogout = async () => {
     await dispatch(logoutUser())
     navigate('/')
     setProfileOpen(false)
+    setShowLogoutConfirm(false)
   }
 
   const getDashboardLink = () => {
@@ -91,7 +106,7 @@ export default function Navbar() {
             <div className="flex items-center gap-4 text-xs text-stone-400">
               <span>Mon–Sat, 9:00 am – 6:00 pm</span>
               <span className="w-px h-3 bg-stone-700" />
-              <span className="text-amber-400 font-semibold tracking-wide">Chennai, Tamil Nadu</span>
+              <span className="text-amber-400 font-semibold tracking-wide">Bhubaneswar,Khurda, Odisha 751010, India</span>
             </div>
           </div>
         </div>
@@ -222,7 +237,7 @@ export default function Navbar() {
               ))}
 
               {/* Services Mega-dropdown */}
-              <div className="relative" ref={dropdownRef}>
+              <div className="relative" ref={dropdownRef}  onClickCapture={() => setServicesOpen(false)}>
                 <button
                   onClick={() => setServicesOpen(!servicesOpen)}
                   className={`flex items-center gap-1.5 px-4 py-2.5 text-[13.5px] font-semibold tracking-wide transition-colors rounded-lg ${
@@ -261,8 +276,8 @@ export default function Navbar() {
                       <div className="grid grid-cols-2 gap-px bg-stone-100 dark:bg-stone-800 p-px">
                         {services.map((s) => (
                           <Link
-                            key={s.href}
-                            to={s.href}
+                            key={s.slug || s.name}
+                            to={getServiceRoute(s.slug)}
                             onClick={() => setServicesOpen(false)}
                             className="group flex items-start gap-3 px-5 py-4 bg-white dark:bg-stone-900 hover:bg-amber-50 dark:hover:bg-stone-800 transition-colors"
                           >
@@ -271,7 +286,7 @@ export default function Navbar() {
                               <p className="text-sm font-semibold text-stone-800 dark:text-stone-200 group-hover:text-[#8B2A0F] dark:group-hover:text-amber-400 transition-colors leading-tight">
                                 {s.name}
                               </p>
-                              <p className="text-xs text-stone-400 dark:text-stone-500 mt-0.5">{s.desc}</p>
+                              <p className="text-xs text-stone-400 dark:text-stone-500 mt-0.5">{s.shortDescription || s.description || 'Professional consultancy support'}</p>
                             </div>
                           </Link>
                         ))}
@@ -346,7 +361,7 @@ export default function Navbar() {
                             </Link>
                           ))}
                           <div className="border-t border-stone-200 dark:border-stone-800 mt-1 pt-1">
-                            <button onClick={handleLogout}
+                            <button onClick={() => setShowLogoutConfirm(true)}
                               className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
                               <HiLogout className="w-4 h-4" /> Logout
                             </button>
@@ -404,7 +419,7 @@ export default function Navbar() {
                 <div className="border-t border-stone-200 dark:border-stone-800 mt-2 pt-3">
                   <p className="px-4 py-1 text-[10px] font-bold text-stone-400 uppercase tracking-[0.28em]">Services</p>
                   {services.map((s) => (
-                    <Link key={s.href} to={s.href} onClick={() => setMobileOpen(false)}
+                    <Link key={s.slug || s.name} to={getServiceRoute(s.slug)} onClick={() => setMobileOpen(false)}
                       className="flex items-center gap-2 px-4 py-2.5 text-sm text-stone-600 dark:text-stone-400 hover:text-[#8B2A0F] dark:hover:text-amber-400 transition-colors">
                       <span className="w-1 h-1 rounded-full bg-amber-400 flex-shrink-0" />
                       {s.name}
@@ -429,6 +444,15 @@ export default function Navbar() {
           )}
         </AnimatePresence>
       </header>
+
+      <ConfirmDialog
+        isOpen={showLogoutConfirm}
+        onClose={() => setShowLogoutConfirm(false)}
+        onConfirm={handleLogout}
+        title="Logout Confirmation"
+        message="Are you sure you want to log out of your account?"
+        confirmLabel="Logout"
+      />
     </>
   )
 }

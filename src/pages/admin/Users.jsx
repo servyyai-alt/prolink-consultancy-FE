@@ -1,13 +1,16 @@
 import { useMemo, useState } from 'react'
+import { useSelector } from 'react-redux'
 import { useFormik } from 'formik'
 import * as Yup from 'yup'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Helmet } from 'react-helmet-async'
 import { motion } from 'framer-motion'
-import { HiLockClosed, HiLockOpen, HiPlus, HiSearch, HiUserAdd } from 'react-icons/hi'
+import { HiLockClosed, HiLockOpen, HiPlus, HiSearch, HiTrash, HiUserAdd } from 'react-icons/hi'
 import { adminAPI } from '../../services/api'
 import { Badge, Button, EmptyState, Input, Modal, Pagination, Select, Textarea } from '../../components/ui/index'
 import { requiredIndianMobileSchema, sanitizeIndianMobileInput } from '../../utils/phoneValidation'
+import { selectUser } from '../../redux/slices/authSlice'
+import ConfirmDialog from '../../components/common/ConfirmDialog'
 import toast from 'react-hot-toast'
 
 const ROLE_COLORS = {
@@ -86,6 +89,8 @@ export default function AdminUsers() {
   const [search, setSearch] = useState('')
   const [role, setRole] = useState('')
   const [isCreateOpen, setIsCreateOpen] = useState(false)
+  const [userToDelete, setUserToDelete] = useState(null)
+  const currentUser = useSelector(selectUser)
   const qc = useQueryClient()
 
   const queryParams = useMemo(() => ({ page, limit: 20, search, role }), [page, search, role])
@@ -155,6 +160,15 @@ export default function AdminUsers() {
       toast.success('Role updated')
     },
     onError: () => toast.error('Failed to update role'),
+  })
+
+  const deleteMutation = useMutation({
+    mutationFn: (id) => adminAPI.deleteUser(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin-users'] })
+      toast.success('User deleted successfully')
+    },
+    onError: (error) => toast.error(error?.response?.data?.message || 'Failed to delete user'),
   })
 
   return (
@@ -231,6 +245,12 @@ export default function AdminUsers() {
                   ))
                 ) : (
                   users.map((user) => (
+                    (() => {
+                      const isCurrentUser = currentUser?._id === user._id
+                      const isSuperAdmin = user.role === 'super_admin'
+                      const disableDelete = isCurrentUser || isSuperAdmin || deleteMutation.isPending
+
+                      return (
                     <motion.tr
                       key={user._id}
                       initial={{ opacity: 0 }}
@@ -275,7 +295,7 @@ export default function AdminUsers() {
                           <Badge variant={ROLE_COLORS[user.role] || 'gray'} className="w-fit">
                             {user.role.replace('_', ' ')}
                           </Badge>
-                          {!user.isVerified && <Badge variant="warning">Unverified</Badge>}
+                          {/* {!user.isVerified && <Badge variant="warning">Unverified</Badge>} */}
                         </div>
                       </td>
 
@@ -284,7 +304,7 @@ export default function AdminUsers() {
                       </td>
 
                       <td className="px-4 py-4">
-                        <div className="flex justify-center">
+                        <div className="flex justify-center gap-2">
                           <button
                             type="button"
                             onClick={() => blockMutation.mutate(user._id)}
@@ -305,9 +325,22 @@ export default function AdminUsers() {
                               </>
                             )}
                           </button>
+                          <button
+                            type="button"
+                            disabled={disableDelete}
+                            onClick={() => {
+                              setUserToDelete(user)
+                            }}
+                            className="inline-flex items-center gap-1.5 rounded-lg bg-red-50 px-3 py-1.5 text-xs font-semibold text-red-600 transition-colors hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-red-900/20 dark:text-red-400"
+                            title={isCurrentUser ? 'You cannot delete your own account' : isSuperAdmin ? 'Super admin cannot be deleted' : 'Delete user'}
+                          >
+                            <HiTrash className="h-3.5 w-3.5" /> Delete
+                          </button>
                         </div>
                       </td>
                     </motion.tr>
+                      )
+                    })()
                   ))
                 )}
               </tbody>
@@ -485,6 +518,21 @@ export default function AdminUsers() {
           </div>
         </form>
       </Modal>
+
+      <ConfirmDialog
+        isOpen={!!userToDelete}
+        onClose={() => setUserToDelete(null)}
+        onConfirm={() => {
+          if (!userToDelete) return
+          deleteMutation.mutate(userToDelete._id, {
+            onSuccess: () => setUserToDelete(null),
+          })
+        }}
+        title="Delete User"
+        message={userToDelete ? `Delete ${userToDelete.firstName} ${userToDelete.lastName}? This will also remove related applications, blogs, testimonials, notifications, and close posted jobs.` : ''}
+        confirmLabel="Delete"
+        isLoading={deleteMutation.isPending}
+      />
     </>
   )
 }

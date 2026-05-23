@@ -158,7 +158,7 @@ export const { setCredentials, clearCredentials, setPendingEmail, updateUser, se
 // Selectors
 export const selectAuth        = (state) => state.auth
 export const selectUser        = (state) => state.auth.user
-export const selectIsLoggedIn  = (state) => !!state.auth.user
+export const selectIsLoggedIn  = (state) => !!state.auth.user && !!state.auth.accessToken
 export const selectRole        = (state) => state.auth.user?.role
 export const selectIsAdmin     = (state) => ['admin', 'super_admin'].includes(state.auth.user?.role)
 export const selectAccessToken = (state) => state.auth.accessToken

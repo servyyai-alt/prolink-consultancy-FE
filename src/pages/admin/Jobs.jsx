@@ -5,9 +5,10 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Helmet } from 'react-helmet-async'
-import { HiSearch, HiTrash, HiPencil, HiEye } from 'react-icons/hi'
+import { HiSearch, HiTrash, HiEye, HiPlus } from 'react-icons/hi'
 import { jobAPI } from '../../services/api'
 import { Pagination, Badge } from '../../components/ui/index'
+import ConfirmDialog from '../../components/common/ConfirmDialog'
 import toast from 'react-hot-toast'
 import { Link } from 'react-router-dom'
 
@@ -16,6 +17,7 @@ const JOB_STATUS_COLOR = { active: 'success', paused: 'warning', closed: 'gray',
 export function AdminJobs() {
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState('')
+  const [jobToDelete, setJobToDelete] = useState(null)
   const qc = useQueryClient()
 
   const { data, isLoading } = useQuery({
@@ -42,6 +44,10 @@ export function AdminJobs() {
             <h1 className="text-xl font-display font-bold text-slate-900 dark:text-white">Jobs</h1>
             <p className="text-sm text-slate-500">{pagination?.total || 0} total jobs</p>
           </div>
+          <Link to="/admin/jobs/create" className="inline-flex items-center gap-2 rounded-xl bg-primary-600 px-4 py-2 text-sm font-semibold text-white shadow-primary transition-colors hover:bg-primary-700">
+            <HiPlus className="w-4 h-4" />
+            Add Job
+          </Link>
         </div>
 
         <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-slate-100 dark:border-slate-700">
@@ -84,7 +90,7 @@ export function AdminJobs() {
                               className="p-1.5 rounded-lg text-slate-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors">
                               <HiEye className="w-4 h-4" />
                             </Link>
-                            <button onClick={() => { if (confirm('Delete this job?')) deleteMutation.mutate(job._id) }}
+                            <button onClick={() => setJobToDelete(job)}
                               className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
                               <HiTrash className="w-4 h-4" />
                             </button>
@@ -100,6 +106,21 @@ export function AdminJobs() {
         </div>
         {pagination && <Pagination currentPage={page} totalPages={pagination.totalPages} onPageChange={setPage} />}
       </div>
+
+      <ConfirmDialog
+        isOpen={!!jobToDelete}
+        onClose={() => setJobToDelete(null)}
+        onConfirm={() => {
+          if (!jobToDelete) return
+          deleteMutation.mutate(jobToDelete._id, {
+            onSuccess: () => setJobToDelete(null),
+          })
+        }}
+        title="Delete Job"
+        message={jobToDelete ? `Are you sure you want to delete "${jobToDelete.title}"? This will close the job and hide it from candidates.` : ''}
+        confirmLabel="Delete"
+        isLoading={deleteMutation.isPending}
+      />
     </>
   )
 }

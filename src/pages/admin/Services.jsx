@@ -4,9 +4,29 @@ import { Helmet } from 'react-helmet-async'
 import { HiPencil, HiPlus, HiSearch, HiTrash } from 'react-icons/hi'
 import { adminAPI, serviceAPI } from '../../services/api'
 import { Badge, Button, EmptyState, Input, Modal, Pagination, Select, Textarea } from '../../components/ui/index'
+import ConfirmDialog from '../../components/common/ConfirmDialog'
 import toast from 'react-hot-toast'
 
-const emptyForm = { name: '', category: '', shortDescription: '', description: '', icon: '', order: 0, isActive: true }
+const createFeature = () => ({ title: '', description: '' })
+const createProcess = (step = 1) => ({ step, title: '', description: '' })
+const createPricing = () => ({ plan: '', price: '', period: '', featuresText: '', isPopular: false, isActive: true })
+const createFaq = () => ({ question: '', answer: '' })
+
+const emptyForm = {
+  name: '',
+  category: '',
+  shortDescription: '',
+  description: '',
+  icon: '',
+  order: 0,
+  isActive: true,
+  metaTitle: '',
+  metaDescription: '',
+  features: [createFeature()],
+  process: [createProcess(1)],
+  pricing: [createPricing()],
+  faqs: [createFaq()],
+}
 
 export default function AdminServices() {
   const [page, setPage] = useState(1)
@@ -14,6 +34,7 @@ export default function AdminServices() {
   const [activeFilter, setActiveFilter] = useState('')
   const [isOpen, setIsOpen] = useState(false)
   const [editing, setEditing] = useState(null)
+  const [serviceToDelete, setServiceToDelete] = useState(null)
   const [form, setForm] = useState(emptyForm)
   const qc = useQueryClient()
 
@@ -36,12 +57,39 @@ export default function AdminServices() {
         icon: payload.icon,
         order: Number(payload.order) || 0,
         isActive: payload.isActive,
+        metaTitle: payload.metaTitle,
+        metaDescription: payload.metaDescription,
+        features: payload.features
+          .filter((item) => item.title.trim() || item.description.trim())
+          .map((item) => ({ title: item.title.trim(), description: item.description.trim() })),
+        process: payload.process
+          .filter((item) => item.title.trim() || item.description.trim())
+          .map((item, index) => ({
+            step: index + 1,
+            title: item.title.trim(),
+            description: item.description.trim(),
+          })),
+        pricing: payload.pricing
+          .filter((item) => item.plan.trim())
+          .map((item) => ({
+            plan: item.plan.trim(),
+            price: Number(item.price) || 0,
+            period: item.period.trim(),
+            features: item.featuresText.split('\n').map((feature) => feature.trim()).filter(Boolean),
+            isPopular: item.isPopular,
+            isActive: item.isActive,
+          })),
+        faqs: payload.faqs
+          .filter((item) => item.question.trim() || item.answer.trim())
+          .map((item) => ({ question: item.question.trim(), answer: item.answer.trim() })),
       }
       return editing ? serviceAPI.update(editing._id, body) : serviceAPI.create(body)
     },
     onSuccess: () => {
       toast.success(editing ? 'Service updated' : 'Service created')
       qc.invalidateQueries({ queryKey: ['admin-services'] })
+      qc.invalidateQueries({ queryKey: ['services'] })
+      qc.invalidateQueries({ queryKey: ['service'] })
       setIsOpen(false)
       setEditing(null)
       setForm(emptyForm)
@@ -74,6 +122,27 @@ export default function AdminServices() {
       icon: service.icon || '',
       order: service.order || 0,
       isActive: service.isActive ?? true,
+      metaTitle: service.metaTitle || '',
+      metaDescription: service.metaDescription || '',
+      features: service.features?.length
+        ? service.features.map((item) => ({ title: item.title || '', description: item.description || '' }))
+        : [createFeature()],
+      process: service.process?.length
+        ? service.process.map((item, index) => ({ step: item.step || index + 1, title: item.title || '', description: item.description || '' }))
+        : [createProcess(1)],
+      pricing: service.pricing?.length
+        ? service.pricing.map((item) => ({
+            plan: item.plan || '',
+            price: item.price || '',
+            period: item.period || '',
+            featuresText: item.features?.join('\n') || '',
+            isPopular: item.isPopular ?? false,
+            isActive: item.isActive ?? true,
+          }))
+        : [createPricing()],
+      faqs: service.faqs?.length
+        ? service.faqs.map((item) => ({ question: item.question || '', answer: item.answer || '' }))
+        : [createFaq()],
     })
     setIsOpen(true)
   }
@@ -81,6 +150,34 @@ export default function AdminServices() {
   const submit = (e) => {
     e.preventDefault()
     saveMutation.mutate(form)
+  }
+
+  const updateListItem = (key, index, field, value) => {
+    setForm((prev) => ({
+      ...prev,
+      [key]: prev[key].map((item, itemIndex) => (
+        itemIndex === index ? { ...item, [field]: value } : item
+      )),
+    }))
+  }
+
+  const addListItem = (key, factory) => {
+    setForm((prev) => ({
+      ...prev,
+      [key]: [...prev[key], factory(prev[key].length + 1)],
+    }))
+  }
+
+  const removeListItem = (key, index, fallbackFactory) => {
+    setForm((prev) => {
+      const nextItems = prev[key].filter((_, itemIndex) => itemIndex !== index)
+      return {
+        ...prev,
+        [key]: nextItems.length ? nextItems.map((item, itemIndex) => (
+          key === 'process' ? { ...item, step: itemIndex + 1 } : item
+        )) : [fallbackFactory(1)],
+      }
+    })
   }
 
   return (
@@ -146,7 +243,7 @@ export default function AdminServices() {
                       <HiPencil className="w-4 h-4" />
                       Edit
                     </Button>
-                    <Button variant="danger" size="sm" onClick={() => window.confirm(`Delete ${service.name}?`) && deleteMutation.mutate(service._id)}>
+                    <Button variant="danger" size="sm" onClick={() => setServiceToDelete(service)}>
                       <HiTrash className="w-4 h-4" />
                       Delete
                     </Button>
@@ -162,7 +259,7 @@ export default function AdminServices() {
         )}
       </div>
 
-      <Modal isOpen={isOpen} onClose={() => setIsOpen(false)} title={editing ? 'Edit Service' : 'Create Service'}>
+      <Modal isOpen={isOpen} onClose={() => setIsOpen(false)} title={editing ? 'Edit Service' : 'Create Service'} size="xl">
         <form onSubmit={submit} className="p-6 space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
             <Input label="Name" value={form.name} onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))} required />
@@ -174,6 +271,10 @@ export default function AdminServices() {
             <Input label="Icon" value={form.icon} onChange={(e) => setForm((prev) => ({ ...prev, icon: e.target.value }))} helperText="Emoji or icon string" />
             <Input label="Order" type="number" value={form.order} onChange={(e) => setForm((prev) => ({ ...prev, order: e.target.value }))} />
           </div>
+          <div className="grid gap-4 md:grid-cols-2">
+            <Input label="Meta Title" value={form.metaTitle} onChange={(e) => setForm((prev) => ({ ...prev, metaTitle: e.target.value }))} />
+            <Input label="Meta Description" value={form.metaDescription} onChange={(e) => setForm((prev) => ({ ...prev, metaDescription: e.target.value }))} />
+          </div>
           <Select
             label="Status"
             value={String(form.isActive)}
@@ -183,11 +284,135 @@ export default function AdminServices() {
               { value: 'false', label: 'Inactive' },
             ]}
           />
+          <div className="space-y-3 rounded-2xl border border-slate-200 dark:border-slate-700 p-4">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <h4 className="font-semibold text-slate-900 dark:text-white">Key Features</h4>
+                <p className="text-xs text-slate-500">Show service highlights on the detail page.</p>
+              </div>
+              <Button type="button" variant="outline" size="sm" onClick={() => addListItem('features', createFeature)}>
+                <HiPlus className="w-4 h-4" />
+                Add Feature
+              </Button>
+            </div>
+            {form.features.map((feature, index) => (
+              <div key={`feature-${index}`} className="grid gap-3 rounded-2xl bg-slate-50 p-3 dark:bg-slate-900/40 md:grid-cols-[1fr_1.4fr_auto]">
+                <Input label="Title" value={feature.title} onChange={(e) => updateListItem('features', index, 'title', e.target.value)} />
+                <Input label="Description" value={feature.description} onChange={(e) => updateListItem('features', index, 'description', e.target.value)} />
+                <div className="flex items-end">
+                  <Button type="button" variant="danger" size="sm" className="w-full" onClick={() => removeListItem('features', index, createFeature)}>Remove</Button>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="space-y-3 rounded-2xl border border-slate-200 dark:border-slate-700 p-4">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <h4 className="font-semibold text-slate-900 dark:text-white">Process Steps</h4>
+                <p className="text-xs text-slate-500">Explain how the service works from start to finish.</p>
+              </div>
+              <Button type="button" variant="outline" size="sm" onClick={() => addListItem('process', createProcess)}>
+                <HiPlus className="w-4 h-4" />
+                Add Step
+              </Button>
+            </div>
+            {form.process.map((step, index) => (
+              <div key={`process-${index}`} className="grid gap-3 rounded-2xl bg-slate-50 p-3 dark:bg-slate-900/40 md:grid-cols-[120px_1fr_1.4fr_auto]">
+                <Input label="Step" value={step.step} disabled />
+                <Input label="Title" value={step.title} onChange={(e) => updateListItem('process', index, 'title', e.target.value)} />
+                <Input label="Description" value={step.description} onChange={(e) => updateListItem('process', index, 'description', e.target.value)} />
+                <div className="flex items-end">
+                  <Button type="button" variant="danger" size="sm" className="w-full" onClick={() => removeListItem('process', index, createProcess)}>Remove</Button>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="space-y-3 rounded-2xl border border-slate-200 dark:border-slate-700 p-4">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <h4 className="font-semibold text-slate-900 dark:text-white">Pricing Plans</h4>
+                <p className="text-xs text-slate-500">Enter one plan per card. Use a new line for each plan feature.</p>
+              </div>
+              <Button type="button" variant="outline" size="sm" onClick={() => addListItem('pricing', createPricing)}>
+                <HiPlus className="w-4 h-4" />
+                Add Plan
+              </Button>
+            </div>
+            {form.pricing.map((plan, index) => (
+              <div key={`pricing-${index}`} className="space-y-3 rounded-2xl bg-slate-50 p-3 dark:bg-slate-900/40">
+                <div className="grid gap-3 md:grid-cols-3">
+                  <Input label="Plan Name" value={plan.plan} onChange={(e) => updateListItem('pricing', index, 'plan', e.target.value)} />
+                  <Input label="Price" type="number" value={plan.price} onChange={(e) => updateListItem('pricing', index, 'price', e.target.value)} />
+                  <Input label="Period" value={plan.period} onChange={(e) => updateListItem('pricing', index, 'period', e.target.value)} placeholder="Per check / Per month / One time" />
+                </div>
+                <Textarea label="Plan Features" rows={4} value={plan.featuresText} onChange={(e) => updateListItem('pricing', index, 'featuresText', e.target.value)} placeholder={'Feature one\nFeature two\nFeature three'} />
+                <div className="grid gap-3 md:grid-cols-3">
+                  <Select
+                    label="Popular Plan"
+                    value={String(plan.isPopular)}
+                    onChange={(e) => updateListItem('pricing', index, 'isPopular', e.target.value === 'true')}
+                    options={[
+                      { value: 'false', label: 'No' },
+                      { value: 'true', label: 'Yes' },
+                    ]}
+                  />
+                  <Select
+                    label="Plan Status"
+                    value={String(plan.isActive)}
+                    onChange={(e) => updateListItem('pricing', index, 'isActive', e.target.value === 'true')}
+                    options={[
+                      { value: 'true', label: 'Active' },
+                      { value: 'false', label: 'Inactive' },
+                    ]}
+                  />
+                  <div className="flex items-end">
+                    <Button type="button" variant="danger" size="sm" className="w-full" onClick={() => removeListItem('pricing', index, createPricing)}>Remove</Button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="space-y-3 rounded-2xl border border-slate-200 dark:border-slate-700 p-4">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <h4 className="font-semibold text-slate-900 dark:text-white">FAQs</h4>
+                <p className="text-xs text-slate-500">Answer the common questions visitors ask before they enquire.</p>
+              </div>
+              <Button type="button" variant="outline" size="sm" onClick={() => addListItem('faqs', createFaq)}>
+                <HiPlus className="w-4 h-4" />
+                Add FAQ
+              </Button>
+            </div>
+            {form.faqs.map((faq, index) => (
+              <div key={`faq-${index}`} className="grid gap-3 rounded-2xl bg-slate-50 p-3 dark:bg-slate-900/40 md:grid-cols-[1fr_1.4fr_auto]">
+                <Input label="Question" value={faq.question} onChange={(e) => updateListItem('faqs', index, 'question', e.target.value)} />
+                <Input label="Answer" value={faq.answer} onChange={(e) => updateListItem('faqs', index, 'answer', e.target.value)} />
+                <div className="flex items-end">
+                  <Button type="button" variant="danger" size="sm" className="w-full" onClick={() => removeListItem('faqs', index, createFaq)}>Remove</Button>
+                </div>
+              </div>
+            ))}
+          </div>
           <div className="flex justify-end">
             <Button type="submit" isLoading={saveMutation.isPending}>{editing ? 'Update Service' : 'Create Service'}</Button>
           </div>
         </form>
       </Modal>
+
+      <ConfirmDialog
+        isOpen={!!serviceToDelete}
+        onClose={() => setServiceToDelete(null)}
+        onConfirm={() => {
+          if (!serviceToDelete) return
+          deleteMutation.mutate(serviceToDelete._id, {
+            onSuccess: () => setServiceToDelete(null),
+          })
+        }}
+        title="Delete Service"
+        message={serviceToDelete ? `Are you sure you want to delete "${serviceToDelete.name}"? This action cannot be undone.` : ''}
+        confirmLabel="Delete"
+        isLoading={deleteMutation.isPending}
+      />
     </>
   )
 }

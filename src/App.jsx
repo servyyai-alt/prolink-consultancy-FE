@@ -29,6 +29,7 @@ const Privacy       = lazy(() => import('./pages/Privacy'))
 
 // Auth pages
 const Login         = lazy(() => import('./pages/auth/Login'))
+const AdminLogin    = lazy(() => import('./pages/auth/AdminLogin'))
 const Register      = lazy(() => import('./pages/auth/Register'))
 const VerifyOTP     = lazy(() => import('./pages/auth/VerifyOTP'))
 const ForgotPassword= lazy(() => import('./pages/auth/ForgotPassword'))
@@ -51,6 +52,7 @@ const EmpProfile    = lazy(() => import('./pages/employer/Profile'))
 // Admin Dashboard
 const AdminOverview = lazy(() => import('./pages/admin/Overview'))
 const AdminUsers    = lazy(() => import('./pages/admin/Users'))
+const AdminProfile  = lazy(() => import('./pages/admin/Profile'))
 const AdminJobs     = lazy(() => import('./pages/admin/Jobs'))
 const AdminApplications = lazy(() => import('./pages/admin/Applications'))
 const AdminContacts = lazy(() => import('./pages/admin/Contacts'))
@@ -58,6 +60,7 @@ const AdminBlogs    = lazy(() => import('./pages/admin/Blogs'))
 const AdminServices = lazy(() => import('./pages/admin/Services'))
 const AdminPayments = lazy(() => import('./pages/admin/Payments'))
 const AdminTestimonials = lazy(() => import('./pages/admin/Testimonials'))
+const SubmitTestimonial = lazy(() => import('./pages/SubmitTestimonial'))
 
 const NotFound = lazy(() => import('./pages/NotFound'))
 
@@ -99,10 +102,16 @@ export default function App() {
 
         {/* Auth Routes */}
         <Route path="/login"          element={isLoggedIn ? <Navigate to="/dashboard" /> : <Login />} />
+        <Route path="/admin/login"    element={isLoggedIn ? <Navigate to={['admin','super_admin','recruiter'].includes(role) ? '/admin' : '/dashboard'} /> : <AdminLogin />} />
         <Route path="/register"       element={isLoggedIn ? <Navigate to="/dashboard" /> : <Register />} />
         <Route path="/verify-otp"     element={<VerifyOTP />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
+        <Route path="/submit-testimonial" element={
+          <ProtectedRoute>
+            <SubmitTestimonial />
+          </ProtectedRoute>
+        } />
 
         {/* Job Seeker Dashboard */}
         <Route path="/dashboard" element={
@@ -137,8 +146,10 @@ export default function App() {
           </ProtectedRoute>
         }>
           <Route index element={<AdminOverview />} />
+          <Route path="profile"      element={<AdminProfile />} />
           <Route path="users"        element={<AdminUsers />} />
           <Route path="jobs"         element={<AdminJobs />} />
+          <Route path="jobs/create"  element={<EmpPostJob />} />
           <Route path="applications" element={<AdminApplications />} />
           <Route path="contacts"     element={<AdminContacts />} />
           <Route path="blogs"        element={<AdminBlogs />} />

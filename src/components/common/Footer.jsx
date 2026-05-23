@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import {
   FaLinkedin,
   FaTwitter,
@@ -15,21 +16,18 @@ import {
 } from "react-icons/hi";
 
 import Logo from "../../assets/logo.jpeg";
+import { serviceAPI } from "../../services/api";
+import { getServiceRoute } from "../../utils/serviceRoutes";
 
 const footerLinks = {
   company: [
     { label: "About Us", to: "/about" },
     { label: "Blog", to: "/blogs" },
     { label: "Careers", to: "/jobs" },
+    { label: "Admin Login", to: "/admin/login" },
     { label: "Contact", to: "/contact" },
     { label: "Privacy Policy", to: "/privacy" },
     { label: "Terms of Use", to: "/terms" },
-  ],
-
-  services: [
-    { label: "Job Consultancy", to: "/services/job-consultancy" },
-    { label: "Campus Drive", to: "/campus-drive" },
-    { label: "Background Verification", to: "/services/background-verification" },
   ],
 
   candidates: [
@@ -55,7 +53,19 @@ const socials = [
   { icon: FaYoutube, href: "#", label: "YouTube" },
 ];
 
+const fallbackServices = [
+  { slug: "job-consultancy", name: "Job Consultancy" },
+  { slug: "campus-drive", name: "Campus Drive" },
+  { slug: "background-verification", name: "Background Verification" },
+];
+
 export default function Footer() {
+  const { data } = useQuery({ queryKey: ["services"], queryFn: serviceAPI.getServices });
+  const services = (data?.data?.data?.services?.length ? data.data.data.services : fallbackServices).map((service) => ({
+    label: service.name,
+    to: getServiceRoute(service.slug),
+  }));
+
   return (
     <footer className="relative overflow-hidden bg-[#0b0806] text-stone-400">
 
@@ -230,7 +240,7 @@ export default function Footer() {
                 </div>
 
                 <span className="text-stone-400 group-hover:text-amber-400 transition-colors">
-                  +91 9437174876
+                  +91 9937047733  | +91 7847878898
                 </span>
               </a>
 
@@ -243,7 +253,7 @@ export default function Footer() {
                 </div>
 
                 <span className="text-stone-400 group-hover:text-amber-400 transition-colors">
-                  info@prolinkconsultancy.com
+                  admin@prolinkconsultancy.com
                 </span>
               </a>
 
@@ -253,7 +263,7 @@ export default function Footer() {
                 </div>
 
                 <span className="text-stone-500 leading-relaxed">
-                  Chennai, Tamil Nadu, India
+                  Bhubaneswar,Khurda, Odisha 751010, India
                 </span>
               </div>
             </div>
@@ -288,7 +298,7 @@ export default function Footer() {
           {/* ===== Links ===== */}
           {[
             { title: "Company", links: footerLinks.company },
-            { title: "Services", links: footerLinks.services },
+            { title: "Services", links: services },
             { title: "Candidates", links: footerLinks.candidates },
             { title: "Employers", links: footerLinks.employers },
           ].map(({ title, links }) => (
@@ -332,10 +342,18 @@ export default function Footer() {
 
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
 
-            <p className="text-sm text-stone-600 text-center md:text-left">
-              © {new Date().getFullYear()} ProLink Consultancy.
-              All rights reserved.
-            </p>
+        <p className="text-sm text-stone-600         dark:text-stone-400 text-center md:text-left         leading-relaxed">
+          © {new Date().getFullYear()} ProLink Consultancy. 
+          All rights reserved. Designed & Developed by{' '}
+          <a
+            href="https://www.leastactioncompany.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-medium text-amber-500         hover:text-amber-400 transition-colors         duration-200 hover:underline"
+          >
+            Least Action Company Pvt Ltd
+          </a>.
+        </p>
 
             <div className="flex items-center gap-5 text-sm text-stone-600">
 
