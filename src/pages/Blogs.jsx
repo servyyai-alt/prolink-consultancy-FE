@@ -6,6 +6,7 @@ import { motion } from 'framer-motion'
 import { HiSearch, HiCalendar, HiClock, HiEye } from 'react-icons/hi'
 import { blogAPI } from '../services/api'
 import { Pagination, Skeleton } from '../components/ui/index'
+import career from "../assets/career.png";
 
 const CATEGORIES = ['All', 'Career Tips', 'Resume Writing', 'Interview Prep', 'Industry News', 'HR Insights', 'Salary Guide']
 
@@ -29,19 +30,35 @@ export default function Blogs() {
         <meta name="description" content="Career tips, resume writing advice, interview preparation guides and HR insights from ProLink Consultancy." />
       </Helmet>
       <div className="pt-16">
-        <div className="bg-gradient-to-r from-primary-700 to-primary-900 py-14">
-          <div className="page-container text-center">
-            <h1 className="text-3xl md:text-4xl font-display font-bold text-white mb-3">Career Blog</h1>
-            <p className="text-primary-200 mb-6">Expert insights on careers, resumes, interviews and HR</p>
-            <div className="max-w-md mx-auto flex gap-2">
-              <div className="flex-1 flex items-center gap-2 bg-white/10 rounded-xl px-4">
-                <HiSearch className="w-4 h-4 text-white/60" />
-                <input value={search} onChange={e => { setSearch(e.target.value); setPage(1) }}
-                  placeholder="Search articles…" className="flex-1 bg-transparent py-3 text-white placeholder-white/50 outline-none text-sm" />
-              </div>
-            </div>
-          </div>
-        </div>
+
+<div
+  className="bg-cover bg-center py-14"
+  style={{ backgroundImage: `url(${career})` }}
+>
+  <div className="page-container text-center">
+    <h1 className="text-3xl md:text-4xl font-display font-bold text-white mb-3">
+      Career Blog
+    </h1>
+    <p className="text-primary-200 mb-6">
+      Expert insights on careers, resumes, interviews and HR
+    </p>
+
+    <div className="max-w-md mx-auto flex gap-2">
+      <div className="flex-1 flex items-center gap-2 bg-white/10 rounded-xl px-4">
+        <HiSearch className="w-4 h-4 text-white/60" />
+        <input
+          value={search}
+          onChange={(e) => {
+            setSearch(e.target.value);
+            setPage(1);
+          }}
+          placeholder="Search articles…"
+          className="flex-1 bg-transparent py-3 text-white placeholder-white/50 outline-none text-sm"
+        />
+      </div>
+    </div>
+  </div>
+</div>
         <div className="page-container py-12">
           {/* Category tabs */}
           <div className="flex flex-wrap gap-2 mb-8">

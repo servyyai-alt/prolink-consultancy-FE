@@ -8,6 +8,7 @@ import { FaWhatsapp } from 'react-icons/fa'
 import { contactAPI } from '../services/api'
 import toast from 'react-hot-toast'
 import { optionalIndianMobileSchema, sanitizeIndianMobileInput } from '../utils/phoneValidation'
+import bgImage from "../assets/contact.png";
 
 export default function Contact() {
   const formik = useFormik({
@@ -41,13 +42,25 @@ export default function Contact() {
 
       <div className="pt-16">
         {/* Hero */}
-        <div className="bg-gradient-to-r from-primary-700 to-primary-900 py-14">
-          <div className="page-container text-center">
-            <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-              className="text-3xl md:text-4xl font-display font-bold text-white mb-3">Get in Touch</motion.h1>
-            <p className="text-primary-200">Our team is ready to help you with any query</p>
-          </div>
-        </div>
+        
+<div
+  className="bg-cover bg-center py-14"
+  style={{ backgroundImage: `url(${bgImage})` }}
+>
+  <div className="page-container text-center">
+    <motion.h1
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="text-3xl md:text-4xl font-display font-bold text-white mb-3"
+    >
+      Get in Touch
+    </motion.h1>
+
+    <p className="text-white/90">
+      Our team is ready to help you with any query
+    </p>
+  </div>
+</div>
 
         <div className="page-container py-16">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

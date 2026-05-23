@@ -1,7 +1,7 @@
-import { useState, useRef } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { Helmet } from 'react-helmet-async'
-import { useFormik } from 'formik'
+import { getIn, useFormik } from 'formik'
 import * as Yup from 'yup'
 import { motion } from 'framer-motion'
 import { HiCamera, HiUpload, HiPlus, HiX, HiCheckCircle } from 'react-icons/hi'
@@ -11,6 +11,94 @@ import toast from 'react-hot-toast'
 import { optionalIndianMobileSchema, sanitizeIndianMobileInput } from '../../utils/phoneValidation'
 
 const SKILL_SUGGESTIONS = ['JavaScript', 'Python', 'React', 'Node.js', 'Java', 'SQL', 'Excel', 'Sales', 'Marketing', 'HR', 'Project Management', 'AutoCAD', 'Tally', 'Leadership']
+
+function ProfileField({ formik, name, label, type = 'text', placeholder, as: Tag = 'input', rows, options }) {
+  const touched = getIn(formik.touched, name)
+  const error = getIn(formik.errors, name)
+  const hasError = touched && error
+
+  return (
+    <div>
+      <label className="label">{label}</label>
+      {Tag === 'select' ? (
+        <select
+          name={name}
+          value={getIn(formik.values, name) || ''}
+          onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
+          className={`input-field ${hasError ? 'border-red-400' : ''}`}
+        >
+          <option value="">Select...</option>
+          {options.map(({ v, l }) => <option key={v} value={v}>{l}</option>)}
+        </select>
+      ) : Tag === 'textarea' ? (
+        <textarea
+          name={name}
+          value={getIn(formik.values, name) || ''}
+          onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
+          rows={rows || 4}
+          placeholder={placeholder}
+          className={`input-field resize-none ${hasError ? 'border-red-400' : ''}`}
+        />
+      ) : (
+        <input
+          name={name}
+          type={type}
+          value={getIn(formik.values, name) || ''}
+          onBlur={formik.handleBlur}
+          placeholder={placeholder}
+          maxLength={name === 'phone' ? 10 : undefined}
+          onChange={(e) => {
+            const value = name === 'phone' ? sanitizeIndianMobileInput(e.target.value) : e.target.value
+            formik.setFieldValue(name, value)
+          }}
+          className={`input-field ${hasError ? 'border-red-400' : ''}`}
+        />
+      )}
+      {hasError && <p className="mt-1 text-xs text-red-500">{error}</p>}
+    </div>
+  )
+}
+
+const cleanValue = (value) => (typeof value === 'string' ? value.trim() : value || '')
+
+const buildJobSeekerPayload = (values, skills = []) => ({
+  firstName: cleanValue(values.firstName),
+  lastName: cleanValue(values.lastName),
+  phone: cleanValue(values.phone),
+  profile: {
+    headline: cleanValue(values.profile.headline),
+    summary: cleanValue(values.profile.summary),
+    location: cleanValue(values.profile.location),
+    website: cleanValue(values.profile.website),
+    linkedin: cleanValue(values.profile.linkedin),
+    github: cleanValue(values.profile.github),
+    experience: cleanValue(values.profile.experience),
+    education: cleanValue(values.profile.education),
+    availability: cleanValue(values.profile.availability),
+    skills: skills.map(cleanValue).filter(Boolean),
+  },
+})
+
+const buildJobSeekerUserSnapshot = (user) => buildJobSeekerPayload({
+  firstName: user?.firstName || '',
+  lastName: user?.lastName || '',
+  phone: user?.phone || '',
+  profile: {
+    headline: user?.profile?.headline || '',
+    summary: user?.profile?.summary || '',
+    location: user?.profile?.location || '',
+    website: user?.profile?.website || '',
+    linkedin: user?.profile?.linkedin || '',
+    github: user?.profile?.github || '',
+    experience: user?.profile?.experience || '',
+    education: user?.profile?.education || '',
+    availability: user?.profile?.availability || '',
+  },
+}, user?.profile?.skills || [])
+
+const hasProfileChanges = (current, original) => JSON.stringify(current) !== JSON.stringify(original)
 
 export default function JSProfile() {
   const dispatch   = useDispatch()
@@ -22,48 +110,49 @@ export default function JSProfile() {
   const avatarRef = useRef()
   const resumeRef = useRef()
 
+  useEffect(() => {
+    setSkills(user?.profile?.skills || [])
+  }, [user?.profile?.skills])
+
   const formik = useFormik({
     enableReinitialize: true,
     initialValues: {
       firstName:   user?.firstName || '',
       lastName:    user?.lastName  || '',
       phone:       user?.phone     || '',
-      'profile.headline':    user?.profile?.headline    || '',
-      'profile.summary':     user?.profile?.summary     || '',
-      'profile.location':    user?.profile?.location    || '',
-      'profile.website':     user?.profile?.website     || '',
-      'profile.linkedin':    user?.profile?.linkedin    || '',
-      'profile.github':      user?.profile?.github      || '',
-      'profile.experience':  user?.profile?.experience  || '',
-      'profile.education':   user?.profile?.education   || '',
-      'profile.availability':user?.profile?.availability|| '',
+      profile: {
+        headline:     user?.profile?.headline     || '',
+        summary:      user?.profile?.summary      || '',
+        location:     user?.profile?.location     || '',
+        website:      user?.profile?.website      || '',
+        linkedin:     user?.profile?.linkedin     || '',
+        github:       user?.profile?.github       || '',
+        experience:   user?.profile?.experience   || '',
+        education:    user?.profile?.education    || '',
+        availability: user?.profile?.availability || '',
+      },
     },
     validationSchema: Yup.object({
-      firstName: Yup.string().required('Required'),
-      lastName:  Yup.string().required('Required'),
-      phone:     optionalIndianMobileSchema('Invalid phone number'),
+      firstName: Yup.string().trim().required('Enter your first name.'),
+      lastName:  Yup.string().trim().required('Enter your last name.'),
+      phone:     optionalIndianMobileSchema('Enter a valid 10-digit mobile number.'),
+      profile: Yup.object({
+        website: Yup.string().trim().url('Enter a valid website URL.'),
+        linkedin: Yup.string().trim().url('Enter a valid LinkedIn URL.'),
+        github: Yup.string().trim().url('Enter a valid GitHub or portfolio URL.'),
+      }),
     }),
     onSubmit: async (values) => {
       setSaving(true)
       try {
-        // Reconstruct nested object
-        const payload = {
-          firstName: values.firstName,
-          lastName:  values.lastName,
-          phone:     values.phone,
-          profile: {
-            headline:    values['profile.headline'],
-            summary:     values['profile.summary'],
-            location:    values['profile.location'],
-            website:     values['profile.website'],
-            linkedin:    values['profile.linkedin'],
-            github:      values['profile.github'],
-            experience:  values['profile.experience'],
-            education:   values['profile.education'],
-            availability:values['profile.availability'],
-            skills,
-          },
+        const payload = buildJobSeekerPayload(values, skills)
+        const original = buildJobSeekerUserSnapshot(user)
+
+        if (!hasProfileChanges(payload, original)) {
+          toast('No changes is there.')
+          return
         }
+
         const { data } = await userAPI.updateProfile(payload)
         dispatch(updateUser(data.data.user))
         toast.success('Profile updated successfully!')
@@ -84,7 +173,7 @@ export default function JSProfile() {
     fd.append('avatar', file)
     try {
       const { data } = await userAPI.uploadAvatar(fd)
-      dispatch(updateUser({ avatar: data.data.avatar }))
+      dispatch(updateUser(data.data.user))
       toast.success('Avatar updated!')
     } catch { toast.error('Upload failed') }
     finally { setUploading(u => ({ ...u, avatar: false })) }
@@ -99,7 +188,7 @@ export default function JSProfile() {
     fd.append('resume', file)
     try {
       const { data } = await userAPI.uploadResume(fd)
-      dispatch(updateUser({ profile: { ...user?.profile, resume: data.data.resume } }))
+      dispatch(updateUser(data.data.user))
       toast.success('Resume uploaded!')
     } catch { toast.error('Upload failed') }
     finally { setUploading(u => ({ ...u, resume: false })) }
@@ -113,31 +202,78 @@ export default function JSProfile() {
 
   const removeSkill = (s) => setSkills(skills.filter(x => x !== s))
 
-  const F = ({ name, label, type = 'text', placeholder, as: Tag = 'input', rows, options }) => (
+  const F = ({
+  name,
+  label,
+  type = 'text',
+  placeholder,
+  as: Tag = 'input',
+  rows,
+  options,
+}) => {
+  const touched = getIn(formik.touched, name)
+  const error = getIn(formik.errors, name)
+  const hasError = touched && error
+
+  return (
     <div>
       <label className="label">{label}</label>
+
       {Tag === 'select' ? (
-        <select {...formik.getFieldProps(name)} className={`input-field ${formik.touched[name] && formik.errors[name] ? 'border-red-400' : ''}`}>
+        <select
+          name={name}
+          value={getIn(formik.values, name) || ''}
+          onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
+          className={`input-field ${hasError ? 'border-red-400' : ''}`}
+        >
           <option value="">Select…</option>
-          {options.map(({ v, l }) => <option key={v} value={v}>{l}</option>)}
+
+          {options.map(({ v, l }) => (
+            <option key={v} value={v}>
+              {l}
+            </option>
+          ))}
         </select>
       ) : Tag === 'textarea' ? (
-        <textarea {...formik.getFieldProps(name)} rows={rows || 4} placeholder={placeholder} className={`input-field resize-none ${formik.touched[name] && formik.errors[name] ? 'border-red-400' : ''}`} />
+        <textarea
+          name={name}
+          value={getIn(formik.values, name) || ''}
+          onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
+          rows={rows || 4}
+          placeholder={placeholder}
+          className={`input-field resize-none ${
+            hasError ? 'border-red-400' : ''
+          }`}
+        />
       ) : (
         <input
-          {...formik.getFieldProps(name)}
+          name={name}
           type={type}
+          value={getIn(formik.values, name) || ''}
+          onBlur={formik.handleBlur}
           placeholder={placeholder}
           maxLength={name === 'phone' ? 10 : undefined}
-          onInput={(e) => {
-            if (name === 'phone') e.target.value = sanitizeIndianMobileInput(e.target.value)
+          onChange={(e) => {
+            let value = e.target.value
+
+            if (name === 'phone') {
+              value = sanitizeIndianMobileInput(value)
+            }
+
+            formik.setFieldValue(name, value)
           }}
-          className={`input-field ${formik.touched[name] && formik.errors[name] ? 'border-red-400' : ''}`}
+          className={`input-field ${hasError ? 'border-red-400' : ''}`}
         />
       )}
-      {formik.touched[name] && formik.errors[name] && <p className="mt-1 text-xs text-red-500">{formik.errors[name]}</p>}
+
+      {hasError && (
+        <p className="mt-1 text-xs text-red-500">{error}</p>
+      )}
     </div>
   )
+}
 
   return (
     <>
@@ -214,17 +350,17 @@ export default function JSProfile() {
           className="card p-6 space-y-4">
           <h3 className="font-bold text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-700 pb-3">Basic Information</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <F name="firstName" label="First Name" placeholder="Arjun" />
-            <F name="lastName"  label="Last Name"  placeholder="Sharma" />
-            <F name="phone"     label="Phone Number" type="tel" placeholder="98765 43210" />
-            <F name="profile.location" label="Location" placeholder="Chennai, Tamil Nadu" />
+            <ProfileField formik={formik} name="firstName" label="First Name" placeholder="Arjun" />
+            <ProfileField formik={formik} name="lastName"  label="Last Name"  placeholder="Sharma" />
+            <ProfileField formik={formik} name="phone"     label="Phone Number" type="tel" placeholder="98765 43210" />
+            <ProfileField formik={formik} name="profile.location" label="Location" placeholder="Chennai, Tamil Nadu" />
           </div>
-          <F name="profile.headline" label="Professional Headline" placeholder="e.g. Full Stack Developer with 3 years of experience" />
-          <F name="profile.summary"  label="Professional Summary" as="textarea" rows={4} placeholder="Write a brief summary about yourself, your experience, and what you're looking for…" />
+          <ProfileField formik={formik} name="profile.headline" label="Professional Headline" placeholder="e.g. Full Stack Developer with 3 years of experience" />
+          <ProfileField formik={formik} name="profile.summary"  label="Professional Summary" as="textarea" rows={4} placeholder="Write a brief summary about yourself, your experience, and what you're looking for…" />
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <F name="profile.experience" label="Total Experience" placeholder="e.g. 3 years" />
-            <F name="profile.education"  label="Highest Education" placeholder="e.g. B.Tech Computer Science" />
-            <F name="profile.availability" label="Availability" as="select" options={[
+            <ProfileField formik={formik} name="profile.experience" label="Total Experience" placeholder="e.g. 3 years" />
+            <ProfileField formik={formik} name="profile.education"  label="Highest Education" placeholder="e.g. B.Tech Computer Science" />
+            <ProfileField formik={formik} name="profile.availability" label="Availability" as="select" options={[
               { v: 'immediate',     l: 'Immediate Joiner' },
               { v: 'within_month',  l: 'Within 1 Month' },
               { v: 'flexible',      l: 'Flexible' },
@@ -279,9 +415,9 @@ export default function JSProfile() {
           className="card p-6 space-y-4">
           <h3 className="font-bold text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-700 pb-3">Online Presence</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <F name="profile.linkedin" label="LinkedIn Profile" placeholder="https://linkedin.com/in/…" type="url" />
-            <F name="profile.github"   label="GitHub / Portfolio" placeholder="https://github.com/…" type="url" />
-            <F name="profile.website"  label="Personal Website" placeholder="https://yoursite.com" type="url" />
+            <ProfileField formik={formik} name="profile.linkedin" label="LinkedIn Profile" placeholder="https://linkedin.com/in/…" type="url" />
+            <ProfileField formik={formik} name="profile.github"   label="GitHub / Portfolio" placeholder="https://github.com/…" type="url" />
+            <ProfileField formik={formik} name="profile.website"  label="Personal Website" placeholder="https://yoursite.com" type="url" />
           </div>
         </motion.div>
 

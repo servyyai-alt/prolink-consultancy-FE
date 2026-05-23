@@ -9,6 +9,8 @@ import { useSelector } from 'react-redux'
 import { selectIsLoggedIn } from '../redux/slices/authSlice'
 import { Pagination, Badge, JobCardSkeleton, EmptyState } from '../components/ui/index'
 import toast from 'react-hot-toast'
+import jobsBg from "../assets/jobs.png";
+
 
 const JOB_TYPES    = ['full_time', 'part_time', 'contract', 'internship', 'freelance']
 const LOCATION_TYPES = ['onsite', 'remote', 'hybrid']
@@ -80,28 +82,47 @@ export default function Jobs() {
 
       <div className="pt-16 min-h-screen bg-slate-50 dark:bg-slate-950">
         {/* Search Header */}
-        <div className="bg-gradient-to-r from-primary-700 to-primary-900 pt-10 pb-16">
-          <div className="page-container">
-            <h1 className="text-2xl md:text-3xl font-display font-bold text-white mb-6">
-              Find Your <span className="text-primary-300">Dream Job</span>
-            </h1>
-            <div className="bg-white dark:bg-slate-800 rounded-2xl p-2 shadow-2xl flex flex-col md:flex-row gap-2">
-              <div className="flex-1 flex items-center gap-2 px-4">
-                <HiSearch className="w-5 h-5 text-slate-400 flex-shrink-0" />
-                <input value={filters.search} onChange={e => updateFilter('search', e.target.value)}
-                  placeholder="Job title, skills, or company…"
-                  className="flex-1 bg-transparent outline-none text-slate-900 dark:text-white placeholder-slate-400 py-3" />
-              </div>
-              <div className="flex items-center gap-2 px-4 border-l border-slate-100 dark:border-slate-700">
-                <HiLocationMarker className="w-5 h-5 text-slate-400 flex-shrink-0" />
-                <input value={filters.location} onChange={e => updateFilter('location', e.target.value)}
-                  placeholder="City or state…"
-                  className="flex-1 bg-transparent outline-none text-slate-900 dark:text-white placeholder-slate-400 py-3 w-40" />
-              </div>
-              <button className="btn-primary rounded-xl px-8">Search Jobs</button>
-            </div>
-          </div>
-        </div>
+        <div
+  className="bg-cover bg-center pt-10 pb-16 relative"
+  style={{ backgroundImage: `url(${jobsBg})` }}
+>
+  {/* Overlay */}
+  <div className="absolute inset-0 bg-black/20"></div>
+
+  <div className="page-container relative z-10">
+    <h1 className="text-2xl md:text-3xl font-display font-bold text-white mb-6">
+      Find Your <span className="text-primary-300">Dream Job</span>
+    </h1>
+
+    <div className="bg-white dark:bg-slate-800 rounded-2xl p-2 shadow-2xl flex flex-col md:flex-row gap-2">
+      <div className="flex-1 flex items-center gap-2 px-4">
+        <HiSearch className="w-5 h-5 text-slate-400 flex-shrink-0" />
+
+        <input
+          value={filters.search}
+          onChange={(e) => updateFilter("search", e.target.value)}
+          placeholder="Job title, skills, or company…"
+          className="flex-1 bg-transparent outline-none text-slate-900 dark:text-white placeholder-slate-400 py-3"
+        />
+      </div>
+
+      <div className="flex items-center gap-2 px-4 border-l border-slate-100 dark:border-slate-700">
+        <HiLocationMarker className="w-5 h-5 text-slate-400 flex-shrink-0" />
+
+        <input
+          value={filters.location}
+          onChange={(e) => updateFilter("location", e.target.value)}
+          placeholder="City or state…"
+          className="flex-1 bg-transparent outline-none text-slate-900 dark:text-white placeholder-slate-400 py-3 w-40"
+        />
+      </div>
+
+      <button className="btn-primary rounded-xl px-8">
+        Search Jobs
+      </button>
+    </div>
+  </div>
+</div>
 
         <div className="page-container -mt-6 pb-16">
           <div className="flex gap-6">
