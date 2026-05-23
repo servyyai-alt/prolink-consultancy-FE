@@ -78,10 +78,14 @@ export default function EmpMyJobs() {
                     <span>{job.location} · {job.type?.replace('_',' ')}</span>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 flex-shrink-0">
+                  <div className="flex items-center gap-2 flex-shrink-0">
                   <Link to={`/employer/applicants?job=${job._id}`}
                     className="flex items-center gap-1.5 px-3 py-1.5 bg-primary-50 dark:bg-primary-900/20 text-primary-600 text-xs font-bold rounded-lg hover:bg-primary-100 transition-colors">
                     <HiUserGroup className="w-3.5 h-3.5" /> Applicants
+                  </Link>
+                  <Link to={`/employer/post-job?slug=${job.slug}`}
+                    className="p-2 rounded-lg text-slate-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors">
+                    <HiPencil className="w-4 h-4" />
                   </Link>
                   <button onClick={() => setJobToDelete(job)}
                     className="p-2 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">

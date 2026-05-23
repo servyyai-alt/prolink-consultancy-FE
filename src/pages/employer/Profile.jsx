@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { useDispatch, useSelector } from 'react-redux'
 import { getIn, useFormik } from 'formik'
@@ -64,6 +64,21 @@ export default function EmpProfile() {
   const dispatch = useDispatch()
   const user = useSelector(selectUser)
   const [saving, setSaving] = useState(false)
+
+  useEffect(() => {
+    let mounted = true
+    const fetchProfile = async () => {
+      try {
+        const { data } = await userAPI.getProfile()
+        if (!mounted) return
+        if (data?.data?.user) dispatch(updateUser(data.data.user))
+      } catch (err) {
+        // ignore - will rely on existing store value; optionally show toast
+      }
+    }
+    fetchProfile()
+    return () => { mounted = false }
+  }, [dispatch])
 
   const formik = useFormik({
     enableReinitialize: true,

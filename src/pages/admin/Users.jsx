@@ -5,7 +5,7 @@ import * as Yup from 'yup'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Helmet } from 'react-helmet-async'
 import { motion } from 'framer-motion'
-import { HiLockClosed, HiLockOpen, HiPlus, HiSearch, HiTrash, HiUserAdd } from 'react-icons/hi'
+import { HiLockClosed, HiLockOpen, HiPlus, HiSearch, HiTrash, HiUserAdd, HiCheck } from 'react-icons/hi'
 import { adminAPI } from '../../services/api'
 import { Badge, Button, EmptyState, Input, Modal, Pagination, Select, Textarea } from '../../components/ui/index'
 import { requiredIndianMobileSchema, sanitizeIndianMobileInput } from '../../utils/phoneValidation'
@@ -151,6 +151,15 @@ export default function AdminUsers() {
       toast.success('User status updated')
     },
     onError: () => toast.error('Failed to update user'),
+  })
+
+  const approveMutation = useMutation({
+    mutationFn: ({ id, approve }) => adminAPI.approveUser(id, { approve }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin-users'] })
+      toast.success('User approval updated')
+    },
+    onError: () => toast.error('Failed to update approval'),
   })
 
   const roleMutation = useMutation({
@@ -325,6 +334,20 @@ export default function AdminUsers() {
                               </>
                             )}
                           </button>
+                          {user.role === 'employer' && (
+                            <button
+                              type="button"
+                              onClick={() => approveMutation.mutate({ id: user._id, approve: !user.isApproved })}
+                              disabled={approveMutation.isPending}
+                              className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors ${
+                                user.isApproved
+                                  ? 'bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-400'
+                                  : 'bg-green-50 text-green-700 hover:bg-green-100 dark:bg-green-900/20 dark:text-green-400'
+                              }`}
+                            >
+                              <HiCheck className="h-3.5 w-3.5" /> {user.isApproved ? 'Unapprove' : 'Approve'}
+                            </button>
+                          )}
                           <button
                             type="button"
                             disabled={disableDelete}
