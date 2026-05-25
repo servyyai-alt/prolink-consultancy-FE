@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { useDispatch, useSelector } from 'react-redux'
 import { getIn, useFormik } from 'formik'
 import * as Yup from 'yup'
+import { HiCamera } from 'react-icons/hi'
 import { userAPI } from '../../services/api'
 import { updateUser, selectUser } from '../../redux/slices/authSlice'
 import toast from 'react-hot-toast'
@@ -64,6 +65,8 @@ export default function EmpProfile() {
   const dispatch = useDispatch()
   const user = useSelector(selectUser)
   const [saving, setSaving] = useState(false)
+  const [uploadingLogo, setUploadingLogo] = useState(false)
+  const logoRef = useRef()
 
   useEffect(() => {
     let mounted = true

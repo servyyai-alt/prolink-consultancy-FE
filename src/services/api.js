@@ -109,6 +109,7 @@ export const userAPI = {
   updateProfile: (data)       => api.put('/users/profile', data),
   changePassword:(data)       => api.put('/users/change-password', data),
   uploadAvatar:  (formData)   => api.post('/users/upload-avatar', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
+  uploadCompanyLogo: (formData) => api.post('/users/upload-company-logo', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
   uploadResume:  (formData)   => api.post('/users/upload-resume', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
   saveJob:       (jobId)      => api.post(`/users/save-job/${jobId}`),
   getSavedJobs:  ()           => api.get('/users/saved-jobs'),

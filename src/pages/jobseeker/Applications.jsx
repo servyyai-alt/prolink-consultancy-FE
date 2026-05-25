@@ -9,7 +9,8 @@ import { Pagination, Badge, Modal, EmptyState } from '../../components/ui/index'
 import toast from 'react-hot-toast'
 
 const STATUS_TABS = ['all','applied','screening','shortlisted','interview_scheduled','offered','hired','rejected']
-const STATUS_COLOR = { applied:'primary', screening:'warning', shortlisted:'teal', interview_scheduled:'purple', interviewed:'purple', offered:'success', hired:'success', rejected:'danger', withdrawn:'gray' }
+const STATUS_COLOR = { applied:'primary', screening:'warning', shortlisted:'teal', interview_scheduled:'purple', offered:'success', hired:'success', rejected:'danger', withdrawn:'gray' }
+const STATUS_LABEL = { applied:'Applied', screening:'Screening', shortlisted:'Shortlisted', interview_scheduled:'Interview Scheduled', offered:'Offered', hired:'Hired', rejected:'Rejected' }
 
 export default function JSApplications() {
   const [page, setPage] = useState(1)
@@ -30,7 +31,8 @@ export default function JSApplications() {
   const withdrawMutation = useMutation({
     mutationFn: ({ id, reason }) => applicationAPI.withdraw(id, { reason }),
     onSuccess: () => {
-      qc.invalidateQueries(['my-applications'])
+      qc.invalidateQueries({ queryKey: ['my-applications'] })
+      qc.invalidateQueries({ queryKey: ['my-interviews'] })
       toast.success('Application withdrawn')
       setWithdrawModal(null)
       setReason('')
@@ -75,7 +77,7 @@ export default function JSApplications() {
           </div>
         ) : apps.length === 0 ? (
           <EmptyState icon={HiBriefcase} title="No Applications Yet"
-            description="Start applying for jobs to see your applications here."
+            description={status ? `No ${STATUS_LABEL[status] || status.replace(/_/g, ' ')} applications found.` : 'Start applying for jobs to see your applications here.'}
             action={<Link to="/jobs" className="btn-primary">Browse Jobs</Link>} />
         ) : (
           <div className="space-y-3">
@@ -151,9 +153,9 @@ export default function JSApplications() {
           <div className="flex gap-3">
             <button onClick={() => setWithdrawModal(null)} className="flex-1 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 font-semibold text-sm hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">Cancel</button>
             <button onClick={() => withdrawMutation.mutate({ id: withdrawModal, reason })}
-              disabled={withdrawMutation.isLoading}
+              disabled={withdrawMutation.isPending}
               className="flex-1 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-semibold text-sm transition-colors disabled:opacity-60">
-              {withdrawMutation.isLoading ? 'Withdrawing…' : 'Yes, Withdraw'}
+              {withdrawMutation.isPending ? 'Withdrawing…' : 'Yes, Withdraw'}
             </button>
           </div>
         </div>
