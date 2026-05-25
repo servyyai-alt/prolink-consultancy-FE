@@ -43,33 +43,33 @@ export default function Contact() {
       <div className="pt-16">
         {/* Hero */}
         
-<div
-  className="bg-cover bg-center py-14"
-  style={{ backgroundImage: `url(${bgImage})` }}
->
-  <div className="page-container text-center">
-    <motion.h1
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="text-3xl md:text-4xl font-display font-bold text-white mb-3"
-    >
-      Get in Touch
-    </motion.h1>
-
-    <p className="text-white/90">
-      Our team is ready to help you with any query
-    </p>
-  </div>
-</div>
+      <div
+        className="bg-cover bg-center py-14"
+        style={{ backgroundImage: `url(${bgImage})` }}
+      >
+        <div className="page-container text-center">
+          <motion.h1
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-3xl md:text-4xl font-display font-bold text-white mb-3"
+          >
+            Get in Touch
+          </motion.h1>
+      
+          <p className="text-white/90">
+            Our team is ready to help you with any query
+          </p>
+        </div>
+      </div>
 
         <div className="page-container py-16">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Info cards */}
             <div className="space-y-5">
               {[
-                { icon: HiPhone, label: 'Call Us', value: '+91 9437174876', sub: 'Mon–Sat, 9AM–6PM', href: 'tel:+919437174876', color: 'blue' },
+                { icon: HiPhone, label: 'Call Us', value: '+91  9937047733', sub: 'Mon–Sat, 9AM–6PM', href: 'tel:+919937047733', color: 'blue' },
                 { icon: HiMail, label: 'Email Us', value: 'info@prolinkconsultancy.com', sub: 'We reply within 24 hrs', href: 'mailto:info@prolinkconsultancy.com', color: 'violet' },
-                { icon: HiLocationMarker, label: 'Visit Us', value: '123 Business District', sub: 'Chennai, TN 600001', color: 'green' },
+                { icon: HiLocationMarker, label: 'Visit Us', value: 'Bhubaneswar, Khurda,', sub: 'Odisha 751010', color: 'green' },
               ].map(({ icon: Icon, label, value, sub, href, color }) => (
                 <motion.div key={label} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}
                   className="card p-5 flex gap-4">
@@ -81,14 +81,27 @@ export default function Contact() {
                   <div>
                     <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">{label}</p>
                     {href ? <a href={href} className="font-semibold text-slate-900 dark:text-white hover:text-primary-600 transition-colors text-sm">{value}</a>
-                           : <p className="font-semibold text-slate-900 dark:text-white text-sm">{value}</p>}
+                           : label === "Visit Us" ? (
+                      <a
+                        href="https://maps.google.com/?q=Bhubaneswar,Khurda,Odisha751010"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="font-semibold text-slate-900 dark:text-white hover:text-primary-600 transition-colors text-sm"
+                      >
+                        {value}
+                      </a>
+                    ) : (
+                      <p className="font-semibold text-slate-900 dark:text-white text-sm">
+                        {value}
+                      </p>
+                    )}
                     <p className="text-xs text-slate-500 mt-0.5">{sub}</p>
                   </div>
                 </motion.div>
               ))}
 
               {/* WhatsApp */}
-              <a href="https://wa.me/919876543210" target="_blank" rel="noreferrer"
+              <a href="https://wa.me/919937047733" target="_blank" rel="noreferrer"
                 className="card p-5 flex gap-4 hover:border-green-300 hover:-translate-y-0.5 transition-all group">
                 <div className="w-11 h-11 rounded-xl bg-green-50 text-green-600 flex items-center justify-center flex-shrink-0">
                   <FaWhatsapp className="w-5 h-5" />

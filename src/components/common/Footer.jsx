@@ -229,41 +229,53 @@ export default function Footer() {
             </p>
 
             {/* Contact */}
-            <div className="space-y-4 mb-8">
+            <div className="space-y-5 mb-8">
 
-              <a
-                href="tel:+919876543210"
-                className="flex items-center gap-4 group"
-              >
-                <div className="w-11 h-11 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center">
+              {/* Phone */}
+              <div className="flex items-start gap-4">
+                <div className="w-11 h-11 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center             flex-shrink-0">
                   <HiPhone className="w-5 h-5 text-amber-400" />
                 </div>
-
-                <span className="text-stone-400 group-hover:text-amber-400 transition-colors">
-                  +91 9937047733  | +91 7847878898
-                </span>
-              </a>
-
+            
+                <div className="space-y-1">
+                  <a
+                    href="tel:+919937047733"
+                    className="block text-stone-400 hover:text-amber-400 transition-colors"
+                  >
+                    +91 99370 47733
+                  </a>
+            
+                  <a
+                    href="tel:+917847878898"
+                    className="block text-stone-400 hover:text-amber-400 transition-colors"
+                  >
+                    +91 78478 78898
+                  </a>
+                </div>
+              </div>
+            
+              {/* Email */}
               <a
-                href="mailto:info@prolinkconsultancy.com"
+                href="mailto:admin@prolinkconsultancy.com"
                 className="flex items-center gap-4 group"
               >
                 <div className="w-11 h-11 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center">
                   <HiMail className="w-5 h-5 text-amber-400" />
                 </div>
-
-                <span className="text-stone-400 group-hover:text-amber-400 transition-colors">
+            
+                <span className="text-stone-400 group-hover:text-amber-400 transition-colors break-all">
                   admin@prolinkconsultancy.com
                 </span>
               </a>
-
+            
+              {/* Location */}
               <div className="flex items-start gap-4">
-                <div className="w-11 h-11 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0">
+                <div className="w-11 h-11 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center             flex-shrink-0">
                   <HiLocationMarker className="w-5 h-5 text-amber-400" />
                 </div>
-
-                <span className="text-stone-500 leading-relaxed">
-                  Bhubaneswar,Khurda, Odisha 751010, India
+            
+                <span className="text-stone-400 leading-relaxed">
+                  Bhubaneswar, Khurda, Odisha 751010, India
                 </span>
               </div>
             </div>

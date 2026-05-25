@@ -107,8 +107,8 @@ export default function JobDetail() {
                         <p className="text-slate-500 mt-0.5">{job.company?.name}</p>
                       </div>
                       <div className="flex gap-2">
-                        {job.urgent && <Badge variant="danger">🔥 Urgent</Badge>}
-                        {job.featured && <Badge variant="primary">⭐ Featured</Badge>}
+                        {job.urgent && <Badge variant="danger"> Urgent</Badge>}
+                        {job.featured && <Badge variant="primary"> Featured</Badge>}
                       </div>
                     </div>
                   </div>

@@ -913,7 +913,7 @@ export default function Home() {
                   </Link>
 
                   <a
-                    href="tel:+919876543210"
+                    href="tel:+9199370 47733"
                     className="
                 inline-flex items-center justify-center gap-3
                 px-8 py-4

@@ -14,7 +14,7 @@ import toast from 'react-hot-toast'
 import logo from '../../assets/logo.jpeg'
 import authImage from '../../assets/login.jpg'
 import registerImage from '../../assets/register.jpg'
-import { optionalIndianMobileSchema, sanitizeIndianMobileInput } from '../../utils/phoneValidation'
+import { requiredIndianMobileSchema, sanitizeIndianMobileInput } from '../../utils/phoneValidation'
 // import registerImage from '../../assets/web-logo.jpeg'
 
 const AuthShell = ({
@@ -153,7 +153,7 @@ export function Login() {
 
       <p className="mt-6 text-center text-sm text-slate-500">
         Don't have an account?{' '}
-        <Link to="/register" className="text-primary-600 font-semibold hover:underline">Create one free</Link>
+        <Link to="/register" className="text-primary-600 font-semibold hover:underline">Create Account</Link>
       </p>
     </AuthShell>
   )
@@ -173,7 +173,7 @@ export function Register() {
       firstName:       Yup.string().min(2).required('First name required'),
       lastName:        Yup.string().min(2).required('Last name required'),
       email:           Yup.string().email('Invalid email').required('Email required'),
-      phone:           optionalIndianMobileSchema('Invalid Indian phone number'),
+      phone:           requiredIndianMobileSchema('Phone number is required', 'Invalid Indian phone number'),
       password:        Yup.string().min(8, 'Min 8 characters').matches(/(?=.*[A-Z])(?=.*[0-9])/, 'Must have uppercase + number').required(),
       confirmPassword: Yup.string().oneOf([Yup.ref('password')], 'Passwords must match').required(),
       role:            Yup.string().oneOf(['job_seeker', 'employer']).required(),
@@ -226,7 +226,7 @@ export function Register() {
         </div>
 
         <div>
-          <label className="label">Phone (optional)</label>
+          <label className="label">Phone Number</label>
           <input
             {...f('phone')}
             type="tel"
@@ -301,7 +301,7 @@ export function Register() {
         </div>
 
         <button type="submit" disabled={isLoading} className="btn-primary w-full py-3.5">
-          {isLoading ? <span className="flex items-center justify-center gap-2"><span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />Creating Account…</span> : 'Create Free Account'}
+          {isLoading ? <span className="flex items-center justify-center gap-2"><span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />Creating Account…</span> : 'Create Account'}
         </button>
       </form>
 
