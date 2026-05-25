@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useDeferredValue, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { Helmet } from 'react-helmet-async'
@@ -13,10 +13,11 @@ export default function Blogs() {
   const [page, setPage] = useState(1)
   const [category, setCategory] = useState('')
   const [search, setSearch] = useState('')
+  const deferredSearch = useDeferredValue(search)
 
   const { data, isLoading } = useQuery({
-    queryKey: ['blogs', { page, category, search }],
-    queryFn: () => blogAPI.getBlogs({ page, limit: 9, category: category||undefined, search: search||undefined }),
+    queryKey: ['blogs', { page, category, search: deferredSearch }],
+    queryFn: () => blogAPI.getBlogs({ page, limit: 9, category: category||undefined, search: deferredSearch||undefined }),
     keepPreviousData: true,
   })
   const blogs = data?.data?.data || []

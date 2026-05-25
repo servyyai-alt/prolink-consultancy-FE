@@ -127,6 +127,7 @@ export const blogAPI = {
   getBlog:  (slug)        => api.get(`/blogs/${slug}`),
   create:   (data)        => api.post('/blogs', data),
   update:   (id, data)    => api.put(`/blogs/${id}`, data),
+  delete:   (id)          => api.delete(`/blogs/${id}`),
 }
 
 export const contactAPI = {

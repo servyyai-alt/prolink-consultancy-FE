@@ -63,7 +63,7 @@ export function AdminJobs() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-700/50">
-                  {['Job Title', 'Company', 'Category', 'Status', 'Views', 'Apps', 'Actions'].map(h => (
+                  {['Job Title', 'Company', 'Category', 'Posted By', 'Status', 'Views', 'Apps', 'Actions'].map(h => (
                     <th key={h} className="text-left px-4 py-3.5 text-xs font-bold text-slate-500 uppercase tracking-wider">{h}</th>
                   ))}
                 </tr>
@@ -81,6 +81,7 @@ export function AdminJobs() {
                         </td>
                         <td className="px-4 py-4 text-slate-600 dark:text-slate-300 text-xs">{job.company?.name}</td>
                         <td className="px-4 py-4 text-slate-600 dark:text-slate-300 text-xs">{job.category}</td>
+                        <td className="px-4 py-4 text-slate-600 dark:text-slate-300 text-xs">{job.postedBy?.fullName}</td>
                         <td className="px-4 py-4"><Badge variant={JOB_STATUS_COLOR[job.status] || 'gray'}>{job.status}</Badge></td>
                         <td className="px-4 py-4 text-slate-500 text-xs">{job.views || 0}</td>
                         <td className="px-4 py-4 text-slate-500 text-xs">{job.applications || 0}</td>
