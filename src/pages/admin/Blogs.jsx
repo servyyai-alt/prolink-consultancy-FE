@@ -1,7 +1,7 @@
 import { useDeferredValue, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Helmet } from 'react-helmet-async'
-import { HiPencil, HiPlus, HiSearch, HiTrash, HiUpload } from 'react-icons/hi'
+import { HiCheck, HiPencil, HiPlus, HiSearch, HiTrash, HiUpload, HiX } from 'react-icons/hi'
 import { adminAPI, blogAPI, uploadAPI } from '../../services/api'
 import { Badge, Button, EmptyState, Input, Modal, Pagination, Select, Textarea } from '../../components/ui/index'
 import ConfirmDialog from '../../components/common/ConfirmDialog'
@@ -19,7 +19,9 @@ const emptyForm = {
   relatedPosts: [],
 }
 const STATUS_VARIANTS = { draft: 'warning', published: 'success', archived: 'gray' }
+const COMMENT_STATUS_VARIANTS = { pending: 'warning', approved: 'success', rejected: 'danger' }
 const SOCIAL_FIELDS = ['facebook', 'instagram', 'linkedin', 'twitter', 'youtube']
+const getCommentStatus = (comment) => comment?.status || (comment?.isApproved ? 'approved' : 'pending')
 
 export default function AdminBlogs() {
   const [page, setPage] = useState(1)
@@ -28,6 +30,7 @@ export default function AdminBlogs() {
   const [isOpen, setIsOpen] = useState(false)
   const [editing, setEditing] = useState(null)
   const [blogToDelete, setBlogToDelete] = useState(null)
+  const [commentBlog, setCommentBlog] = useState(null)
   const [form, setForm] = useState(emptyForm)
   const deferredSearch = useDeferredValue(search)
   const qc = useQueryClient()
@@ -99,6 +102,42 @@ export default function AdminBlogs() {
     onError: () => toast.error('Could not delete blog'),
   })
 
+  const commentStatusMutation = useMutation({
+    mutationFn: ({ blogId, commentId, status }) => blogAPI.updateCommentStatus(blogId, commentId, { status }),
+    onSuccess: (_, variables) => {
+      toast.success(`Comment ${variables.status}`)
+      qc.invalidateQueries({ queryKey: ['admin-blogs'] })
+      setCommentBlog((prev) => {
+        if (!prev || prev._id !== variables.blogId) return prev
+        return {
+          ...prev,
+          comments: (prev.comments || []).map((comment) => (
+            comment._id === variables.commentId
+              ? { ...comment, status: variables.status, isApproved: variables.status === 'approved' }
+              : comment
+          )),
+        }
+      })
+    },
+    onError: () => toast.error('Could not update comment'),
+  })
+
+  const deleteCommentMutation = useMutation({
+    mutationFn: ({ blogId, commentId }) => blogAPI.deleteComment(blogId, commentId),
+    onSuccess: (_, variables) => {
+      toast.success('Comment deleted')
+      qc.invalidateQueries({ queryKey: ['admin-blogs'] })
+      setCommentBlog((prev) => {
+        if (!prev || prev._id !== variables.blogId) return prev
+        return {
+          ...prev,
+          comments: (prev.comments || []).filter((comment) => comment._id !== variables.commentId),
+        }
+      })
+    },
+    onError: () => toast.error('Could not delete comment'),
+  })
+
   const openCreate = () => {
     setEditing(null)
     setForm(emptyForm)
@@ -147,6 +186,13 @@ export default function AdminBlogs() {
         : [...prev.relatedPosts, blogId],
     }))
   }
+
+  const getCommentStats = (comments = []) => ({
+    total: comments.length,
+    pending: comments.filter((comment) => getCommentStatus(comment) === 'pending').length,
+    approved: comments.filter((comment) => getCommentStatus(comment) === 'approved').length,
+    rejected: comments.filter((comment) => getCommentStatus(comment) === 'rejected').length,
+  })
 
   return (
     <>
@@ -208,11 +254,27 @@ export default function AdminBlogs() {
                       {blog.category} - {blog.author?.firstName} {blog.author?.lastName} - {blog.views || 0} views
                     </p>
                     <p className="text-sm text-slate-600 dark:text-slate-300 max-w-3xl">{blog.excerpt || 'No excerpt yet.'}</p>
+                    <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500">
+                      <span>{getCommentStats(blog.comments).total} comments</span>
+                      {getCommentStats(blog.comments).pending > 0 && (
+                        <span className="rounded-full bg-amber-100 px-2 py-0.5 font-semibold text-amber-700 dark:bg-amber-900/20 dark:text-amber-300">
+                          {getCommentStats(blog.comments).pending} pending
+                        </span>
+                      )}
+                      {getCommentStats(blog.comments).approved > 0 && (
+                        <span className="rounded-full bg-green-100 px-2 py-0.5 font-semibold text-green-700 dark:bg-green-900/20 dark:text-green-300">
+                          {getCommentStats(blog.comments).approved} approved
+                        </span>
+                      )}
+                    </div>
                     {!!blog.relatedPosts?.length && (
                       <p className="text-xs text-slate-500">Related posts: {blog.relatedPosts.map((post) => post.title).join(', ')}</p>
                     )}
                   </div>
                   <div className="flex items-center gap-2">
+                    <Button variant="outline" size="sm" onClick={() => setCommentBlog(blog)}>
+                      Comments
+                    </Button>
                     <Button variant="outline" size="sm" onClick={() => openEdit(blog)}>
                       <HiPencil className="w-4 h-4" />
                       Edit
@@ -337,6 +399,84 @@ export default function AdminBlogs() {
         confirmLabel="Delete"
         isLoading={deleteMutation.isPending}
       />
+
+      <Modal isOpen={!!commentBlog} onClose={() => setCommentBlog(null)} title={commentBlog ? `Comments - ${commentBlog.title}` : 'Comments'} size="xl">
+        <div className="p-6 space-y-5">
+          {commentBlog && (
+            <div className="flex flex-wrap gap-2">
+              <Badge variant="gray">{getCommentStats(commentBlog.comments).total} total</Badge>
+              <Badge variant="warning">{getCommentStats(commentBlog.comments).pending} pending</Badge>
+              <Badge variant="success">{getCommentStats(commentBlog.comments).approved} approved</Badge>
+              <Badge variant="danger">{getCommentStats(commentBlog.comments).rejected} rejected</Badge>
+            </div>
+          )}
+
+          {!commentBlog?.comments?.length ? (
+            <EmptyState title="No comments yet" description="This blog has not received any user comments so far." />
+          ) : (
+            <div className="space-y-4">
+              {commentBlog.comments
+                .slice()
+                .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+                .map((comment) => {
+                  const status = getCommentStatus(comment)
+                  const displayName = comment.user?.firstName
+                    ? `${comment.user.firstName} ${comment.user.lastName || ''}`.trim()
+                    : comment.name || 'User'
+
+                  return (
+                    <div key={comment._id} className="rounded-2xl border border-slate-200 bg-slate-50/70 p-5 dark:border-slate-700 dark:bg-slate-900/30">
+                      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                        <div className="space-y-2">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <p className="font-semibold text-slate-900 dark:text-white">{displayName}</p>
+                            <Badge variant={COMMENT_STATUS_VARIANTS[status] || 'gray'}>{status}</Badge>
+                          </div>
+                          <p className="text-xs text-slate-500">
+                            {comment.email || comment.user?.email || 'No email'} - {new Date(comment.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                          </p>
+                          <p className="whitespace-pre-wrap text-sm leading-7 text-slate-600 dark:text-slate-300">{comment.content}</p>
+                        </div>
+                        <div className="flex flex-wrap gap-2 lg:justify-end">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => commentStatusMutation.mutate({ blogId: commentBlog._id, commentId: comment._id, status: 'approved' })}
+                            disabled={commentStatusMutation.isPending || status === 'approved'}
+                            className="border-green-200 text-green-700 hover:bg-green-50 dark:border-green-900/40 dark:text-green-300 dark:hover:bg-green-900/20"
+                          >
+                            <HiCheck className="w-4 h-4" />
+                            Approve
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => commentStatusMutation.mutate({ blogId: commentBlog._id, commentId: comment._id, status: 'rejected' })}
+                            disabled={commentStatusMutation.isPending || status === 'rejected'}
+                            className="border-amber-200 text-amber-700 hover:bg-amber-50 dark:border-amber-900/40 dark:text-amber-300 dark:hover:bg-amber-900/20"
+                          >
+                            <HiX className="w-4 h-4" />
+                            Reject
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => deleteCommentMutation.mutate({ blogId: commentBlog._id, commentId: comment._id })}
+                            disabled={deleteCommentMutation.isPending}
+                            className="border-red-200 text-red-600 hover:bg-red-50 dark:border-red-900/40 dark:text-red-400 dark:hover:bg-red-900/20"
+                          >
+                            <HiTrash className="w-4 h-4" />
+                            Delete
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+            </div>
+          )}
+        </div>
+      </Modal>
     </>
   )
 }

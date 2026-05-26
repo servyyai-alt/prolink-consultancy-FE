@@ -32,7 +32,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
               toastOptions={{
                 duration: 4000,
                 style: { background: '#1d1613', color: '#f5efe8', borderRadius: '14px', border: '1px solid #3b2c27' },
-                success: { iconTheme: { primary: '#f3bc2f', secondary: '#1d1613' } },
+                success: { iconTheme: { primary: '#22c55e', secondary: '#1d1613' } },
                 error:   { iconTheme: { primary: '#ef4444', secondary: '#fff' } },
               }}
             />

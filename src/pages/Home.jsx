@@ -16,7 +16,7 @@ import {
   HiStar,
   HiPhone,
 } from "react-icons/hi";
-import { jobAPI } from "../services/api";
+import { jobAPI, testimonialAPI } from "../services/api";
 import HeroSection from "../assets/video/herosection.mp4";
 
 /* ─── Data ─── */
@@ -99,6 +99,14 @@ const TESTIMONIALS = [
   },
 ];
 
+const getInitials = (name = "") =>
+  name
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join("") || "?";
+
 /* ─── Animation wrapper ─── */
 function Reveal({ children, delay = 0, className = "" }) {
   const { ref, inView } = useInView({ triggerOnce: true, threshold: 0.1 });
@@ -135,6 +143,23 @@ export default function Home() {
     staleTime: 5 * 60 * 1000,
   });
   const featuredJobs = data?.data?.data || [];
+
+  const { data: testimonialData } = useQuery({
+    queryKey: ["home-testimonials"],
+    queryFn: () => testimonialAPI.getTestimonials({ limit: 3 }),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const approvedTestimonials = testimonialData?.data?.data?.length
+    ? testimonialData.data.data
+    : TESTIMONIALS.map((item) => ({
+        _id: item.name,
+        name: item.name,
+        content: item.quote,
+        rating: 5,
+        avatar: null,
+        designation: item.role,
+      }));
 
   return (
     <>
@@ -733,48 +758,161 @@ export default function Home() {
           TESTIMONIALS
       ════════════════════════════════════════ */}
       <section className="section-padding bg-white dark:bg-[#100c08]">
+      
         <div className="page-container">
-          <Reveal>
-            <div className="text-center mb-14">
-              <SectionLabel>Client Reactions</SectionLabel>
-              <h2
-                className="text-4xl font-bold text-stone-900 dark:text-white"
-                style={{ fontFamily: "'Georgia', serif" }}
-              >
-                The polish that makes people say "wow" before the first call.
-              </h2>
-            </div>
-          </Reveal>
 
-          <div className="grid md:grid-cols-3 gap-6">
-            {TESTIMONIALS.map((t, i) => (
-              <Reveal key={t.name} delay={i * 0.09}>
-                <div className="rounded-2xl border border-stone-200 dark:border-stone-800 bg-stone-50 dark:bg-[#1a1108] p-8 flex flex-col">
-                  {/* Stars */}
-                  <div className="flex gap-1 mb-5">
-                    {[...Array(5)].map((_, j) => (
-                      <HiStar key={j} className="w-4 h-4 text-amber-400" />
-                    ))}
+    {/* SECTION HEADER */}
+         <Reveal>
+         <div className="mb-14 flex flex-col items-center justify-center text-center">
+
+        <SectionLabel>
+          Client Reactions
+        </SectionLabel>
+
+        <h2
+          className="text-4xl font-bold text-stone-900 dark:text-white"
+          style={{ fontFamily: "'Georgia', serif" }}
+        >
+          The polish that makes people say{" "}
+          <span className="bg-gradient-to-r from-[#8B2A0F] to-amber-600 bg-clip-text text-transparent">
+            "wow"
+          </span>{" "}
+          before the first call.
+        </h2>
+
+        <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-stone-500 dark:text-stone-400">
+          Trusted by businesses and professionals across industries for quality hiring,
+          verification, and consultancy services.
+        </p>
+
+        <Link
+         to="/testimonials"
+         className="group mt-6 inline-flex items-center gap-2 rounded-full border border-stone-300        dark:border-stone-700 bg-white/80 dark:bg-[#1a1108] px-5 py-2.5 text-sm font-semibold        text-stone-700 dark:text-stone-200 transition-all duration-300 hover:-translate-y-0.5        hover:border-[#8B2A0F] hover:text-[#8B2A0F] dark:hover:text-amber-400 hover:shadow-lg"
+       >
+         View All Testimonials
+       
+         <HiArrowRight className="h-4 w-4 transition-transform duration-300        group-hover:translate-x-1" />
+       </Link>
+
+         </div>
+         </Reveal>
+     
+         {/* TESTIMONIAL GRID */}
+         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
+
+         {approvedTestimonials &&
+         approvedTestimonials.length > 0 ? (
+
+        approvedTestimonials.map((testimonial, i) => (
+
+          <Reveal
+            key={testimonial._id || testimonial.name || i}
+            delay={i * 0.08}
+          >
+
+            <div className="group relative flex h-full flex-col overflow-hidden rounded-3xl border border-stone-200/80 bg-stone-50/90 p-8 shadow-sm backdrop-blur-sm transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl dark:border-stone-800 dark:bg-[#1a1108]/90">
+
+              {/* GLOW EFFECT */}
+              <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-[#8B2A0F]/10 blur-3xl transition-all duration-500 group-hover:bg-[#8B2A0F]/20" />
+
+              <div className="absolute -bottom-10 -left-10 h-32 w-32 rounded-full bg-amber-500/10 blur-3xl transition-all duration-500 group-hover:bg-amber-500/20" />
+
+              {/* TOP BORDER */}
+              <div className="absolute left-0 top-0 h-1 w-0 bg-gradient-to-r from-[#8B2A0F] to-amber-500 transition-all duration-500 group-hover:w-full" />
+
+              {/* STARS */}
+              <div className="relative z-10 mb-5 flex gap-1">
+
+                {[...Array(testimonial.rating || 5)].map(
+                  (_, j) => (
+                    <HiStar
+                      key={j}
+                      className="h-4 w-4 text-amber-400"
+                    />
+                  )
+                )}
+
+              </div>
+
+              {/* CONTENT */}
+              <p className="relative z-10 mb-7 flex-1 text-[15px] italic leading-relaxed text-stone-700 dark:text-stone-300">
+                "{testimonial.content}"
+              </p>
+
+              {/* USER INFO */}
+              <div className="relative z-10 flex items-center gap-3 border-t border-stone-200 pt-5 dark:border-stone-800">
+
+                {/* AVATAR */}
+                {testimonial.avatar?.url ? (
+
+                  <div className="relative">
+
+                    <img
+                      src={testimonial.avatar.url}
+                      alt={testimonial.name}
+                      className="h-12 w-12 rounded-2xl object-cover border-2 border-white shadow-md dark:border-stone-700"
+                    />
+
+                    <div className="absolute inset-0 rounded-2xl ring-2 ring-[#8B2A0F]/10 group-hover:ring-[#8B2A0F]/30 transition-all duration-500" />
+
                   </div>
-                  <p className="text-stone-700 dark:text-stone-300 leading-relaxed flex-1 mb-7 italic">
-                    "{t.quote}"
+
+                ) : (
+
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-[#8B2A0F] to-[#5c1c09] text-sm font-bold text-white shadow-lg flex-shrink-0 transition-transform duration-500 group-hover:scale-105">
+
+                    {getInitials(testimonial.name)}
+
+                  </div>
+
+                )}
+
+                {/* NAME + DESIGNATION */}
+                <div className="flex-1">
+
+                  <p className="font-bold text-stone-900 dark:text-white">
+                    {testimonial.name}
                   </p>
-                  <div className="flex items-center gap-3 border-t border-stone-200 dark:border-stone-800 pt-5">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#8B2A0F] to-[#5c1c09] flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
-                      {t.initials}
-                    </div>
-                    <div>
-                      <p className="font-bold text-sm text-stone-900 dark:text-white">
-                        {t.name}
-                      </p>
-                      <p className="text-xs text-stone-400 mt-0.5">{t.role}</p>
-                    </div>
-                  </div>
+
+                  <p className="mt-0.5 text-xs leading-relaxed text-stone-400">
+
+                    {[
+                      testimonial.designation,
+                      testimonial.company,
+                    ]
+                      .filter(Boolean)
+                      .join(" · ") || "ProLink Client"}
+
+                  </p>
+
                 </div>
-              </Reveal>
-            ))}
-          </div>
+
+              </div>
+
+              {/* BOTTOM BORDER */}
+              <div className="absolute bottom-0 left-0 h-1 w-0 bg-gradient-to-r from-[#8B2A0F] to-amber-500 transition-all duration-500 group-hover:w-full" />
+
+            </div>
+
+          </Reveal>
+        ))
+
+         ) : (
+
+        <div className="col-span-full py-16 text-center">
+
+          <p className="text-stone-500 dark:text-stone-400">
+            No testimonials available at the moment.
+          </p>
+
         </div>
+
+      )}
+
+         </div>
+      
+        </div>
+      
       </section>
 
       {/* ════════════════════════════════════════

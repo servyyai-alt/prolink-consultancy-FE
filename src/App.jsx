@@ -4,6 +4,9 @@ import { useDispatch, useSelector } from 'react-redux'
 import { getMe } from './redux/slices/authSlice'
 import { selectTheme } from './redux/slices/uiSlice'
 import { selectIsLoggedIn, selectRole } from './redux/slices/authSlice'
+import { setNotifications } from './redux/slices/notificationSlice'
+import { notificationAPI } from './services/api'
+import { useSocket } from './hooks'
 import PublicLayout from './components/layouts/PublicLayout'
 import DashboardLayout from './components/layouts/DashboardLayout'
 import AdminLayout from './components/layouts/AdminLayout'
@@ -24,6 +27,7 @@ const CvWriting     = lazy(() => import('./pages/CvWriting'))
 const CampusDrive   = lazy(() => import('./pages/CampusDrive'))
 const Events        = lazy(() => import('./pages/Events'))
 const Catering      = lazy(() => import('./pages/Catering'))
+const Testimonials  = lazy(() => import('./pages/Testimonials'))
 const Terms         = lazy(() => import('./pages/Terms'))
 const Privacy       = lazy(() => import('./pages/Privacy'))
 
@@ -41,6 +45,7 @@ const JSProfile     = lazy(() => import('./pages/jobseeker/Profile'))
 const JSApplications= lazy(() => import('./pages/jobseeker/Applications'))
 const JSSavedJobs   = lazy(() => import('./pages/jobseeker/SavedJobs'))
 const JSInterviews  = lazy(() => import('./pages/jobseeker/Interviews'))
+const ContactRequests = lazy(() => import('./pages/ContactRequests'))
 
 // Employer Dashboard
 const EmpOverview   = lazy(() => import('./pages/employer/Overview'))
@@ -58,6 +63,7 @@ const AdminApplications = lazy(() => import('./pages/admin/Applications'))
 const AdminContacts = lazy(() => import('./pages/admin/Contacts'))
 const AdminBlogs    = lazy(() => import('./pages/admin/Blogs'))
 const AdminServices = lazy(() => import('./pages/admin/Services'))
+const AdminTeamMembers = lazy(() => import('./pages/admin/TeamMembers'))
 const AdminPayments = lazy(() => import('./pages/admin/Payments'))
 const AdminTestimonials = lazy(() => import('./pages/admin/Testimonials'))
 const SubmitTestimonial = lazy(() => import('./pages/SubmitTestimonial'))
@@ -69,6 +75,7 @@ export default function App() {
   const theme = useSelector(selectTheme)
   const isLoggedIn = useSelector(selectIsLoggedIn)
   const role = useSelector(selectRole)
+  useSocket()
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark')
@@ -76,6 +83,16 @@ export default function App() {
 
   useEffect(() => {
     if (isLoggedIn) dispatch(getMe())
+  }, [dispatch, isLoggedIn])
+
+  useEffect(() => {
+    if (!isLoggedIn) return
+
+    notificationAPI.getAll()
+      .then(({ data }) => {
+        dispatch(setNotifications(data.data || { notifications: [], unreadCount: 0 }))
+      })
+      .catch(() => {})
   }, [dispatch, isLoggedIn])
 
   return (
@@ -96,6 +113,7 @@ export default function App() {
           <Route path="/campus-drive" element={<CampusDrive />} />
           <Route path="/events"    element={<Events />} />
           <Route path="/catering"  element={<Catering />} />
+          <Route path="/testimonials" element={<Testimonials />} />
           <Route path="/terms" element={<Terms />} />
           <Route path="/privacy" element={<Privacy />} />
         </Route>
@@ -108,7 +126,7 @@ export default function App() {
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
         <Route path="/submit-testimonial" element={
-          <ProtectedRoute>
+          <ProtectedRoute allowedRoles={['job_seeker']}>
             <SubmitTestimonial />
           </ProtectedRoute>
         } />
@@ -124,6 +142,7 @@ export default function App() {
           <Route path="applications" element={<JSApplications />} />
           <Route path="saved-jobs"   element={<JSSavedJobs />} />
           <Route path="interviews"   element={<JSInterviews />} />
+          <Route path="contact-requests" element={<ContactRequests />} />
         </Route>
 
         {/* Employer Dashboard */}
@@ -137,6 +156,7 @@ export default function App() {
           <Route path="my-jobs"     element={<EmpMyJobs />} />
           <Route path="applicants"  element={<EmpApplicants />} />
           <Route path="profile"     element={<EmpProfile />} />
+          <Route path="contact-requests" element={<ContactRequests />} />
         </Route>
 
         {/* Admin Panel */}
@@ -154,6 +174,7 @@ export default function App() {
           <Route path="contacts"     element={<AdminContacts />} />
           <Route path="blogs"        element={<AdminBlogs />} />
           <Route path="services"     element={<AdminServices />} />
+          <Route path="team-members" element={<AdminTeamMembers />} />
           <Route path="payments"     element={<AdminPayments />} />
           <Route path="testimonials" element={<AdminTestimonials />} />
         </Route>

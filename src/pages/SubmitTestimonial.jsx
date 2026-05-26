@@ -5,13 +5,14 @@ import { useFormik } from 'formik'
 import * as Yup from 'yup'
 import { testimonialAPI } from '../services/api'
 import { useSelector } from 'react-redux'
-import { selectIsLoggedIn, selectUser } from '../redux/slices/authSlice'
+import { selectIsLoggedIn, selectRole, selectUser } from '../redux/slices/authSlice'
 import ProtectedRoute from '../routes/ProtectedRoute'
 import toast from 'react-hot-toast'
 
 export default function SubmitTestimonial() {
   const navigate = useNavigate()
   const isLoggedIn = useSelector(selectIsLoggedIn)
+  const role = useSelector(selectRole)
   const user = useSelector(selectUser)
 
   const formik = useFormik({
@@ -38,10 +39,12 @@ export default function SubmitTestimonial() {
     },
   })
 
-  if (!isLoggedIn) return <ProtectedRoute><div /></ProtectedRoute>
+  if (!isLoggedIn || role !== 'job_seeker') {
+    return <ProtectedRoute allowedRoles={['job_seeker']}><div /></ProtectedRoute>
+  }
 
   return (
-    <ProtectedRoute>
+    <ProtectedRoute allowedRoles={['job_seeker']}>
       <div className="max-w-2xl mx-auto py-12">
         <Helmet><title>Submit Testimonial | ProLink</title></Helmet>
         <h1 className="text-2xl font-display font-bold mb-3">Share your feedback</h1>

@@ -248,7 +248,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import {
   HiViewGrid, HiUser, HiBriefcase, HiBookmark, HiCalendar,
   HiLogout, HiMenu, HiX, HiBell, HiSun, HiMoon,
-  HiPlusCircle, HiClipboardList, HiUserGroup,
+  HiPlusCircle, HiClipboardList, HiUserGroup, HiChatAlt2,
 } from 'react-icons/hi'
 import { logoutUser, selectUser } from '../../redux/slices/authSlice'
 import { toggleTheme, selectTheme } from '../../redux/slices/uiSlice'
@@ -263,6 +263,7 @@ const JOB_SEEKER_NAV = [
   { to: '/dashboard/applications',icon: HiBriefcase,    label: 'Applications' },
   { to: '/dashboard/saved-jobs',  icon: HiBookmark,     label: 'Saved Jobs' },
   { to: '/dashboard/interviews',  icon: HiCalendar,     label: 'Interviews' },
+  { to: '/dashboard/contact-requests', icon: HiChatAlt2, label: 'Support Requests' },
 ]
 const EMPLOYER_NAV = [
   { to: '/employer',              icon: HiViewGrid,     label: 'Overview',     end: true },
@@ -270,6 +271,7 @@ const EMPLOYER_NAV = [
   { to: '/employer/my-jobs',      icon: HiBriefcase,    label: 'My Jobs' },
   { to: '/employer/applicants',   icon: HiUserGroup,    label: 'Applicants' },
   { to: '/employer/profile',      icon: HiUser,         label: 'Company Profile' },
+  { to: '/employer/contact-requests', icon: HiChatAlt2, label: 'Support Requests' },
 ]
 
 export default function DashboardLayout({ variant = 'jobseeker' }) {
@@ -391,7 +393,7 @@ export default function DashboardLayout({ variant = 'jobseeker' }) {
           </button>
           <div className="flex-1" />
           <div className="flex items-center gap-2">
-            <Link to={variant === 'employer' ? '/employer/applicants' : '/dashboard/applications'}
+            <Link to={variant === 'employer' ? '/employer/contact-requests' : '/dashboard/contact-requests'}
               className="relative p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800">
               <HiBell className="w-5 h-5" />
               {unread > 0 && (

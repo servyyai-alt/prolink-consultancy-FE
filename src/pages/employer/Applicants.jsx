@@ -3,14 +3,18 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Helmet } from 'react-helmet-async'
 import { useSearchParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { HiSearch, HiDownload, HiCalendar, HiEye } from 'react-icons/hi'
+import { HiSearch, HiDownload, HiCalendar, HiCheckCircle } from 'react-icons/hi'
 import { applicationAPI, jobAPI } from '../../services/api'
-import { Pagination, Badge, Modal, EmptyState } from '../../components/ui/index'
+import { Pagination, Badge, Modal, EmptyState, Button } from '../../components/ui/index'
 import toast from 'react-hot-toast'
-
-const STATUS_COLOR = { applied:'primary', screening:'warning', shortlisted:'success', interview_scheduled:'purple', offered:'success', hired:'success', rejected:'danger', withdrawn:'gray' }
-const STATUS_LABEL = { applied:'Applied', screening:'Screening', shortlisted:'Shortlisted', interview_scheduled:'Interview Scheduled', offered:'Offered', hired:'Hired', rejected:'Rejected', withdrawn:'Withdrawn' }
-const NEXT_STATUSES = { applied:['screening','rejected'], screening:['shortlisted','rejected'], shortlisted:['interview_scheduled','rejected'], interview_scheduled:['offered','rejected'], offered:['hired','rejected'] }
+import {
+  APPLICATION_NEXT_STATUSES,
+  APPLICATION_STATUS_DESCRIPTIONS,
+  APPLICATION_STATUS_LABELS,
+  APPLICATION_STATUS_VARIANTS,
+  getApplicationProgress,
+  getApplicationStatusLabel,
+} from '../../constants/applicationStatus'
 
 export default function EmpApplicants() {
   const [searchParams] = useSearchParams()
@@ -18,6 +22,8 @@ export default function EmpApplicants() {
   const [page, setPage] = useState(1)
   const [status, setStatus] = useState('')
   const [selected, setSelected] = useState(null)
+  const [statusModal, setStatusModal] = useState(null)
+  const [statusNote, setStatusNote] = useState('')
   const [scheduleModal, setScheduleModal] = useState(null)
   const [interview, setInterview] = useState({ scheduledAt:'', type:'video', link:'', notes:'' })
   const qc = useQueryClient()
@@ -40,8 +46,10 @@ export default function EmpApplicants() {
     mutationFn: ({ id, status, note }) => applicationAPI.updateStatus(id, { status, note }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['job-applicants'] })
-      toast.success('Status updated')
+      toast.success('Candidate status updated')
       setSelected(null)
+      setStatusModal(null)
+      setStatusNote('')
     },
     onError: (err) => toast.error(err?.response?.data?.message || 'Update failed'),
   })
@@ -56,6 +64,16 @@ export default function EmpApplicants() {
     },
     onError: (err) => toast.error(err?.response?.data?.message || 'Failed to schedule'),
   })
+
+  const openStatusModal = (application, nextStatus) => {
+    if (nextStatus === 'interview_scheduled') {
+      setScheduleModal(application._id)
+      return
+    }
+
+    setStatusModal({ application, nextStatus })
+    setStatusNote('')
+  }
 
   return (
     <>
@@ -77,7 +95,7 @@ export default function EmpApplicants() {
             className="input-field sm:w-48 text-sm">
             <option value="">All Statuses</option>
             {['applied','screening','shortlisted','interview_scheduled','offered','hired','rejected'].map(s => (
-              <option key={s} value={s}>{STATUS_LABEL[s]}</option>
+              <option key={s} value={s}>{APPLICATION_STATUS_LABELS[s]}</option>
             ))}
           </select>
         </div>
@@ -103,7 +121,16 @@ export default function EmpApplicants() {
                         <p className="font-bold text-slate-900 dark:text-white">{app.applicant?.firstName} {app.applicant?.lastName}</p>
                         <p className="text-sm text-slate-500">{app.applicant?.profile?.headline || app.applicant?.email}</p>
                       </div>
-                      <Badge variant={STATUS_COLOR[app.status]||'gray'} className="capitalize flex-shrink-0">{STATUS_LABEL[app.status] || app.status?.replace(/_/g,' ')}</Badge>
+                      <Badge variant={APPLICATION_STATUS_VARIANTS[app.status]||'gray'} className="capitalize flex-shrink-0">{getApplicationStatusLabel(app.status)}</Badge>
+                    </div>
+                    <div className="mt-3 rounded-xl border border-slate-100 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-900/40">
+                      <div className="flex items-center justify-between gap-3 text-xs font-semibold text-slate-500">
+                        <span>{APPLICATION_STATUS_DESCRIPTIONS[app.status] || 'Status update available.'}</span>
+                        <span>{getApplicationProgress(app.status)}%</span>
+                      </div>
+                      <div className="mt-2 h-2 overflow-hidden rounded-full bg-white dark:bg-slate-800">
+                        <div className="h-full rounded-full bg-primary-600" style={{ width: `${getApplicationProgress(app.status)}%` }} />
+                      </div>
                     </div>
                     {app.applicant?.profile?.skills?.length > 0 && (
                       <div className="flex flex-wrap gap-1.5 mt-2">
@@ -119,19 +146,18 @@ export default function EmpApplicants() {
                           <HiDownload className="w-3.5 h-3.5" /> Resume
                         </a>
                       )}
-                      {NEXT_STATUSES[app.status]?.includes('interview_scheduled') && (
-                        <button onClick={() => setScheduleModal(app._id)}
-                          className="flex items-center gap-1 text-xs font-semibold text-purple-600 bg-purple-50 dark:bg-purple-900/20 px-3 py-1.5 rounded-full hover:bg-purple-100 transition-colors">
-                          <HiCalendar className="w-3.5 h-3.5" /> Schedule Interview
-                        </button>
-                      )}
-                      {NEXT_STATUSES[app.status]?.filter(s => s !== 'interview_scheduled').map(nextStatus => (
-                        <button key={nextStatus} onClick={() => statusMutation.mutate({ id: app._id, status: nextStatus })}
+                      {APPLICATION_NEXT_STATUSES[app.status]?.map(nextStatus => (
+                        <button key={nextStatus} onClick={() => openStatusModal(app, nextStatus)}
                           className={`text-xs font-semibold px-3 py-1.5 rounded-full transition-colors capitalize ${
                             nextStatus === 'rejected' ? 'text-red-600 bg-red-50 hover:bg-red-100 dark:bg-red-900/20' :
+                            nextStatus === 'interview_scheduled' ? 'text-purple-600 bg-purple-50 hover:bg-purple-100 dark:bg-purple-900/20' :
                             'text-green-600 bg-green-50 hover:bg-green-100 dark:bg-green-900/20'
                           }`}>
-                          Move to {STATUS_LABEL[nextStatus] || nextStatus.replace(/_/g,' ')}
+                          {nextStatus === 'interview_scheduled' ? (
+                            <span className="inline-flex items-center gap-1"><HiCalendar className="w-3.5 h-3.5" /> Schedule Interview</span>
+                          ) : (
+                            <>Move to {getApplicationStatusLabel(nextStatus)}</>
+                          )}
                         </button>
                       ))}
                     </div>
@@ -143,6 +169,52 @@ export default function EmpApplicants() {
         )}
         {pagination && <Pagination currentPage={page} totalPages={pagination.totalPages} onPageChange={setPage} />}
       </div>
+
+      <Modal isOpen={!!statusModal} onClose={() => setStatusModal(null)} title="Update Candidate Status" size="md">
+        {statusModal && (
+          <div className="space-y-5 p-6">
+            <div className="rounded-2xl bg-slate-50 p-4 dark:bg-slate-900/50">
+              <p className="text-sm font-semibold text-slate-900 dark:text-white">
+                {statusModal.application.applicant?.firstName} {statusModal.application.applicant?.lastName}
+              </p>
+              <p className="mt-1 text-sm text-slate-500">{statusModal.application.applicant?.email}</p>
+              <div className="mt-4 flex flex-wrap items-center gap-2 text-sm">
+                <Badge variant={APPLICATION_STATUS_VARIANTS[statusModal.application.status] || 'gray'}>
+                  {getApplicationStatusLabel(statusModal.application.status)}
+                </Badge>
+                <span className="text-slate-400">to</span>
+                <Badge variant={APPLICATION_STATUS_VARIANTS[statusModal.nextStatus] || 'gray'}>
+                  {getApplicationStatusLabel(statusModal.nextStatus)}
+                </Badge>
+              </div>
+            </div>
+
+            <div>
+              <label className="label">Update note for candidate</label>
+              <textarea
+                value={statusNote}
+                onChange={(event) => setStatusNote(event.target.value)}
+                rows={4}
+                placeholder="Example: We reviewed your profile and would like to move you to the next hiring stage."
+                className="input-field resize-none"
+              />
+              <p className="mt-1 text-xs text-slate-500">This note is visible in the candidate timeline.</p>
+            </div>
+
+            <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+              <Button type="button" variant="ghost" onClick={() => setStatusModal(null)}>Cancel</Button>
+              <Button
+                type="button"
+                onClick={() => statusMutation.mutate({ id: statusModal.application._id, status: statusModal.nextStatus, note: statusNote })}
+                isLoading={statusMutation.isPending}
+              >
+                <HiCheckCircle className="h-4 w-4" />
+                Confirm Update
+              </Button>
+            </div>
+          </div>
+        )}
+      </Modal>
 
       {/* Schedule interview modal */}
       <Modal isOpen={!!scheduleModal} onClose={() => setScheduleModal(null)} title="Schedule Interview" size="md">

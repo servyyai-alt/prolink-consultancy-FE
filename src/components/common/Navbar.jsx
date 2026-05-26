@@ -5,9 +5,9 @@ import { useQuery } from '@tanstack/react-query'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   HiMenu, HiX, HiChevronDown, HiBell, HiMoon, HiSun,
-  HiUser, HiLogout, HiViewGrid, HiPhone, HiMail,
+  HiUser, HiLogout, HiViewGrid, HiPhone, HiMail, HiChatAlt2,
 } from 'react-icons/hi'
-import { selectIsLoggedIn, selectUser, logoutUser } from '../../redux/slices/authSlice'
+import { selectIsLoggedIn, selectUser, selectRole, logoutUser } from '../../redux/slices/authSlice'
 import { toggleTheme, selectTheme } from '../../redux/slices/uiSlice'
 import { selectUnreadCount } from '../../redux/slices/notificationSlice'
 import { serviceAPI } from '../../services/api'
@@ -27,11 +27,12 @@ const fallbackServices = [
 ]
 
 const navLinks = [
-  { label: 'Home',    to: '/' },
-  { label: 'About',   to: '/about' },
-  { label: 'Jobs',    to: '/jobs' },
-  { label: 'Blogs',   to: '/blogs' },
-  { label: 'Contact', to: '/contact' },
+  { label: 'Home',         to: '/' },
+  { label: 'About',        to: '/about' },
+  { label: 'Jobs',         to: '/jobs' },
+  { label: 'Blogs',        to: '/blogs' },
+  { label: 'Testimonials', to: '/testimonials' },
+  { label: 'Contact',      to: '/contact' },
 ]
 
 export default function Navbar() {
@@ -48,8 +49,10 @@ export default function Navbar() {
   const location    = useLocation()
   const isLoggedIn  = useSelector(selectIsLoggedIn)
   const user        = useSelector(selectUser)
+  const role        = useSelector(selectRole)
   const theme       = useSelector(selectTheme)
   const unreadCount = useSelector(selectUnreadCount)
+  const canSubmitTestimonial = role === 'job_seeker'
   const { data } = useQuery({ queryKey: ['services'], queryFn: serviceAPI.getServices })
   const services = data?.data?.data?.services?.length ? data.data.data.services : fallbackServices
 
@@ -86,6 +89,12 @@ export default function Navbar() {
     if (['admin', 'super_admin', 'recruiter'].includes(user.role)) return '/admin'
     if (user.role === 'employer') return '/employer'
     return '/dashboard'
+  }
+
+  const getNotificationLink = () => {
+    if (user?.role === 'employer') return '/employer/contact-requests'
+    if (['admin', 'super_admin', 'recruiter'].includes(user?.role)) return '/admin/contacts'
+    return '/dashboard/contact-requests'
   }
 
   return (
@@ -310,7 +319,7 @@ export default function Navbar() {
               {isLoggedIn ? (
                 <>
                   <Link
-                    to={`${getDashboardLink()}/notifications`}
+                    to={getNotificationLink()}
                     className="relative p-2 rounded-lg text-stone-400 hover:text-stone-700 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
                   >
                     <HiBell className="w-[18px] h-[18px]" />
@@ -354,6 +363,7 @@ export default function Navbar() {
                           {[
                             { icon: HiViewGrid, label: 'Dashboard', to: getDashboardLink() },
                             { icon: HiUser, label: 'My Profile', to: `${getDashboardLink()}/profile` },
+                            ...(canSubmitTestimonial ? [{ icon: HiChatAlt2, label: 'Submit Testimonial', to: '/submit-testimonial' }] : []),
                           ].map(({ icon: Icon, label, to }) => (
                             <Link key={to} to={to} onClick={() => setProfileOpen(false)}
                               className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-stone-700 dark:text-stone-300 hover:text-[#8B2A0F] dark:hover:text-amber-400 hover:bg-amber-50 dark:hover:bg-stone-800 transition-colors">

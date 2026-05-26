@@ -1,8 +1,10 @@
 import { motion } from 'framer-motion'
 import { Helmet } from 'react-helmet-async'
 import { useInView } from 'react-intersection-observer'
+import { useQuery } from '@tanstack/react-query'
 import { FaLinkedin } from 'react-icons/fa'
 import { Target, Eye, Handshake, Rocket, HeartHandshake } from 'lucide-react'
+import { teamMemberAPI } from '../services/api'
 
 
 const TEAM = [
@@ -20,7 +22,7 @@ const VALUES = [
 ]
 
 const TIMELINE = [
-  { year: '2015', title: 'Founded in Chennai', desc: 'ProLink began as a focused recruitment consultancy serving local employers.' },
+  { year: '2015', title: 'Founded in Odisha', desc: 'ProLink began as a focused recruitment consultancy serving local employers.' },
   { year: '2017', title: 'Expanded Pan-India', desc: 'Client partnerships grew across Bengaluru, Hyderabad, Mumbai, and beyond.' },
   { year: '2019', title: 'Stronger Job Consultancy', desc: 'Candidate placement services expanded across more roles and industries.' },
   { year: '2021', title: 'Digital Platform', desc: 'Online hiring workflows made ProLink faster and easier to engage with.' },
@@ -44,6 +46,13 @@ function FadeUp({ children, delay = 0 }) {
 }
 
 export default function About() {
+  const { data } = useQuery({
+    queryKey: ['team-members'],
+    queryFn: () => teamMemberAPI.getTeamMembers(),
+  })
+
+  const teamMembers = data?.data?.data?.teamMembers?.length ? data.data.data.teamMembers : TEAM
+
   return (
     <>
       <Helmet>
@@ -172,36 +181,128 @@ export default function About() {
           </div>
         </section>
 
-        <section className="section-padding bg-slate-50 dark:bg-slate-950">
-          <div className="page-container">
-            <FadeUp>
-              <div className="mb-12 text-center">
-                <h2 className="section-heading">
-                  Meet Our <span className="gradient-text">Team</span>
-                </h2>
-                <p className="section-subheading">The people behind ProLink&apos;s success</p>
-              </div>
-            </FadeUp>
+      <section className="section-padding bg-slate-50 dark:bg-slate-950">
+        <div className="page-container">
 
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-              {TEAM.map(({ name, role, bio }, index) => (
-                <FadeUp key={name} delay={index * 0.08}>
-                  <div className="card group p-6 text-center transition-transform hover:-translate-y-1">
-                    <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-primary-400 to-primary-700 shadow-primary transition-shadow group-hover:shadow-lg">
-                      <span className="text-2xl font-bold text-white">{name[0]}</span>
-                    </div>
-                    <h3 className="font-bold text-slate-900 dark:text-white">{name}</h3>
-                    <p className="mt-0.5 text-sm font-semibold text-primary-600">{role}</p>
-                    <p className="mt-2 text-xs text-slate-500">{bio}</p>
-                    <a href="#" className="mt-3 inline-flex items-center gap-1 text-xs text-blue-600 hover:underline">
-                      <FaLinkedin className="h-3.5 w-3.5" /> LinkedIn
-                    </a>
+    <FadeUp>
+      <div className="mb-14 text-center">
+
+        <span className="mb-4 inline-flex items-center rounded-full border border-primary/20 bg-primary/10 px-4 py-1 text-sm font-semibold text-primary">
+          Our Professionals
+        </span>
+
+        <h2 className="section-heading">
+          Meet Our <span className="gradient-text">Team</span>
+        </h2>
+
+        <p className="section-subheading">
+          The passionate professionals behind ProLink&apos;s success
+        </p>
+
+      </div>
+    </FadeUp>
+
+    <div className="grid grid-cols-1 gap-7 sm:grid-cols-2 lg:grid-cols-4">
+
+      {teamMembers.map(
+        (
+          {
+            _id,
+            name,
+            role,
+            bio,
+            linkedinUrl,
+            image,
+          },
+          index
+        ) => (
+
+          <FadeUp
+            key={_id || `${name}-${index}`}
+            delay={index * 0.08}
+          >
+
+            <div className="group relative overflow-hidden rounded-3xl border border-slate-200/70 bg-white/80 backdrop-blur-xl p-6 shadow-sm transition-all duration-500 hover:-translate-y-3 hover:shadow-2xl dark:border-slate-800 dark:bg-slate-900/70">
+
+              {/* PRIMARY GLOW */}
+              <div className="absolute -top-10 -right-10 h-36 w-36 rounded-full bg-primary/10 blur-3xl transition-all duration-500 group-hover:bg-primary/20" />
+
+              {/* SECONDARY GLOW */}
+              <div className="absolute -bottom-10 -left-10 h-36 w-36 rounded-full bg-blue-500/10 blur-3xl transition-all duration-500 group-hover:bg-blue-500/20" />
+
+              {/* SHINE EFFECT */}
+              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 bg-gradient-to-tr from-transparent via-white/10 to-transparent" />
+
+              {/* TOP BORDER */}
+              <div className="absolute left-0 top-0 h-1 w-0 bg-gradient-to-r from-primary via-blue-500 to-primary transition-all duration-500 group-hover:w-full" />
+
+              <div className="relative z-10 text-center">
+
+                {/* IMAGE */}
+                {image?.url ? (
+                  <div className="relative mx-auto mb-5 w-fit">
+
+                    <img
+                      src={image.url}
+                      alt={name}
+                      className="h-24 w-24 rounded-3xl object-cover border-4 border-white dark:border-slate-800 shadow-xl transition-all duration-500 group-hover:scale-105 group-hover:shadow-primary"
+                    />
+
+                    <div className="absolute inset-0 rounded-3xl ring-2 ring-primary/20 transition-all duration-500 group-hover:ring-primary/40" />
+
                   </div>
-                </FadeUp>
-              ))}
+                ) : (
+                  <div className="relative mx-auto mb-5 flex h-24 w-24 items-center justify-center rounded-3xl bg-gradient-to-br from-primary-500 to-primary-700 shadow-xl transition-all duration-500 group-hover:scale-105 group-hover:shadow-primary">
+
+                    <span className="text-3xl font-bold text-white">
+                      {name[0]}
+                    </span>
+
+                  </div>
+                )}
+
+                {/* NAME */}
+                <h3 className="text-xl font-bold text-slate-900 transition-colors duration-300 group-hover:text-primary dark:text-white">
+                  {name}
+                </h3>
+
+                {/* ROLE */}
+                <div className="mt-3 inline-flex items-center rounded-full border border-primary/20 bg-primary/10 px-4 py-1 text-xs font-semibold tracking-wide text-primary dark:border-primary/30 dark:bg-primary/20">
+                  {role}
+                </div>
+
+                {/* BIO */}
+                <p className="mt-4 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+                  {bio}
+                </p>
+
+                {/* LINKEDIN BUTTON */}
+                {linkedinUrl ? (
+                  <a
+                    href={linkedinUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="mt-6 inline-flex items-center gap-2 rounded-2xl border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-600 transition-all duration-300 hover:-translate-y-0.5 hover:bg-blue-100 hover:shadow-md dark:border-blue-500/20 dark:bg-blue-500/10 dark:text-blue-400 dark:hover:bg-blue-500/20"
+                  >
+                    <FaLinkedin className="h-4 w-4" />
+                    Connect
+                  </a>
+                ) : null}
+
+              </div>
+
+              {/* BOTTOM BORDER */}
+              <div className="absolute bottom-0 left-0 h-1 w-0 bg-gradient-to-r from-primary via-blue-500 to-primary transition-all duration-500 group-hover:w-full" />
+
             </div>
-          </div>
-        </section>
+
+          </FadeUp>
+        )
+      )}
+
+    </div>
+        </div>
+      </section>
       </div>
     </>
   )

@@ -1,43 +1,25 @@
 import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Helmet } from 'react-helmet-async'
-import { HiBriefcase, HiCalendar, HiSearch, HiUserGroup } from 'react-icons/hi'
+import { HiBriefcase, HiCalendar, HiCheckCircle, HiSearch, HiUserGroup } from 'react-icons/hi'
 import { adminAPI, applicationAPI } from '../../services/api'
-import { Badge, EmptyState, Modal, Pagination } from '../../components/ui/index'
+import { Badge, Button, EmptyState, Modal, Pagination } from '../../components/ui/index'
 import toast from 'react-hot-toast'
-
-const STATUS_VARIANTS = {
-  applied: 'primary',
-  screening: 'warning',
-  shortlisted: 'teal',
-  interview_scheduled: 'purple',
-  offered: 'success',
-  hired: 'success',
-  rejected: 'danger',
-  withdrawn: 'gray',
-}
-const STATUS_LABELS = {
-  applied: 'Applied',
-  screening: 'Screening',
-  shortlisted: 'Shortlisted',
-  interview_scheduled: 'Interview Scheduled',
-  offered: 'Offered',
-  hired: 'Hired',
-  rejected: 'Rejected',
-  withdrawn: 'Withdrawn',
-}
-const NEXT_STATUSES = {
-  applied: ['screening', 'rejected'],
-  screening: ['shortlisted', 'rejected'],
-  shortlisted: ['interview_scheduled', 'rejected'],
-  interview_scheduled: ['offered', 'rejected'],
-  offered: ['hired', 'rejected'],
-}
+import {
+  APPLICATION_NEXT_STATUSES,
+  APPLICATION_STATUS_DESCRIPTIONS,
+  APPLICATION_STATUS_LABELS,
+  APPLICATION_STATUS_VARIANTS,
+  getApplicationProgress,
+  getApplicationStatusLabel,
+} from '../../constants/applicationStatus'
 
 export default function AdminApplications() {
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState('')
   const [status, setStatus] = useState('')
+  const [statusModal, setStatusModal] = useState(null)
+  const [statusNote, setStatusNote] = useState('')
   const [scheduleModal, setScheduleModal] = useState(null)
   const [interview, setInterview] = useState({ scheduledAt: '', type: 'video', link: '', notes: '' })
   const qc = useQueryClient()
@@ -52,13 +34,25 @@ export default function AdminApplications() {
   const pagination = data?.data?.pagination
 
   const statusMutation = useMutation({
-    mutationFn: ({ id, nextStatus }) => applicationAPI.updateStatus(id, { status: nextStatus }),
+    mutationFn: ({ id, nextStatus, note }) => applicationAPI.updateStatus(id, { status: nextStatus, note }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['admin-applications'] })
-      toast.success('Application status updated')
+      toast.success('Candidate status updated')
+      setStatusModal(null)
+      setStatusNote('')
     },
     onError: (err) => toast.error(err?.response?.data?.message || 'Status update failed'),
   })
+
+  const openStatusModal = (application, nextStatus) => {
+    if (nextStatus === 'interview_scheduled') {
+      setScheduleModal(application._id)
+      return
+    }
+
+    setStatusModal({ application, nextStatus })
+    setStatusNote('')
+  }
 
   const interviewMutation = useMutation({
     mutationFn: ({ id, ...payload }) => applicationAPI.scheduleInterview(id, payload),
@@ -96,8 +90,8 @@ export default function AdminApplications() {
             className="px-4 py-2.5 bg-slate-50 dark:bg-slate-700 rounded-xl text-sm text-slate-700 dark:text-slate-200 border-none outline-none font-medium"
           >
             <option value="">All statuses</option>
-            {Object.keys(STATUS_VARIANTS).map((value) => (
-              <option key={value} value={value}>{STATUS_LABELS[value]}</option>
+            {Object.keys(APPLICATION_STATUS_VARIANTS).map((value) => (
+              <option key={value} value={value}>{APPLICATION_STATUS_LABELS[value]}</option>
             ))}
           </select>
         </div>
@@ -121,8 +115,8 @@ export default function AdminApplications() {
                         <h3 className="font-semibold text-slate-900 dark:text-white">
                           {application.applicant?.firstName} {application.applicant?.lastName}
                         </h3>
-                        <Badge variant={STATUS_VARIANTS[application.status] || 'gray'}>
-                          {STATUS_LABELS[application.status] || application.status.replaceAll('_', ' ')}
+                        <Badge variant={APPLICATION_STATUS_VARIANTS[application.status] || 'gray'}>
+                          {getApplicationStatusLabel(application.status)}
                         </Badge>
                       </div>
                       <div className="flex flex-wrap gap-4 text-sm text-slate-500">
@@ -136,6 +130,19 @@ export default function AdminApplications() {
                     </div>
                     <div className="text-sm text-slate-500">
                       Applied {new Date(application.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                    </div>
+                  </div>
+
+                  <div className="rounded-xl border border-slate-100 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-900/40">
+                    <div className="flex items-center justify-between gap-3 text-xs font-semibold text-slate-500">
+                      <span>{APPLICATION_STATUS_DESCRIPTIONS[application.status] || 'Status update available.'}</span>
+                      <span>{getApplicationProgress(application.status)}%</span>
+                    </div>
+                    <div className="mt-2 h-2 overflow-hidden rounded-full bg-white dark:bg-slate-800">
+                      <div
+                        className="h-full rounded-full bg-primary-600 transition-all"
+                        style={{ width: `${getApplicationProgress(application.status)}%` }}
+                      />
                     </div>
                   </div>
 
@@ -170,29 +177,25 @@ export default function AdminApplications() {
                   )}
 
                   <div className="flex flex-wrap gap-2">
-                    {NEXT_STATUSES[application.status]?.includes('interview_scheduled') && (
-                      <button
-                        type="button"
-                        onClick={() => setScheduleModal(application._id)}
-                        className="inline-flex items-center gap-1.5 rounded-full bg-purple-50 px-3 py-1.5 text-xs font-semibold text-purple-600 transition-colors hover:bg-purple-100 dark:bg-purple-900/20"
-                      >
-                        <HiCalendar className="h-3.5 w-3.5" />
-                        Schedule Interview
-                      </button>
-                    )}
-                    {NEXT_STATUSES[application.status]?.filter((nextStatus) => nextStatus !== 'interview_scheduled').map((nextStatus) => (
+                    {APPLICATION_NEXT_STATUSES[application.status]?.map((nextStatus) => (
                       <button
                         key={nextStatus}
                         type="button"
-                        onClick={() => statusMutation.mutate({ id: application._id, nextStatus })}
+                        onClick={() => openStatusModal(application, nextStatus)}
                         disabled={statusMutation.isPending}
                         className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-colors disabled:opacity-60 ${
                           nextStatus === 'rejected'
                             ? 'bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-900/20'
+                            : nextStatus === 'interview_scheduled'
+                            ? 'bg-purple-50 text-purple-600 hover:bg-purple-100 dark:bg-purple-900/20'
                             : 'bg-green-50 text-green-600 hover:bg-green-100 dark:bg-green-900/20'
                         }`}
                       >
-                        Move to {STATUS_LABELS[nextStatus]}
+                        {nextStatus === 'interview_scheduled' ? (
+                          <span className="inline-flex items-center gap-1.5"><HiCalendar className="h-3.5 w-3.5" /> Schedule Interview</span>
+                        ) : (
+                          <>Move to {getApplicationStatusLabel(nextStatus)}</>
+                        )}
                       </button>
                     ))}
                   </div>
@@ -206,6 +209,63 @@ export default function AdminApplications() {
           <Pagination currentPage={page} totalPages={pagination.totalPages} onPageChange={setPage} />
         )}
       </div>
+
+      <Modal
+        isOpen={!!statusModal}
+        onClose={() => setStatusModal(null)}
+        title="Update Application Status"
+        size="md"
+      >
+        {statusModal && (
+          <div className="space-y-5 p-6">
+            <div className="rounded-2xl bg-slate-50 p-4 dark:bg-slate-900/50">
+              <p className="text-sm font-semibold text-slate-900 dark:text-white">
+                {statusModal.application.applicant?.firstName} {statusModal.application.applicant?.lastName}
+              </p>
+              <p className="mt-1 text-sm text-slate-500">{statusModal.application.job?.title || 'Untitled job'}</p>
+              <div className="mt-4 flex flex-wrap items-center gap-2 text-sm">
+                <Badge variant={APPLICATION_STATUS_VARIANTS[statusModal.application.status] || 'gray'}>
+                  {getApplicationStatusLabel(statusModal.application.status)}
+                </Badge>
+                <span className="text-slate-400">to</span>
+                <Badge variant={APPLICATION_STATUS_VARIANTS[statusModal.nextStatus] || 'gray'}>
+                  {getApplicationStatusLabel(statusModal.nextStatus)}
+                </Badge>
+              </div>
+            </div>
+
+            <div>
+              <label className="label">Update note for candidate</label>
+              <textarea
+                value={statusNote}
+                onChange={(event) => setStatusNote(event.target.value)}
+                rows={4}
+                placeholder="Example: Your profile matches the role requirements. Our team will review your resume in detail next."
+                className="input-field resize-none"
+              />
+              <p className="mt-1 text-xs text-slate-500">This note is stored in the timeline and helps the candidate understand the decision.</p>
+            </div>
+
+            <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+              <Button type="button" variant="ghost" onClick={() => setStatusModal(null)}>Cancel</Button>
+              <Button
+                type="button"
+                onClick={() =>
+                  statusMutation.mutate({
+                    id: statusModal.application._id,
+                    nextStatus: statusModal.nextStatus,
+                    note: statusNote,
+                  })
+                }
+                isLoading={statusMutation.isPending}
+              >
+                <HiCheckCircle className="h-4 w-4" />
+                Confirm Update
+              </Button>
+            </div>
+          </div>
+        )}
+      </Modal>
 
       <Modal isOpen={!!scheduleModal} onClose={() => setScheduleModal(null)} title="Schedule Interview" size="md">
         <div className="space-y-4 p-6">

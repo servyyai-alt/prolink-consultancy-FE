@@ -220,6 +220,7 @@ const ADMIN_NAV = [
   { to: '/admin/contacts',    icon: HiMail,          label: 'Contacts' },
   { to: '/admin/blogs',       icon: HiNewspaper,     label: 'Blogs' },
   { to: '/admin/services',    icon: HiCollection,    label: 'Services' },
+  { to: '/admin/team-members',icon: HiUsers,         label: 'Team' },
   // { to: '/admin/payments',    icon: HiCurrencyRupee, label: 'Payments' },
   { to: '/admin/testimonials',icon: HiStar,          label: 'Testimonials' },
 ]

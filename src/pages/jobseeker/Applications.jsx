@@ -2,15 +2,21 @@ import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Helmet } from 'react-helmet-async'
 import { Link } from 'react-router-dom'
-import { motion, AnimatePresence } from 'framer-motion'
-import { HiBriefcase, HiLocationMarker, HiClock, HiX, HiChevronDown } from 'react-icons/hi'
+import { motion } from 'framer-motion'
+import { HiBriefcase, HiCheckCircle, HiLocationMarker, HiClock, HiX } from 'react-icons/hi'
 import { applicationAPI } from '../../services/api'
 import { Pagination, Badge, Modal, EmptyState } from '../../components/ui/index'
 import toast from 'react-hot-toast'
+import {
+  APPLICATION_STATUS_DESCRIPTIONS,
+  APPLICATION_STATUS_LABELS,
+  APPLICATION_STATUS_ORDER,
+  APPLICATION_STATUS_VARIANTS,
+  getApplicationProgress,
+  getApplicationStatusLabel,
+} from '../../constants/applicationStatus'
 
-const STATUS_TABS = ['all','applied','screening','shortlisted','interview_scheduled','offered','hired','rejected']
-const STATUS_COLOR = { applied:'primary', screening:'warning', shortlisted:'teal', interview_scheduled:'purple', offered:'success', hired:'success', rejected:'danger', withdrawn:'gray' }
-const STATUS_LABEL = { applied:'Applied', screening:'Screening', shortlisted:'Shortlisted', interview_scheduled:'Interview Scheduled', offered:'Offered', hired:'Hired', rejected:'Rejected' }
+const STATUS_TABS = ['all','applied','screening','shortlisted','interview_scheduled','offered','hired','rejected','withdrawn']
 
 export default function JSApplications() {
   const [page, setPage] = useState(1)
@@ -77,7 +83,7 @@ export default function JSApplications() {
           </div>
         ) : apps.length === 0 ? (
           <EmptyState icon={HiBriefcase} title="No Applications Yet"
-            description={status ? `No ${STATUS_LABEL[status] || status.replace(/_/g, ' ')} applications found.` : 'Start applying for jobs to see your applications here.'}
+            description={status ? `No ${getApplicationStatusLabel(status)} applications found.` : 'Start applying for jobs to see your applications here.'}
             action={<Link to="/jobs" className="btn-primary">Browse Jobs</Link>} />
         ) : (
           <div className="space-y-3">
@@ -97,14 +103,38 @@ export default function JSApplications() {
                         </Link>
                         <p className="text-sm text-slate-500 mt-0.5">{app.job?.company?.name}</p>
                       </div>
-                      <Badge variant={STATUS_COLOR[app.status] || 'gray'} className="flex-shrink-0 capitalize">
-                        {app.status?.replace(/_/g, ' ')}
+                      <Badge variant={APPLICATION_STATUS_VARIANTS[app.status] || 'gray'} className="flex-shrink-0 capitalize">
+                        {getApplicationStatusLabel(app.status)}
                       </Badge>
                     </div>
                     <div className="flex flex-wrap gap-4 mt-2.5 text-xs text-slate-500">
                       {app.job?.location && <span className="flex items-center gap-1"><HiLocationMarker className="w-3.5 h-3.5" />{app.job.location}</span>}
                       {app.job?.type && <span className="flex items-center gap-1"><HiBriefcase className="w-3.5 h-3.5" />{app.job.type.replace('_', ' ')}</span>}
                       <span className="flex items-center gap-1"><HiClock className="w-3.5 h-3.5" />Applied {new Date(app.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                    </div>
+
+                    <div className="mt-4 rounded-xl border border-slate-100 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-900/40">
+                      <div className="flex items-center justify-between gap-3 text-xs font-semibold text-slate-500">
+                        <span>{APPLICATION_STATUS_DESCRIPTIONS[app.status] || 'Your application status has been updated.'}</span>
+                        <span>{getApplicationProgress(app.status)}%</span>
+                      </div>
+                      <div className="mt-2 h-2 overflow-hidden rounded-full bg-white dark:bg-slate-800">
+                        <div className="h-full rounded-full bg-primary-600" style={{ width: `${getApplicationProgress(app.status)}%` }} />
+                      </div>
+                      <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
+                        {APPLICATION_STATUS_ORDER.map((step) => {
+                          const stepIndex = APPLICATION_STATUS_ORDER.indexOf(step)
+                          const currentIndex = APPLICATION_STATUS_ORDER.indexOf(app.status)
+                          const isComplete = currentIndex >= stepIndex && !['rejected', 'withdrawn'].includes(app.status)
+
+                          return (
+                            <div key={step} className={`flex items-center gap-1.5 text-[11px] font-semibold ${isComplete ? 'text-primary-700 dark:text-primary-300' : 'text-slate-400'}`}>
+                              <HiCheckCircle className={`h-3.5 w-3.5 ${isComplete ? 'text-primary-600' : 'text-slate-300'}`} />
+                              <span className="truncate">{APPLICATION_STATUS_LABELS[step]}</span>
+                            </div>
+                          )
+                        })}
+                      </div>
                     </div>
 
                     {/* Interview details */}
@@ -119,6 +149,31 @@ export default function JSApplications() {
                           <a href={app.interview.link} target="_blank" rel="noreferrer"
                             className="text-xs text-purple-600 hover:underline font-semibold mt-1 block">Join Meeting →</a>
                         )}
+                      </div>
+                    )}
+
+                    {app.statusHistory?.length > 0 && (
+                      <div className="mt-4 rounded-xl border border-slate-100 p-3 dark:border-slate-700">
+                        <p className="text-xs font-bold uppercase tracking-wide text-slate-400">Latest Update</p>
+                        {[...app.statusHistory].slice(-1).map((entry, index) => (
+                          <div key={`${entry.status}-${entry.changedAt || index}`} className="mt-2 text-sm">
+                            <p className="font-semibold text-slate-700 dark:text-slate-200">
+                              {getApplicationStatusLabel(entry.status)}
+                              {entry.changedAt && (
+                                <span className="ml-2 text-xs font-normal text-slate-500">
+                                  {new Date(entry.changedAt).toLocaleString('en-IN', {
+                                    day: 'numeric',
+                                    month: 'short',
+                                    year: 'numeric',
+                                    hour: 'numeric',
+                                    minute: '2-digit',
+                                  })}
+                                </span>
+                              )}
+                            </p>
+                            {entry.note && <p className="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-300">{entry.note}</p>}
+                          </div>
+                        ))}
                       </div>
                     )}
                   </div>

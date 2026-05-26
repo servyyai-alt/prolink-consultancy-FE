@@ -123,16 +123,27 @@ export const serviceAPI = {
   delete:      (id)          => api.delete(`/services/${id}`),
 }
 
+export const teamMemberAPI = {
+  getTeamMembers: (params)   => api.get('/team-members', { params }),
+  create:         (data)     => api.post('/team-members', data),
+  update:         (id, data) => api.put(`/team-members/${id}`, data),
+  delete:         (id)       => api.delete(`/team-members/${id}`),
+}
+
 export const blogAPI = {
-  getBlogs: (params)      => api.get('/blogs', { params }),
-  getBlog:  (slug)        => api.get(`/blogs/${slug}`),
-  create:   (data)        => api.post('/blogs', data),
-  update:   (id, data)    => api.put(`/blogs/${id}`, data),
-  delete:   (id)          => api.delete(`/blogs/${id}`),
+  getBlogs:             (params) => api.get('/blogs', { params }),
+  getBlog:              (slug) => api.get(`/blogs/${slug}`),
+  create:               (data) => api.post('/blogs', data),
+  update:               (id, data) => api.put(`/blogs/${id}`, data),
+  delete:               (id) => api.delete(`/blogs/${id}`),
+  addComment:           (id, data) => api.post(`/blogs/${id}/comments`, data),
+  updateCommentStatus:  (blogId, commentId, data) => api.patch(`/blogs/${blogId}/comments/${commentId}`, data),
+  deleteComment:        (blogId, commentId) => api.delete(`/blogs/${blogId}/comments/${commentId}`),
 }
 
 export const contactAPI = {
-  submit: (data) => api.post('/contact', data),
+  submit:         (data) => api.post('/contact', data),
+  getMyInquiries: (params) => api.get('/contact/my-inquiries', { params }),
 }
 
 export const testimonialAPI = {
@@ -176,10 +187,12 @@ export const adminAPI = {
   approveUser:       (id, data) => api.patch(`/admin/users/${id}/approve`, data),
   deleteUser:        (id)     => api.delete(`/admin/users/${id}`),
   getContacts:       (params) => api.get('/admin/contacts', { params }),
+  updateContact:     (id, data) => api.patch(`/admin/contacts/${id}`, data),
   getPayments:       (params) => api.get('/admin/payments', { params }),
   getApplications:   (params) => api.get('/admin/applications', { params }),
   getBlogs:          (params) => api.get('/admin/blogs', { params }),
   getServices:       (params) => api.get('/admin/services', { params }),
+  getTeamMembers:    (params) => api.get('/admin/team-members', { params }),
   getTestimonials:   (params) => api.get('/admin/testimonials', { params }),
   approveTestimonial:(id)     => api.patch(`/admin/testimonials/${id}/approve`),
   updateTestimonial: (id, data) => api.patch(`/admin/testimonials/${id}`, data),
