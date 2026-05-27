@@ -128,7 +128,7 @@ export default function Navbar() {
           : 'bg-white dark:bg-stone-950 border-b border-stone-200/60 dark:border-stone-800/60'
       }`}>
         <div className="page-container">
-          <div className="flex items-center justify-between h-[68px]">
+          <div className="relative flex items-center justify-between h-[68px]">
 
             {/* Logo */}
             {/* <Link to="/" className="flex items-center gap-3 group flex-shrink-0">
@@ -246,9 +246,9 @@ export default function Navbar() {
               ))}
 
               {/* Services Mega-dropdown */}
-              <div className="relative" ref={dropdownRef}  onClickCapture={() => setServicesOpen(false)}>
+              <div ref={dropdownRef}>
                 <button
-                  onClick={() => setServicesOpen(!servicesOpen)}
+                  onClick={() => setServicesOpen(prev => !prev)}
                   className={`flex items-center gap-1.5 px-4 py-2.5 text-[13.5px] font-semibold tracking-wide transition-colors rounded-lg ${
                     servicesOpen
                       ? 'text-[#8B2A0F] dark:text-amber-400'
@@ -266,7 +266,7 @@ export default function Navbar() {
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 10, scale: 0.97 }}
                       transition={{ duration: 0.18, ease: [0.22, 1, 0.36, 1] }}
-                      className="absolute top-full left-1/2 -translate-x-1/2 mt-3 w-[560px] bg-white dark:bg-stone-900 rounded-2xl shadow-2xl border border-stone-200/80 dark:border-stone-800 overflow-hidden"
+                      className="absolute top-full right-0 mt-3 w-[560px] max-w-[95vw] translate-x-0 rounded-2xl border border-stone-200/80 bg-white shadow-2xl dark:border-stone-800 dark:bg-stone-900 overflow-hidden z-[9999]"
                     >
                       {/* Dropdown header */}
                       <div className="bg-gradient-to-r from-[#1a0e07] to-[#2d1608] px-6 py-4 flex items-center justify-between">

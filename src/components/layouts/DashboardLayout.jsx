@@ -241,9 +241,9 @@
 
 // export default DashboardLayout
 
-import { Outlet, NavLink, useNavigate } from 'react-router-dom'
+import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   HiViewGrid, HiUser, HiBriefcase, HiBookmark, HiCalendar,
@@ -277,8 +277,10 @@ const EMPLOYER_NAV = [
 export default function DashboardLayout({ variant = 'jobseeker' }) {
   const [open, setOpen] = useState(false)
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
+  const sidebarRef = useRef(null)
   const dispatch  = useDispatch()
   const navigate  = useNavigate()
+  const location  = useLocation()
   const user      = useSelector(selectUser)
   const theme     = useSelector(selectTheme)
   const unread    = useSelector(selectUnreadCount)
@@ -290,10 +292,31 @@ export default function DashboardLayout({ variant = 'jobseeker' }) {
     setShowLogoutConfirm(false)
   }
 
+  useEffect(() => {
+    if (!open) return undefined
+
+    const closeOnOutsideTouch = (e) => {
+      if (sidebarRef.current && !sidebarRef.current.contains(e.target)) {
+        setOpen(false)
+      }
+    }
+
+    document.addEventListener('pointerdown', closeOnOutsideTouch, true)
+    document.addEventListener('touchstart', closeOnOutsideTouch, true)
+    return () => {
+      document.removeEventListener('pointerdown', closeOnOutsideTouch, true)
+      document.removeEventListener('touchstart', closeOnOutsideTouch, true)
+    }
+  }, [open])
+
+  useEffect(() => {
+    setOpen(false)
+  }, [location.pathname])
+
   const Sidebar = ({ mobile = false }) => (
     <div className={`flex flex-col h-full bg-white dark:bg-slate-900 ${mobile ? '' : 'border-r border-slate-100 dark:border-slate-800'}`}>
       {/* Logo */}
-      <Link to="/" className="flex items-center gap-2.5">
+      <Link to="/" onClick={() => setOpen(false)} className="flex items-center gap-2.5">
        <div className="relative overflow-hidden rounded-xl">
         <img
           src={Logo}
@@ -355,7 +378,10 @@ export default function DashboardLayout({ variant = 'jobseeker' }) {
           {theme === 'dark' ? <HiSun className="w-4 h-4" /> : <HiMoon className="w-4 h-4" />}
           {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
         </button>
-        <button onClick={() => setShowLogoutConfirm(true)}
+        <button onClick={() => {
+          setOpen(false)
+          setShowLogoutConfirm(true)
+        }}
           className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm font-semibold text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all">
           <HiLogout className="w-4 h-4" /> Logout
         </button>
@@ -372,20 +398,34 @@ export default function DashboardLayout({ variant = 'jobseeker' }) {
 
       {/* Mobile sidebar overlay */}
       <AnimatePresence>
-        {open && (
-          <>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="fixed inset-0 z-40 bg-black/40 lg:hidden" onClick={() => setOpen(false)} />
-            <motion.div initial={{ x: -280 }} animate={{ x: 0 }} exit={{ x: -280 }}
-              className="fixed left-0 top-0 bottom-0 z-50 w-72 lg:hidden shadow-2xl">
-              <Sidebar mobile />
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+  {open && (
+    <>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 bg-black/40 z-40 lg:hidden"
+        onClick={() => setOpen(false)}
+      />
+
+      <motion.div
+        initial={{ x: -260 }}
+        animate={{ x: 0 }}
+        exit={{ x: -260 }}
+        ref={sidebarRef}
+        className="fixed left-0 top-0 bottom-0 z-50 w-64 lg:hidden shadow-2xl"
+      >
+        <Sidebar />
+      </motion.div>
+    </>
+  )}
+</AnimatePresence>
 
       {/* Main content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div
+        className="flex-1 flex flex-col overflow-hidden"
+        
+      >
         {/* Top bar */}
         <header className="bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 px-4 sm:px-6 py-3.5 flex items-center justify-between">
           <button onClick={() => setOpen(true)} className="lg:hidden p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800">
