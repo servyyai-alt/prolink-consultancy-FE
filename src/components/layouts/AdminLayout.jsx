@@ -198,9 +198,9 @@
 
 // export default AdminLayout
 
-import { Outlet, NavLink, useNavigate, Link } from 'react-router-dom'
+import { Outlet, NavLink, useLocation, useNavigate, Link } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   HiViewGrid, HiUsers, HiBriefcase, HiClipboardList,
@@ -227,8 +227,10 @@ const ADMIN_NAV = [
 export default function AdminLayout() {
   const [open, setOpen] = useState(false)
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
+  const sidebarRef = useRef(null)
   const dispatch = useDispatch()
   const navigate = useNavigate()
+  const location = useLocation()
   const user     = useSelector(selectUser)
   const theme    = useSelector(selectTheme)
 
@@ -237,6 +239,27 @@ export default function AdminLayout() {
     navigate('/')
     setShowLogoutConfirm(false)
   }
+
+  useEffect(() => {
+    if (!open) return undefined
+
+    const closeOnOutsideTouch = (e) => {
+      if (sidebarRef.current && !sidebarRef.current.contains(e.target)) {
+        setOpen(false)
+      }
+    }
+
+    document.addEventListener('pointerdown', closeOnOutsideTouch, true)
+    document.addEventListener('touchstart', closeOnOutsideTouch, true)
+    return () => {
+      document.removeEventListener('pointerdown', closeOnOutsideTouch, true)
+      document.removeEventListener('touchstart', closeOnOutsideTouch, true)
+    }
+  }, [open])
+
+  useEffect(() => {
+    setOpen(false)
+  }, [location.pathname])
 
   const Sidebar = () => (
     <div className="flex flex-col h-full bg-slate-900">
@@ -250,7 +273,7 @@ export default function AdminLayout() {
             <span className="block text-[10px] text-slate-400 uppercase tracking-widest">Admin Panel</span>
           </div>
         </Link> */}
-              <Link to="/" className="flex items-center gap-2.5">
+              <Link to="/" onClick={() => setOpen(false)} className="flex items-center gap-2.5">
                <div className="relative overflow-hidden rounded-xl">
                 <img
                   src={Logo}
@@ -295,7 +318,10 @@ export default function AdminLayout() {
           {theme === 'dark' ? <HiSun className="w-4 h-4" /> : <HiMoon className="w-4 h-4" />}
           {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
         </button>
-        <button onClick={() => setShowLogoutConfirm(true)}
+        <button onClick={() => {
+          setOpen(false)
+          setShowLogoutConfirm(true)
+        }}
           className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-sm text-red-400 hover:bg-red-900/20 hover:text-red-300">
           <HiLogout className="w-4 h-4" /> Logout
         </button>
@@ -308,19 +334,33 @@ export default function AdminLayout() {
       <div className="hidden lg:block w-60 flex-shrink-0"><Sidebar /></div>
 
       <AnimatePresence>
-        {open && (
-          <>
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              className="fixed inset-0 z-40 bg-black/60 lg:hidden" onClick={() => setOpen(false)} />
-            <motion.div initial={{ x: -260 }} animate={{ x: 0 }} exit={{ x: -260 }}
-              className="fixed left-0 top-0 bottom-0 z-50 w-64 lg:hidden shadow-2xl">
-              <Sidebar />
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+  {open && (
+    <>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 bg-black/40 z-40 lg:hidden"
+        onClick={() => setOpen(false)}
+      />
 
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <motion.div
+        initial={{ x: -260 }}
+        animate={{ x: 0 }}
+        exit={{ x: -260 }}
+        ref={sidebarRef}
+        className="fixed left-0 top-0 bottom-0 z-50 w-64 lg:hidden shadow-2xl"
+      >
+        <Sidebar />
+      </motion.div>
+    </>
+  )}
+</AnimatePresence>
+
+      <div
+        className="flex-1 flex flex-col overflow-hidden"
+        
+      >
         <header className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 px-4 sm:px-6 py-3.5 flex items-center gap-4">
           <button onClick={() => setOpen(true)} className="lg:hidden p-2 rounded-lg text-slate-500">
             <HiMenu className="w-5 h-5" />
