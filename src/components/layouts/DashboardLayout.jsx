@@ -243,7 +243,7 @@
 
 import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   HiViewGrid, HiUser, HiBriefcase, HiBookmark, HiCalendar,
@@ -277,7 +277,6 @@ const EMPLOYER_NAV = [
 export default function DashboardLayout({ variant = 'jobseeker' }) {
   const [open, setOpen] = useState(false)
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
-  const sidebarRef = useRef(null)
   const dispatch  = useDispatch()
   const navigate  = useNavigate()
   const location  = useLocation()
@@ -292,22 +291,7 @@ export default function DashboardLayout({ variant = 'jobseeker' }) {
     setShowLogoutConfirm(false)
   }
 
-  useEffect(() => {
-    if (!open) return undefined
-
-    const closeOnOutsideTouch = (e) => {
-      if (sidebarRef.current && !sidebarRef.current.contains(e.target)) {
-        setOpen(false)
-      }
-    }
-
-    document.addEventListener('pointerdown', closeOnOutsideTouch, true)
-    document.addEventListener('touchstart', closeOnOutsideTouch, true)
-    return () => {
-      document.removeEventListener('pointerdown', closeOnOutsideTouch, true)
-      document.removeEventListener('touchstart', closeOnOutsideTouch, true)
-    }
-  }, [open])
+  const closeSidebar = () => setOpen(false)
 
   useEffect(() => {
     setOpen(false)
@@ -316,7 +300,7 @@ export default function DashboardLayout({ variant = 'jobseeker' }) {
   const Sidebar = ({ mobile = false }) => (
     <div className={`flex flex-col h-full bg-white dark:bg-slate-900 ${mobile ? '' : 'border-r border-slate-100 dark:border-slate-800'}`}>
       {/* Logo */}
-      <Link to="/" onClick={() => setOpen(false)} className="flex items-center gap-2.5">
+      <Link to="/" onClickCapture={closeSidebar} className="flex items-center gap-2.5">
        <div className="relative overflow-hidden rounded-xl">
         <img
           src={Logo}
@@ -364,7 +348,7 @@ export default function DashboardLayout({ variant = 'jobseeker' }) {
               isActive ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-400'
                        : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white'
             }`}
-            onClick={() => setOpen(false)}>
+            onClickCapture={closeSidebar}>
             <Icon className="w-4 h-4 flex-shrink-0" />
             {label}
           </NavLink>
@@ -404,16 +388,16 @@ export default function DashboardLayout({ variant = 'jobseeker' }) {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black/40 z-40 lg:hidden"
-        onClick={() => setOpen(false)}
+        className="fixed inset-0 bg-black/40 z-[90] lg:hidden"
+        onPointerDown={closeSidebar}
+        onClick={closeSidebar}
       />
 
       <motion.div
         initial={{ x: -260 }}
         animate={{ x: 0 }}
         exit={{ x: -260 }}
-        ref={sidebarRef}
-        className="fixed left-0 top-0 bottom-0 z-50 w-64 lg:hidden shadow-2xl"
+        className="fixed left-0 top-0 bottom-0 z-[100] w-64 lg:hidden shadow-2xl"
       >
         <Sidebar />
       </motion.div>
@@ -428,8 +412,8 @@ export default function DashboardLayout({ variant = 'jobseeker' }) {
       >
         {/* Top bar */}
         <header className="bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 px-4 sm:px-6 py-3.5 flex items-center justify-between">
-          <button onClick={() => setOpen(true)} className="lg:hidden p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800">
-            <HiMenu className="w-5 h-5" />
+          <button onClick={() => setOpen((prev) => !prev)} className="lg:hidden p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800">
+            {open ? <HiX className="w-5 h-5" /> : <HiMenu className="w-5 h-5" />}
           </button>
           <div className="flex-1" />
           <div className="flex items-center gap-2">

@@ -200,12 +200,12 @@
 
 import { Outlet, NavLink, useLocation, useNavigate, Link } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   HiViewGrid, HiUsers, HiBriefcase, HiClipboardList,
   HiMail, HiNewspaper, HiCog, HiCurrencyRupee,
-  HiStar, HiLogout, HiMenu, HiMoon, HiSun, HiCollection,
+  HiStar, HiLogout, HiMenu, HiX, HiMoon, HiSun, HiCollection,
 } from 'react-icons/hi'
 import { logoutUser, selectUser } from '../../redux/slices/authSlice'
 import { toggleTheme, selectTheme } from '../../redux/slices/uiSlice'
@@ -228,7 +228,6 @@ const ADMIN_NAV = [
 export default function AdminLayout() {
   const [open, setOpen] = useState(false)
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
-  const sidebarRef = useRef(null)
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const location = useLocation()
@@ -241,22 +240,7 @@ export default function AdminLayout() {
     setShowLogoutConfirm(false)
   }
 
-  useEffect(() => {
-    if (!open) return undefined
-
-    const closeOnOutsideTouch = (e) => {
-      if (sidebarRef.current && !sidebarRef.current.contains(e.target)) {
-        setOpen(false)
-      }
-    }
-
-    document.addEventListener('pointerdown', closeOnOutsideTouch, true)
-    document.addEventListener('touchstart', closeOnOutsideTouch, true)
-    return () => {
-      document.removeEventListener('pointerdown', closeOnOutsideTouch, true)
-      document.removeEventListener('touchstart', closeOnOutsideTouch, true)
-    }
-  }, [open])
+  const closeSidebar = () => setOpen(false)
 
   useEffect(() => {
     setOpen(false)
@@ -274,7 +258,7 @@ export default function AdminLayout() {
             <span className="block text-[10px] text-slate-400 uppercase tracking-widest">Admin Panel</span>
           </div>
         </Link> */}
-              <Link to="/" onClick={() => setOpen(false)} className="flex items-center gap-2.5">
+              <Link to="/" onClickCapture={closeSidebar} className="flex items-center gap-2.5">
                <div className="relative overflow-hidden rounded-xl">
                 <img
                   src={Logo}
@@ -298,7 +282,7 @@ export default function AdminLayout() {
               isActive ? 'bg-primary-600 text-white shadow-primary'
                        : 'text-slate-400 hover:bg-slate-800 hover:text-white'
             }`}
-            onClick={() => setOpen(false)}>
+            onClickCapture={closeSidebar}>
             <Icon className="w-4 h-4 flex-shrink-0" />{label}
           </NavLink>
         ))}
@@ -341,16 +325,16 @@ export default function AdminLayout() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black/40 z-40 lg:hidden"
-        onClick={() => setOpen(false)}
+        className="fixed inset-0 bg-black/40 z-[90] lg:hidden"
+        onPointerDown={closeSidebar}
+        onClick={closeSidebar}
       />
 
       <motion.div
         initial={{ x: -260 }}
         animate={{ x: 0 }}
         exit={{ x: -260 }}
-        ref={sidebarRef}
-        className="fixed left-0 top-0 bottom-0 z-50 w-64 lg:hidden shadow-2xl"
+        className="fixed left-0 top-0 bottom-0 z-[100] w-64 lg:hidden shadow-2xl"
       >
         <Sidebar />
       </motion.div>
@@ -363,8 +347,8 @@ export default function AdminLayout() {
         
       >
         <header className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 px-4 sm:px-6 py-3.5 flex items-center gap-4">
-          <button onClick={() => setOpen(true)} className="lg:hidden p-2 rounded-lg text-slate-500">
-            <HiMenu className="w-5 h-5" />
+          <button onClick={() => setOpen((prev) => !prev)} className="lg:hidden p-2 rounded-lg text-slate-500">
+            {open ? <HiX className="w-5 h-5" /> : <HiMenu className="w-5 h-5" />}
           </button>
           <span className="text-sm font-semibold text-slate-500">Admin Panel</span>
         </header>

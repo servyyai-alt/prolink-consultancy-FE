@@ -90,11 +90,21 @@ export default function JSApplications() {
             {apps.map((app, i) => (
               <motion.div key={app._id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}
                 className="card p-5">
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center font-bold text-primary-700 text-lg flex-shrink-0">
-                    {app.job?.company?.name?.[0] || 'C'}
-                  </div>
-                  <div className="flex-1 min-w-0">
+                <div className="flex flex-col sm:flex-row items-start gap-3 lg:gap-4">
+
+  {/* Mobile Top Logo */}
+  <div className="w-full flex justify-center sm:hidden">
+    <div className="w-10 h-10 rounded-xl bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center font-bold text-primary-700 text-lg flex-shrink-0">
+      {app.job?.company?.name?.[0] || 'C'}
+    </div>
+  </div>
+
+  {/* Desktop Logo */}
+  <div className="hidden sm:flex w-10 h-10 lg:w-12 lg:h-12 rounded-xl bg-primary-50 dark:bg-primary-900/20 items-center justify-center font-bold text-primary-700 text-lg flex-shrink-0">
+    {app.job?.company?.name?.[0] || 'C'}
+  </div>
+
+  <div className="flex-1 min-w-0 w-full">
                     <div className="flex items-start justify-between gap-3 flex-wrap">
                       <div className="min-w-0">
                         <Link to={`/jobs/${app.job?.slug}`}

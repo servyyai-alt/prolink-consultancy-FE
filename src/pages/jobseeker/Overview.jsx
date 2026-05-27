@@ -118,54 +118,120 @@ export default function JSOverview() {
         )}
 
         {/* Stats row */}
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <CardLink to="/dashboard/applications" icon={HiBriefcase}    color="bg-primary-50 dark:bg-primary-900/20 text-primary-600"  label="Applications"  value={totalApps}           desc="Total submitted" />
           <CardLink to="/dashboard/saved-jobs"   icon={HiBookmark}     color="bg-amber-50 dark:bg-amber-900/20 text-amber-600"         label="Saved Jobs"    value={savedJobs.length}    desc="Jobs bookmarked" />
           <CardLink to="/dashboard/interviews"   icon={HiCalendar}     color="bg-violet-50 dark:bg-violet-900/20 text-violet-600"      label="Interviews"    value={totalInterviews} desc="Scheduled" />
         </div>
 
         {/* Recent applications */}
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
-          className="card overflow-hidden">
-          <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-700">
-            <h3 className="font-bold text-slate-900 dark:text-white">Recent Applications</h3>
-            <Link to="/dashboard/applications" className="text-xs text-primary-600 font-semibold hover:underline">View all</Link>
-          </div>
+        {/* Recent applications */}
+<motion.div
+  initial={{ opacity: 0, y: 10 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ delay: 0.15 }}
+  className="card overflow-hidden"
+>
+  <div className="flex items-center justify-between px-4 sm:px-5 py-4 border-b border-slate-100 dark:border-slate-700">
+    <h3 className="font-bold text-slate-900 dark:text-white text-sm sm:text-base">
+      Recent Applications
+    </h3>
 
-          {applications.length === 0 ? (
-            <div className="py-12 text-center">
-              <div className="w-14 h-14 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto mb-3">
-                <HiBriefcase className="w-7 h-7 text-slate-400" />
-              </div>
-              <p className="text-slate-500 text-sm">No applications yet.</p>
-              <Link to="/jobs" className="btn-primary mt-4 text-sm py-2 px-5">Browse Jobs</Link>
-            </div>
-          ) : (
-            <div className="divide-y divide-slate-100 dark:divide-slate-700">
-              {applications.map((app) => (
-                <div key={app._id} className="flex items-center justify-between px-5 py-4 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-10 h-10 rounded-xl bg-primary-50 dark:bg-primary-900/20 flex items-center justify-center font-bold text-primary-600 flex-shrink-0">
-                      {app.job?.company?.name?.[0] || 'C'}
-                    </div>
-                    <div className="min-w-0">
-                      <p className="font-semibold text-slate-900 dark:text-white text-sm truncate">{app.job?.title}</p>
-                      <p className="text-xs text-slate-500 truncate">{app.job?.company?.name} · {app.job?.location}</p>
-                    </div>
-                  </div>
-                  <div className="flex-shrink-0 ml-3 text-right">
-                    <Badge variant={APP_STATUS_COLOR[app.status] || 'gray'} className="capitalize">
-                      {app.status?.replace(/_/g, ' ')}
-                    </Badge>
-                    <p className="text-xs text-slate-400 mt-1">
-                      {new Date(app.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </motion.div>
+    <Link
+      to="/dashboard/applications"
+      className="text-xs sm:text-sm text-primary-600 font-semibold hover:underline"
+    >
+      View all
+    </Link>
+  </div>
+
+  {applications.length === 0 ? (
+    <div className="py-10 sm:py-12 text-center px-4">
+      <div className="w-14 h-14 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center mx-auto mb-3">
+        <HiBriefcase className="w-7 h-7 text-slate-400" />
+      </div>
+
+      <p className="text-slate-500 text-sm">No applications yet.</p>
+
+      <Link
+        to="/jobs"
+        className="btn-primary mt-4 inline-flex text-sm py-2 px-5"
+      >
+        Browse Jobs
+      </Link>
+    </div>
+  ) : (
+    <div className="divide-y divide-slate-100 dark:divide-slate-700">
+  {applications.map((app) => (
+    <div
+      key={app._id}
+      className="
+        flex flex-col
+        sm:flex-row sm:items-center
+        gap-3
+        px-4 sm:px-5
+        py-4
+        hover:bg-slate-50 dark:hover:bg-slate-700/50
+        transition-colors
+      "
+    >
+      {/* Left */}
+      <div className="flex items-start gap-3 min-w-0 flex-1">
+        <div
+          className="
+            w-10 h-10 rounded-xl
+            bg-primary-50 dark:bg-primary-900/20
+            flex items-center justify-center
+            font-bold text-primary-600
+            flex-shrink-0
+          "
+        >
+          {app.job?.company?.name?.[0] || 'C'}
+        </div>
+
+        <div className="min-w-0 flex-1">
+          <p className="font-semibold text-slate-900 dark:text-white text-sm truncate">
+            {app.job?.title}
+          </p>
+
+          <p className="text-xs text-slate-500 truncate">
+            {app.job?.company?.name} · {app.job?.location}
+          </p>
+        </div>
+      </div>
+
+      {/* Right */}
+      <div
+        className="
+          flex items-center justify-between
+          sm:flex-col sm:items-end
+          flex-shrink-0
+          min-w-[120px]
+        "
+      >
+        <Badge
+          variant={APP_STATUS_COLOR[app.status] || 'gray'}
+          className="
+            inline-flex items-center
+            whitespace-nowrap
+            capitalize text-xs
+          "
+        >
+          {app.status?.replace(/_/g, ' ')}
+        </Badge>
+
+        <p className="text-xs text-slate-400 sm:mt-1 whitespace-nowrap">
+          {new Date(app.createdAt).toLocaleDateString('en-IN', {
+            day: 'numeric',
+            month: 'short',
+          })}
+        </p>
+      </div>
+    </div>
+  ))}
+</div>
+  )}
+</motion.div>
       </div>
     </>
   )

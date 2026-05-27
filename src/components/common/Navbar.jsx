@@ -41,6 +41,7 @@ export default function Navbar() {
   const [servicesOpen, setServicesOpen] = useState(false)
   const [profileOpen,  setProfileOpen]  = useState(false)
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
+  const navRef = useRef(null)
   const dropdownRef = useRef(null)
   const profileRef  = useRef(null)
 
@@ -67,9 +68,22 @@ export default function Navbar() {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) setServicesOpen(false)
       if (profileRef.current  && !profileRef.current.contains(e.target))  setProfileOpen(false)
     }
-    document.addEventListener('mousedown', handler)
-    return () => document.removeEventListener('mousedown', handler)
+    document.addEventListener('pointerdown', handler)
+    return () => document.removeEventListener('pointerdown', handler)
   }, [])
+
+  useEffect(() => {
+    if (!mobileOpen) return undefined
+
+    const closeMobileMenu = (e) => {
+      if (navRef.current && !navRef.current.contains(e.target)) {
+        setMobileOpen(false)
+      }
+    }
+
+    document.addEventListener('pointerdown', closeMobileMenu, true)
+    return () => document.removeEventListener('pointerdown', closeMobileMenu, true)
+  }, [mobileOpen])
 
   useEffect(() => {
     setServicesOpen(false)
@@ -97,8 +111,10 @@ export default function Navbar() {
     return '/dashboard/contact-requests'
   }
 
+  const closeMobileMenu = () => setMobileOpen(false)
+
   return (
-    <>
+    <div ref={navRef}>
       {/* ── Top info bar ── */}
       <div className="hidden lg:block bg-[#1a1108] border-b border-amber-900/30">
         <div className="page-container">
@@ -121,8 +137,21 @@ export default function Navbar() {
         </div>
       </div>
 
+      <AnimatePresence>
+        {mobileOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[60] bg-black/10 lg:hidden"
+            onPointerDown={closeMobileMenu}
+            onClick={closeMobileMenu}
+          />
+        )}
+      </AnimatePresence>
+
       {/* ── Main navbar ── */}
-      <header className={`sticky top-0 left-0 right-0 z-50 transition-all duration-300 ${
+      <header className={`sticky top-0 left-0 right-0 z-[70] transition-all duration-300 ${
         scrolled
           ? 'bg-white dark:bg-stone-950/95 backdrop-blur-xl shadow-[0_2px_20px_rgba(0,0,0,0.08)] border-b border-stone-200/70 dark:border-stone-800/70'
           : 'bg-white dark:bg-stone-950 border-b border-stone-200/60 dark:border-stone-800/60'
@@ -416,7 +445,7 @@ export default function Navbar() {
             >
               <div className="page-container py-4 flex flex-col gap-0.5">
                 {navLinks.map(({ label, to }) => (
-                  <NavLink key={to} to={to} onClick={() => setMobileOpen(false)}
+                  <NavLink key={to} to={to} onClickCapture={closeMobileMenu}
                     className={({ isActive }) =>
                       `px-4 py-3 rounded-xl text-sm font-semibold ${
                         isActive
@@ -429,7 +458,7 @@ export default function Navbar() {
                 <div className="border-t border-stone-200 dark:border-stone-800 mt-2 pt-3">
                   <p className="px-4 py-1 text-[10px] font-bold text-stone-400 uppercase tracking-[0.28em]">Services</p>
                   {services.map((s) => (
-                    <Link key={s.slug || s.name} to={getServiceRoute(s.slug)} onClick={() => setMobileOpen(false)}
+                    <Link key={s.slug || s.name} to={getServiceRoute(s.slug)} onClickCapture={closeMobileMenu}
                       className="flex items-center gap-2 px-4 py-2.5 text-sm text-stone-600 dark:text-stone-400 hover:text-[#8B2A0F] dark:hover:text-amber-400 transition-colors">
                       <span className="w-1 h-1 rounded-full bg-amber-400 flex-shrink-0" />
                       {s.name}
@@ -439,11 +468,11 @@ export default function Navbar() {
 
                 {!isLoggedIn && (
                   <div className="flex gap-2 mt-3 pt-3 border-t border-stone-200 dark:border-stone-800">
-                    <Link to="/login" onClick={() => setMobileOpen(false)}
+                    <Link to="/login" onClickCapture={closeMobileMenu}
                       className="flex-1 py-2.5 text-sm font-semibold text-center border border-stone-300 dark:border-stone-700 rounded-xl text-stone-700 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-900 transition-colors">
                       Sign In
                     </Link>
-                    <Link to="/register" onClick={() => setMobileOpen(false)}
+                    <Link to="/register" onClickCapture={closeMobileMenu}
                       className="flex-1 py-2.5 text-sm font-bold text-center bg-[#8B2A0F] text-white rounded-xl hover:bg-[#a03212] transition-colors">
                       Register
                     </Link>
@@ -463,6 +492,6 @@ export default function Navbar() {
         message="Are you sure you want to log out of your account?"
         confirmLabel="Logout"
       />
-    </>
+    </div>
   )
 }
