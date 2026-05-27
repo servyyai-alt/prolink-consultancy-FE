@@ -215,9 +215,9 @@ export default function Contact() {
                 {
                   icon: HiMail,
                   label: 'Email Us',
-                  value: 'info@prolinkconsultancy.com',
+                  value: 'admin@prolinkconsultancy.com',
                   sub: 'We reply within 24 hrs',
-                  href: 'mailto:info@prolinkconsultancy.com',
+                  href: 'mailto:admin@prolinkconsultancy.com',
                   color: 'violet',
                 },
             

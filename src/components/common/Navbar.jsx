@@ -16,8 +16,8 @@ import ConfirmDialog from './ConfirmDialog'
 import Logo from '../../assets/logo.jpeg'
 
 const TOP_BAR_CONTACT = [
-  { icon: HiPhone, label: '+91 98765 43210', href: 'tel:+919437174876' },
-  { icon: HiMail,  label: 'info@prolinkconsultancy.com', href: 'mailto:info@prolinkconsultancy.com' },
+  { icon: HiPhone, label: '+91 9437174876', href: 'tel:+919437174876' },
+  { icon: HiMail,  label: 'admin@prolinkconsultancy.com', href: 'mailto:admin@prolinkconsultancy.com' },
 ]
 
 const fallbackServices = [
