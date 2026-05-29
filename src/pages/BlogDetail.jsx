@@ -17,6 +17,45 @@ const SOCIAL_CONFIG = [
   { key: 'youtube', label: 'YouTube', icon: FaYoutube },
 ]
 
+function BlogTables({ tables = [] }) {
+  const visibleTables = tables.filter((table) => table.headers?.length && table.rows?.length)
+  if (visibleTables.length === 0) return null
+
+  return (
+    <div className="mt-10 space-y-8">
+      {visibleTables.map((table, tableIndex) => (
+        <div key={tableIndex} className="space-y-3">
+          {table.title && (
+            <h2 className="text-xl font-display font-bold text-slate-900 dark:text-white">{table.title}</h2>
+          )}
+          <div className="overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-700">
+            <table className="w-full min-w-[560px] text-left text-sm">
+              <thead className="bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200">
+                <tr>
+                  {table.headers.map((header, index) => (
+                    <th key={index} className="px-4 py-3 font-semibold">{header}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 bg-white dark:divide-slate-700 dark:bg-slate-900">
+                {table.rows.map((row, rowIndex) => (
+                  <tr key={rowIndex}>
+                    {table.headers.map((_, cellIndex) => (
+                      <td key={cellIndex} className="px-4 py-3 text-slate-600 dark:text-slate-300">
+                        {row[cellIndex] || '-'}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
 export default function BlogDetail() {
   const { slug } = useParams()
   const [comment, setComment] = useState('')
@@ -95,6 +134,7 @@ export default function BlogDetail() {
           <div className="prose prose-slate dark:prose-invert max-w-none text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap text-base">
             {blog.content}
           </div>
+          <BlogTables tables={blog.tables} />
           {blog.tags?.length > 0 && (
             <div className="mt-10 pt-6 border-t border-slate-100 dark:border-slate-800">
               <p className="text-sm font-bold text-slate-500 mb-3">Tags</p>

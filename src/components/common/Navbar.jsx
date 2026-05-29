@@ -131,7 +131,7 @@ export default function Navbar() {
             <div className="flex items-center gap-4 text-xs text-stone-400">
               <span>Mon–Sat, 9:00 am – 6:00 pm</span>
               <span className="w-px h-3 bg-stone-700" />
-              <span className="text-amber-400 font-semibold tracking-wide">Bhubaneswar,Khurda, Odisha 751010, India</span>
+              <span className="text-amber-400 font-semibold tracking-wide">Plot no 3010, Palasuni Rasulagarh,Bhubaneswar, Odisha 751025, India</span>
             </div>
           </div>
         </div>

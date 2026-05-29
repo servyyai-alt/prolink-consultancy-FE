@@ -7,6 +7,22 @@ import { Badge, Button, EmptyState, Input, Modal, Pagination, Select, Textarea }
 import ConfirmDialog from '../../components/common/ConfirmDialog'
 import toast from 'react-hot-toast'
 
+const createEmptyTable = () => ({
+  title: '',
+  headers: ['Column 1', 'Column 2'],
+  rows: [['', '']],
+})
+
+const BLOG_CATEGORIES = [
+  'Career Tips',
+  'Resume Writing',
+  'Interview Prep',
+  'Industry News',
+  'HR Insights',
+  'Salary Guide',
+  'Others',
+];
+
 const emptyForm = {
   title: '',
   category: '',
@@ -16,12 +32,22 @@ const emptyForm = {
   status: 'draft',
   thumbnail: { url: '', public_id: '' },
   socialLinks: { facebook: '', instagram: '', linkedin: '', twitter: '', youtube: '' },
+  tables: [],
   relatedPosts: [],
 }
 const STATUS_VARIANTS = { draft: 'warning', published: 'success', archived: 'gray' }
 const COMMENT_STATUS_VARIANTS = { pending: 'warning', approved: 'success', rejected: 'danger' }
 const SOCIAL_FIELDS = ['facebook', 'instagram', 'linkedin', 'twitter', 'youtube']
 const getCommentStatus = (comment) => comment?.status || (comment?.isApproved ? 'approved' : 'pending')
+const normalizeBlogTables = (tables = []) => tables
+  .map((table) => ({
+    title: table.title?.trim() || '',
+    headers: (table.headers || []).map((header) => `${header}`.trim()).filter(Boolean),
+    rows: (table.rows || [])
+      .map((row) => Array.isArray(row) ? row.map((cell) => `${cell}`.trim()) : [])
+      .filter((row) => row.some(Boolean)),
+  }))
+  .filter((table) => table.headers.length > 0 && table.rows.length > 0)
 
 export default function AdminBlogs() {
   const [page, setPage] = useState(1)
@@ -30,6 +56,7 @@ export default function AdminBlogs() {
   const [isOpen, setIsOpen] = useState(false)
   const [editing, setEditing] = useState(null)
   const [blogToDelete, setBlogToDelete] = useState(null)
+  const [customCategory, setCustomCategory] = useState('');
   const [commentBlog, setCommentBlog] = useState(null)
   const [form, setForm] = useState(emptyForm)
   const deferredSearch = useDeferredValue(search)
@@ -63,6 +90,7 @@ export default function AdminBlogs() {
         socialLinks: Object.fromEntries(
           Object.entries(payload.socialLinks || {}).map(([key, value]) => [key, value.trim()])
         ),
+        tables: normalizeBlogTables(payload.tables),
         relatedPosts: payload.relatedPosts,
       }
       return editing ? blogAPI.update(editing._id, body) : blogAPI.create(body)
@@ -161,13 +189,55 @@ export default function AdminBlogs() {
         twitter: blog.socialLinks?.twitter || '',
         youtube: blog.socialLinks?.youtube || '',
       },
+      tables: (blog.tables || []).map((table) => ({
+        title: table.title || '',
+        headers: table.headers?.length ? table.headers : ['Column 1', 'Column 2'],
+        rows: table.rows?.length ? table.rows : [['', '']],
+      })),
       relatedPosts: (blog.relatedPosts || []).map((post) => post._id || post),
     })
     setIsOpen(true)
   }
 
+  const validateForm = () => {
+  const errors = {};
+
+  if (!form.title?.trim()) {
+    errors.title = "Blog title is required";
+  }
+
+  if (!form.category?.trim()) {
+    errors.category = "Please select a category";
+  }
+
+  if (!form.content?.trim()) {
+    errors.content = "Blog content is required";
+  }
+
+  if (!form.excerpt?.trim()) {
+    errors.excerpt = "Excerpt is required";
+  }
+
+  return errors;
+};
+
   const submit = (e) => {
     e.preventDefault()
+  if (!form.title?.trim()) {
+    return toast.error("Please enter blog title");
+  }
+
+  if (!form.category?.trim()) {
+    return toast.error("Please select blog category");
+  }
+
+  if (!form.excerpt?.trim()) {
+    return toast.error("Please enter blog excerpt");
+  }
+
+  if (!form.content?.trim()) {
+    return toast.error("Please enter blog content");
+  }
     saveMutation.mutate(form)
   }
 
@@ -184,6 +254,74 @@ export default function AdminBlogs() {
       relatedPosts: prev.relatedPosts.includes(blogId)
         ? prev.relatedPosts.filter((id) => id !== blogId)
         : [...prev.relatedPosts, blogId],
+    }))
+  }
+
+  const updateTable = (tableIndex, updater) => {
+    setForm((prev) => ({
+      ...prev,
+      tables: prev.tables.map((table, index) => (
+        index === tableIndex ? updater(table) : table
+      )),
+    }))
+  }
+
+  const addTable = () => {
+    setForm((prev) => ({ ...prev, tables: [...prev.tables, createEmptyTable()] }))
+  }
+
+  const removeTable = (tableIndex) => {
+    setForm((prev) => ({ ...prev, tables: prev.tables.filter((_, index) => index !== tableIndex) }))
+  }
+
+  const addTableColumn = (tableIndex) => {
+    updateTable(tableIndex, (table) => ({
+      ...table,
+      headers: [...table.headers, `Column ${table.headers.length + 1}`],
+      rows: table.rows.map((row) => [...row, '']),
+    }))
+  }
+
+  const removeTableColumn = (tableIndex, columnIndex) => {
+    updateTable(tableIndex, (table) => {
+      if (table.headers.length <= 1) return table
+      return {
+        ...table,
+        headers: table.headers.filter((_, index) => index !== columnIndex),
+        rows: table.rows.map((row) => row.filter((_, index) => index !== columnIndex)),
+      }
+    })
+  }
+
+  const addTableRow = (tableIndex) => {
+    updateTable(tableIndex, (table) => ({
+      ...table,
+      rows: [...table.rows, table.headers.map(() => '')],
+    }))
+  }
+
+  const removeTableRow = (tableIndex, rowIndex) => {
+    updateTable(tableIndex, (table) => ({
+      ...table,
+      rows: table.rows.length > 1 ? table.rows.filter((_, index) => index !== rowIndex) : table.rows,
+    }))
+  }
+
+  const updateTableHeader = (tableIndex, columnIndex, value) => {
+    updateTable(tableIndex, (table) => ({
+      ...table,
+      headers: table.headers.map((header, index) => index === columnIndex ? value : header),
+    }))
+  }
+
+  const updateTableCell = (tableIndex, rowIndex, columnIndex, value) => {
+    updateTable(tableIndex, (table) => ({
+      ...table,
+      rows: table.rows.map((row, index) => (
+        index === rowIndex
+          ? row.map((cell, cellIndex) => cellIndex === columnIndex ? value : cell)
+          : row
+      )),
     }))
   }
 
@@ -304,7 +442,36 @@ export default function AdminBlogs() {
         <form onSubmit={submit} className="p-6 space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
             <Input label="Title" value={form.title} onChange={(e) => setForm((prev) => ({ ...prev, title: e.target.value }))} required />
-            <Input label="Category" value={form.category} onChange={(e) => setForm((prev) => ({ ...prev, category: e.target.value }))} required />
+            <Select
+              label="Category"
+              value={form.category}
+              onChange={(e) =>
+                setForm((prev) => ({
+                  ...prev,
+                  category: e.target.value,
+                }))
+              }
+              options={BLOG_CATEGORIES.map((category) => ({
+                value: category,
+                label: category,
+              }))} required
+            />
+            {form.category === 'Others' && (
+              <Input
+                label="Custom Category"
+                value={customCategory}
+                onChange={(e) => {
+                  setCustomCategory(e.target.value);
+            
+                  setForm((prev) => ({
+                    ...prev,
+                    category: e.target.value,
+                  }));
+                }}
+                placeholder="Enter custom category"
+                required
+              />
+            )}
           </div>
           <div className="grid gap-4 md:grid-cols-[1fr_auto] md:items-end">
             <Input
@@ -325,8 +492,117 @@ export default function AdminBlogs() {
             </div>
           )}
           <Input label="Tags" value={form.tags} onChange={(e) => setForm((prev) => ({ ...prev, tags: e.target.value }))} helperText="Comma-separated tags" />
-          <Textarea label="Excerpt" rows={3} value={form.excerpt} onChange={(e) => setForm((prev) => ({ ...prev, excerpt: e.target.value }))} />
+          <Textarea label="Excerpt" rows={3} value={form.excerpt} onChange={(e) => setForm((prev) => ({ ...prev, excerpt: e.target.value }))} required/>
           <Textarea label="Content" rows={10} value={form.content} onChange={(e) => setForm((prev) => ({ ...prev, content: e.target.value }))} required />
+          <div className="space-y-3">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="label">Blog Tables</p>
+                <p className="text-xs text-slate-500">Add simple tables that appear below the blog content.</p>
+              </div>
+              <Button type="button" variant="outline" size="sm" onClick={addTable}>
+                <HiPlus className="w-4 h-4" />
+                Add Table
+              </Button>
+            </div>
+
+            {form.tables.length > 0 && (
+              <div className="space-y-4">
+                {form.tables.map((table, tableIndex) => (
+                  <div key={tableIndex} className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4 dark:border-slate-700 dark:bg-slate-900/30">
+                    <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                      <Input
+                        label="Table Title"
+                        value={table.title}
+                        onChange={(e) => updateTable(tableIndex, (current) => ({ ...current, title: e.target.value }))}
+                        placeholder="Optional table title"
+                      />
+                      <div className="flex flex-wrap gap-2">
+                        <Button type="button" variant="outline" size="sm" onClick={() => addTableColumn(tableIndex)}>
+                          <HiPlus className="w-4 h-4" />
+                          Column
+                        </Button>
+                        <Button type="button" variant="outline" size="sm" onClick={() => addTableRow(tableIndex)}>
+                          <HiPlus className="w-4 h-4" />
+                          Row
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => removeTable(tableIndex)}
+                          className="border-red-200 text-red-600 hover:bg-red-50 dark:border-red-900/40 dark:text-red-400 dark:hover:bg-red-900/20"
+                        >
+                          <HiTrash className="w-4 h-4" />
+                          Remove
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800">
+                      <table className="w-full min-w-[560px] text-sm">
+                        <thead className="bg-slate-100 dark:bg-slate-700/70">
+                          <tr>
+                            {table.headers.map((header, columnIndex) => (
+                              <th key={columnIndex} className="p-2 text-left align-top">
+                                <div className="flex items-center gap-2">
+                                  <input
+                                    value={header}
+                                    onChange={(e) => updateTableHeader(tableIndex, columnIndex, e.target.value)}
+                                    className="input-field min-w-[120px] py-2 text-xs font-semibold"
+                                    placeholder={`Column ${columnIndex + 1}`}
+                                  />
+                                  {table.headers.length > 1 && (
+                                    <button
+                                      type="button"
+                                      onClick={() => removeTableColumn(tableIndex, columnIndex)}
+                                      className="shrink-0 rounded-lg p-2 text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20 dark:hover:text-red-300"
+                                      aria-label="Remove column"
+                                    >
+                                      <HiX className="h-4 w-4" />
+                                    </button>
+                                  )}
+                                </div>
+                              </th>
+                            ))}
+                            <th className="w-12 p-2" aria-label="Row actions" />
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
+                          {table.rows.map((row, rowIndex) => (
+                            <tr key={rowIndex}>
+                              {table.headers.map((_, columnIndex) => (
+                                <td key={columnIndex} className="p-2 align-top">
+                                  <input
+                                    value={row[columnIndex] || ''}
+                                    onChange={(e) => updateTableCell(tableIndex, rowIndex, columnIndex, e.target.value)}
+                                    className="input-field min-w-[120px] py-2 text-sm"
+                                    placeholder="Cell value"
+                                  />
+                                </td>
+                              ))}
+                              <td className="p-2 align-top">
+                                {table.rows.length > 1 && (
+                                  <button
+                                    type="button"
+                                    onClick={() => removeTableRow(tableIndex, rowIndex)}
+                                    className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20 dark:hover:text-red-300"
+                                    aria-label="Remove row"
+                                  >
+                                    <HiTrash className="h-4 w-4" />
+                                  </button>
+                                )}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
           <div className="space-y-3">
             <p className="label">Social Media Links</p>
             <div className="grid gap-4 md:grid-cols-2">

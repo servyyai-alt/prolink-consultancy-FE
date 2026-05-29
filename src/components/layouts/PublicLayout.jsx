@@ -2,6 +2,7 @@ import { Outlet } from 'react-router-dom'
 import Navbar from '../common/Navbar'
 import Footer from '../common/Footer'
 import ScrollToTop from '../common/ScrollToTop'
+import ServiceChatbot from '../common/ServiceChatbot'
 
 export default function PublicLayout() {
   return (
@@ -12,6 +13,7 @@ export default function PublicLayout() {
         <Outlet />
       </main>
       <Footer />
+      <ServiceChatbot />
     </div>
   )
 }

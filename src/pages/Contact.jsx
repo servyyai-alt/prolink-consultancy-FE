@@ -224,8 +224,8 @@ export default function Contact() {
                 {
                   icon: HiLocationMarker,
                   label: 'Visit Us',
-                  value: 'Bhubaneswar, Khurda,',
-                  sub: 'Odisha 751010',
+                  value: 'Plot no 3010, Cuttack - Puri By pass Near Sapta sati Temple in Palasuni Rasulagarh, Bhubaneswar,',
+                  sub: 'Odisha 751025',
                   color: 'green',
                 },
               ].map(
