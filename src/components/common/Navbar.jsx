@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import {
   HiMenu, HiX, HiChevronDown, HiBell, HiMoon, HiSun,
   HiUser, HiLogout, HiViewGrid, HiPhone, HiMail, HiChatAlt2,
+  HiDocumentText,
 } from 'react-icons/hi'
 import { selectIsLoggedIn, selectUser, selectRole, logoutUser } from '../../redux/slices/authSlice'
 import { toggleTheme, selectTheme } from '../../redux/slices/uiSlice'
@@ -337,6 +338,14 @@ export default function Navbar() {
 
             {/* Right actions */}
             <div className="flex items-center gap-1.5">
+              <Link
+                to="/brochures"
+                className="hidden lg:inline-flex items-center gap-2 rounded-lg px-3 py-2 text-[13px] font-semibold tracking-wide text-stone-600 transition-colors hover:bg-stone-100 hover:text-stone-900 dark:text-stone-300 dark:hover:bg-stone-800 dark:hover:text-white"
+              >
+                <HiDocumentText className="h-4 w-4" />
+                Brochure
+              </Link>
+
               {/* Theme */}
               <button
                 onClick={() => dispatch(toggleTheme())}
@@ -454,6 +463,20 @@ export default function Navbar() {
                       }`
                     }>{label}</NavLink>
                 ))}
+
+                <NavLink
+                  to="/brochures"
+                  onClickCapture={closeMobileMenu}
+                  className={({ isActive }) =>
+                    `px-4 py-3 rounded-xl text-sm font-semibold ${
+                      isActive
+                        ? 'text-[#8B2A0F] dark:text-amber-400 bg-amber-50 dark:bg-amber-900/10'
+                        : 'text-stone-700 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-900'
+                    }`
+                  }
+                >
+                  Brochure
+                </NavLink>
 
                 <div className="border-t border-stone-200 dark:border-stone-800 mt-2 pt-3">
                   <p className="px-4 py-1 text-[10px] font-bold text-stone-400 uppercase tracking-[0.28em]">Services</p>

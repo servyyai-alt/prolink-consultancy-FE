@@ -206,6 +206,7 @@ import {
   HiViewGrid, HiUsers, HiBriefcase, HiClipboardList,
   HiMail, HiNewspaper, HiCog, HiCurrencyRupee,
   HiStar, HiLogout, HiMenu, HiX, HiMoon, HiSun, HiCollection,
+  HiDocumentText,
 } from 'react-icons/hi'
 import { logoutUser, selectUser } from '../../redux/slices/authSlice'
 import { toggleTheme, selectTheme } from '../../redux/slices/uiSlice'
@@ -220,6 +221,7 @@ const ADMIN_NAV = [
   { to: '/admin/contacts',    icon: HiMail,          label: 'Contacts' },
   { to: '/admin/blogs',       icon: HiNewspaper,     label: 'Blogs' },
   { to: '/admin/services',    icon: HiCollection,    label: 'Services' },
+  { to: '/admin/brochure',    icon: HiDocumentText,  label: 'Brochure' },
   { to: '/admin/team-members',icon: HiUsers,         label: 'Team' },
   // { to: '/admin/payments',    icon: HiCurrencyRupee, label: 'Payments' },
   { to: '/admin/testimonials',icon: HiStar,          label: 'Testimonials' },

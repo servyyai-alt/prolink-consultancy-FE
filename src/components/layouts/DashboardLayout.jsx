@@ -248,7 +248,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import {
   HiViewGrid, HiUser, HiBriefcase, HiBookmark, HiCalendar,
   HiLogout, HiMenu, HiX, HiBell, HiSun, HiMoon,
-  HiPlusCircle, HiClipboardList, HiUserGroup, HiChatAlt2,
+  HiPlusCircle, HiUserGroup, HiChatAlt2,
 } from 'react-icons/hi'
 import { logoutUser, selectUser } from '../../redux/slices/authSlice'
 import { toggleTheme, selectTheme } from '../../redux/slices/uiSlice'

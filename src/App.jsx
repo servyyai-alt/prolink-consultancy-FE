@@ -30,6 +30,7 @@ const Catering      = lazy(() => import('./pages/Catering'))
 const Testimonials  = lazy(() => import('./pages/Testimonials'))
 const Terms         = lazy(() => import('./pages/Terms'))
 const Privacy       = lazy(() => import('./pages/Privacy'))
+const PublicBrochures = lazy(() => import('./pages/Brochures'))
 
 // Auth pages
 const Login         = lazy(() => import('./pages/auth/Login'))
@@ -63,6 +64,7 @@ const AdminApplications = lazy(() => import('./pages/admin/Applications'))
 const AdminContacts = lazy(() => import('./pages/admin/Contacts'))
 const AdminBlogs    = lazy(() => import('./pages/admin/Blogs'))
 const AdminServices = lazy(() => import('./pages/admin/Services'))
+const AdminBrochure = lazy(() => import('./pages/admin/Brochure'))
 const AdminTeamMembers = lazy(() => import('./pages/admin/TeamMembers'))
 const AdminPayments = lazy(() => import('./pages/admin/Payments'))
 const AdminTestimonials = lazy(() => import('./pages/admin/Testimonials'))
@@ -114,6 +116,7 @@ export default function App() {
           <Route path="/events"    element={<Events />} />
           <Route path="/catering"  element={<Catering />} />
           <Route path="/testimonials" element={<Testimonials />} />
+          <Route path="/brochures" element={<PublicBrochures />} />
           <Route path="/terms" element={<Terms />} />
           <Route path="/privacy" element={<Privacy />} />
         </Route>
@@ -174,6 +177,7 @@ export default function App() {
           <Route path="contacts"     element={<AdminContacts />} />
           <Route path="blogs"        element={<AdminBlogs />} />
           <Route path="services"     element={<AdminServices />} />
+          <Route path="brochure"     element={<AdminBrochure />} />
           <Route path="team-members" element={<AdminTeamMembers />} />
           <Route path="payments"     element={<AdminPayments />} />
           <Route path="testimonials" element={<AdminTestimonials />} />
