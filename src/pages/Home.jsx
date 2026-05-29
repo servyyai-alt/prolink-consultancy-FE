@@ -501,22 +501,10 @@ export default function Home() {
             </Reveal>
 
             <div className="space-y-6">
-              {SERVICES.map((s, i) => {
-                const isOpen = openService === s.title;
-
-                return (
-                  <Reveal key={s.title} delay={i * 0.08}>
-                    <button
-                      type="button"
-                      aria-expanded={isOpen}
-                      onClick={() => setOpenService(isOpen ? null : s.title)}
-                      className={`group w-full rounded-2xl border text-left transition-all p-7 ${
-                        isOpen
-                          ? "border-amber-300/80 bg-amber-50/50 shadow-lg shadow-amber-900/5 dark:border-amber-800/70 dark:bg-[#1f1309]"
-                          : "border-stone-200 bg-stone-50 hover:border-amber-300/60 hover:bg-amber-50/30 dark:border-stone-800 dark:bg-[#1a1108] dark:hover:border-amber-800/60 dark:hover:bg-[#1f1309]"
-                      }`}
-                    >
-                      <div className="flex items-start gap-6">
+              {SERVICES.map((s, i) => (
+                <Reveal key={s.title} delay={i * 0.08}>
+                  <div className="group rounded-2xl border border-stone-200 dark:border-stone-800 bg-stone-50 dark:bg-[#1a1108] hover:border-amber-300/60 dark:hover:border-amber-800/60 hover:bg-amber-50/30 dark:hover:bg-[#1f1309] transition-all p-7">
+                    <div className="flex items-start gap-6">
                       <div className="flex-shrink-0">
                         <span className="text-[11px] font-bold text-amber-500/60 uppercase tracking-[0.3em]">
                           {s.num}
@@ -526,39 +514,25 @@ export default function Home() {
                         </div>
                       </div>
                       <div className="flex-1">
-                        <div className="flex items-start justify-between gap-4">
-                          <h3
-                            className="text-xl font-bold text-stone-900 dark:text-white"
-                            style={{ fontFamily: "'Georgia', serif" }}
-                          >
-                            {s.title}
-                          </h3>
-                          <HiChevronDown
-                            className={`mt-1 h-5 w-5 flex-shrink-0 text-stone-400 transition-transform ${
-                              isOpen ? "rotate-180 text-amber-500" : "group-hover:text-amber-500"
-                            }`}
-                          />
-                        </div>
-                        <motion.div
-                          initial={false}
-                          animate={isOpen ? { height: "auto", opacity: 1 } : { height: 0, opacity: 0 }}
-                          transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-                          className="overflow-hidden"
+                        <h3
+                          className="text-xl font-bold text-stone-900 dark:text-white mb-2"
+                          style={{ fontFamily: "'Georgia', serif" }}
                         >
-                          <p className="pt-3 text-sm leading-relaxed text-stone-500 dark:text-stone-400">
-                            {s.description}
-                          </p>
-                          <span className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-amber-100/80 px-3 py-1.5 text-xs font-semibold text-[#8B2A0F] dark:bg-amber-400/10 dark:text-amber-400">
-                            <span className="h-1.5 w-1.5 rounded-full bg-amber-400" />
-                            {s.detail}
-                          </span>
-                        </motion.div>
+                          {s.title}
+                        </h3>
+                        <p className="text-stone-500 dark:text-stone-400 text-sm leading-relaxed mb-4">
+                          {s.description}
+                        </p>
+                        <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#8B2A0F] dark:text-amber-400 bg-amber-100/80 dark:bg-amber-400/10 px-3 py-1.5 rounded-full">
+                          <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                          {s.detail}
+                        </span>
                       </div>
+                      {/* <HiArrowRight className="w-5 h-5 text-stone-300 dark:text-stone-700 group-hover:text-amber-400 group-hover:translate-x-1 transition-all flex-shrink-0 mt-1" /> */}
                     </div>
-                  </button>
+                  </div>
                 </Reveal>
-                );
-              })}
+              ))}
             </div>
           </div>
         </div>
