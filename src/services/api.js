@@ -172,6 +172,12 @@ export const uploadAPI = {
   uploadImage: (formData) => api.post('/upload/image', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
 }
 
+export const brochureAPI = {
+  getAll: () => api.get('/brochures'),
+  create: (formData) => api.post('/brochures', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
+  delete: (id) => api.delete(`/brochures/${id}`),
+}
+
 export const notificationAPI = {
   getAll:      ()   => api.get('/notifications'),
   markAllRead: ()   => api.patch('/notifications/mark-read'),
