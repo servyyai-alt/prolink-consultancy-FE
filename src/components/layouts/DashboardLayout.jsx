@@ -247,14 +247,14 @@ import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   HiViewGrid, HiUser, HiBriefcase, HiBookmark, HiCalendar,
-  HiLogout, HiMenu, HiX, HiBell, HiSun, HiMoon,
+  HiLogout, HiMenu, HiX, HiSun, HiMoon,
   HiPlusCircle, HiUserGroup, HiChatAlt2,
 } from 'react-icons/hi'
 import { logoutUser, selectUser } from '../../redux/slices/authSlice'
 import { toggleTheme, selectTheme } from '../../redux/slices/uiSlice'
-import { selectUnreadCount } from '../../redux/slices/notificationSlice'
 import { Link } from 'react-router-dom'
 import ConfirmDialog from '../common/ConfirmDialog'
+import NotificationMenu from '../common/NotificationMenu'
 import Logo from '../../assets/logo.jpeg'
 
 const JOB_SEEKER_NAV = [
@@ -282,7 +282,6 @@ export default function DashboardLayout({ variant = 'jobseeker' }) {
   const location  = useLocation()
   const user      = useSelector(selectUser)
   const theme     = useSelector(selectTheme)
-  const unread    = useSelector(selectUnreadCount)
   const navLinks  = variant === 'employer' ? EMPLOYER_NAV : JOB_SEEKER_NAV
 
   const handleLogout = async () => {
@@ -417,15 +416,7 @@ export default function DashboardLayout({ variant = 'jobseeker' }) {
           </button>
           <div className="flex-1" />
           <div className="flex items-center gap-2">
-            <Link to={variant === 'employer' ? '/employer/contact-requests' : '/dashboard/contact-requests'}
-              className="relative p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800">
-              <HiBell className="w-5 h-5" />
-              {unread > 0 && (
-                <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
-                  {unread > 9 ? '9+' : unread}
-                </span>
-              )}
-            </Link>
+            <NotificationMenu role={user?.role} />
           </div>
         </header>
 

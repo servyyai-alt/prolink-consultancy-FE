@@ -211,6 +211,7 @@ import {
 import { logoutUser, selectUser } from '../../redux/slices/authSlice'
 import { toggleTheme, selectTheme } from '../../redux/slices/uiSlice'
 import ConfirmDialog from '../common/ConfirmDialog'
+import NotificationMenu from '../common/NotificationMenu'
 import Logo from '../../assets/logo.jpeg'
 
 const ADMIN_NAV = [
@@ -353,6 +354,8 @@ export default function AdminLayout() {
             {open ? <HiX className="w-5 h-5" /> : <HiMenu className="w-5 h-5" />}
           </button>
           <span className="text-sm font-semibold text-slate-500">Admin Panel</span>
+          <div className="flex-1" />
+          <NotificationMenu role={user?.role} />
         </header>
         <main className="flex-1 overflow-y-auto p-4 sm:p-6">
           <Outlet />

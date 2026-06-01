@@ -4,20 +4,20 @@ import { useDispatch, useSelector } from 'react-redux'
 import { useQuery } from '@tanstack/react-query'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
-  HiMenu, HiX, HiChevronDown, HiBell, HiMoon, HiSun,
+  HiMenu, HiX, HiChevronDown, HiMoon, HiSun,
   HiUser, HiLogout, HiViewGrid, HiPhone, HiMail, HiChatAlt2,
   HiDocumentText,
 } from 'react-icons/hi'
 import { selectIsLoggedIn, selectUser, selectRole, logoutUser } from '../../redux/slices/authSlice'
 import { toggleTheme, selectTheme } from '../../redux/slices/uiSlice'
-import { selectUnreadCount } from '../../redux/slices/notificationSlice'
 import { serviceAPI } from '../../services/api'
 import { getServiceRoute } from '../../utils/serviceRoutes'
 import ConfirmDialog from './ConfirmDialog'
+import NotificationMenu from './NotificationMenu'
 import Logo from '../../assets/logo.jpeg'
 
 const TOP_BAR_CONTACT = [
-  { icon: HiPhone, label: '+91 9437174876', href: 'tel:+919437174876' },
+  { icon: HiPhone, label: '+91 99370 47733', href: 'tel:+9199370 47733' },
   { icon: HiMail,  label: 'admin@prolinkconsultancy.com', href: 'mailto:admin@prolinkconsultancy.com' },
 ]
 
@@ -53,7 +53,6 @@ export default function Navbar() {
   const user        = useSelector(selectUser)
   const role        = useSelector(selectRole)
   const theme       = useSelector(selectTheme)
-  const unreadCount = useSelector(selectUnreadCount)
   const canSubmitTestimonial = role === 'job_seeker'
   const { data } = useQuery({ queryKey: ['services'], queryFn: serviceAPI.getServices })
   const services = data?.data?.data?.services?.length ? data.data.data.services : fallbackServices
@@ -104,12 +103,6 @@ export default function Navbar() {
     if (['admin', 'super_admin', 'recruiter'].includes(user.role)) return '/admin'
     if (user.role === 'employer') return '/employer'
     return '/dashboard'
-  }
-
-  const getNotificationLink = () => {
-    if (user?.role === 'employer') return '/employer/contact-requests'
-    if (['admin', 'super_admin', 'recruiter'].includes(user?.role)) return '/admin/contacts'
-    return '/dashboard/contact-requests'
   }
 
   const closeMobileMenu = () => setMobileOpen(false)
@@ -356,17 +349,7 @@ export default function Navbar() {
 
               {isLoggedIn ? (
                 <>
-                  <Link
-                    to={getNotificationLink()}
-                    className="relative p-2 rounded-lg text-stone-400 hover:text-stone-700 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
-                  >
-                    <HiBell className="w-[18px] h-[18px]" />
-                    {unreadCount > 0 && (
-                      <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
-                        {unreadCount > 9 ? '9+' : unreadCount}
-                      </span>
-                    )}
-                  </Link>
+                  <NotificationMenu role={user?.role} />
 
                   <div className="relative" ref={profileRef}>
                     <button

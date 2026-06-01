@@ -54,6 +54,12 @@ import { addNotification } from '../redux/slices/notificationSlice'
 
 let socketInstance = null
 
+const getSocketUrl = () => {
+  if (import.meta.env.VITE_SOCKET_URL) return import.meta.env.VITE_SOCKET_URL
+  if (import.meta.env.VITE_API_URL) return import.meta.env.VITE_API_URL.replace(/\/api\/v1\/?$/, '')
+  return window.location.origin
+}
+
 export function useSocket() {
   const dispatch    = useDispatch()
   const isLoggedIn  = useSelector(selectIsLoggedIn)
@@ -62,7 +68,9 @@ export function useSocket() {
   useEffect(() => {
     if (!isLoggedIn || !accessToken) return
 
-    socketInstance = io(import.meta.env.VITE_SOCKET_URL || '', {
+    if (socketInstance) socketInstance.disconnect()
+
+    socketInstance = io(getSocketUrl(), {
       auth: { token: accessToken },
       transports: ['websocket', 'polling'],
       reconnectionAttempts: 5,
@@ -79,7 +87,7 @@ export function useSocket() {
     return () => {
       if (socketInstance) { socketInstance.disconnect(); socketInstance = null }
     }
-  }, [isLoggedIn, accessToken])
+  }, [dispatch, isLoggedIn, accessToken])
 
   return socketInstance
 }

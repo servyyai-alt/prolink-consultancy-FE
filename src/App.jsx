@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { getMe } from './redux/slices/authSlice'
 import { selectTheme } from './redux/slices/uiSlice'
 import { selectIsLoggedIn, selectRole } from './redux/slices/authSlice'
-import { setNotifications } from './redux/slices/notificationSlice'
+import { clearNotifications, setNotifications } from './redux/slices/notificationSlice'
 import { notificationAPI } from './services/api'
 import { useSocket } from './hooks'
 import PublicLayout from './components/layouts/PublicLayout'
@@ -88,7 +88,10 @@ export default function App() {
   }, [dispatch, isLoggedIn])
 
   useEffect(() => {
-    if (!isLoggedIn) return
+    if (!isLoggedIn) {
+      dispatch(clearNotifications())
+      return
+    }
 
     notificationAPI.getAll()
       .then(({ data }) => {

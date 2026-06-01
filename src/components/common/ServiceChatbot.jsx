@@ -22,7 +22,7 @@ const fallbackServices = [
 ]
 
 const CONTACT = {
-  phone: '+91 9437174876',
+  phone: '+91 99370 47733',
   email: 'admin@prolinkconsultancy.com',
   address: 'Plot no 3010, Palasuni Rasulagarh, Bhubaneswar, Odisha 751025, India',
   hours: 'Monday to Saturday, 9:00 am to 6:00 pm',
