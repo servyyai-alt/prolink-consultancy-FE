@@ -115,6 +115,7 @@ export default function Testimonials() {
                           <img
                             src={testimonial.avatar.url}
                             alt={testimonial.name}
+                            loading="lazy"
                             className="h-12 w-12 rounded-2xl object-cover border border-slate-200 dark:border-slate-700"
                           />
                         ) : (

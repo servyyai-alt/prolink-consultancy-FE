@@ -85,7 +85,7 @@ export default function Blogs() {
                   <Link to={`/blogs/${blog.slug}`} className="card-hover overflow-hidden flex flex-col group">
                     <div className="h-48 bg-gradient-to-br from-primary-100 to-blue-100 dark:from-primary-900/30 dark:to-blue-900/20 relative overflow-hidden">
                       {blog.thumbnail?.url
-                        ? <img src={blog.thumbnail.url} alt={blog.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                        ? <img src={blog.thumbnail.url} alt={blog.title} loading="lazy" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                         : <div className="w-full h-full flex items-center justify-center text-4xl">📝</div>
                       }
                       <span className="absolute top-3 left-3 px-2.5 py-1 bg-primary-600 text-white text-xs font-bold rounded-full">{blog.category}</span>

@@ -266,6 +266,7 @@ export default function AdminLayout() {
                 <img
                   src={Logo}
                   alt="ProLink Consultancy"
+                  loading="eager"
                   className="
                     h-16
                     w-auto

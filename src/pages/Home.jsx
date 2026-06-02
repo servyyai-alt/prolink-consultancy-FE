@@ -853,6 +853,7 @@ export default function Home() {
                     <img
                       src={testimonial.avatar.url}
                       alt={testimonial.name}
+                      loading="lazy"
                       className="h-12 w-12 rounded-2xl object-cover border-2 border-white shadow-md dark:border-stone-700"
                     />
 

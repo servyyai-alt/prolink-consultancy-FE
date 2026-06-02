@@ -1,6 +1,5 @@
 import { useParams, Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { Helmet } from 'react-helmet-async'
 import { motion } from 'framer-motion'
 import { HiCheckCircle, HiArrowLeft, HiArrowRight } from 'react-icons/hi'
 import { serviceAPI, contactAPI } from '../services/api'
@@ -9,6 +8,9 @@ import * as Yup from 'yup'
 import toast from 'react-hot-toast'
 import { getServiceIcon } from '../constants/serviceIcons'
 import { requiredIndianMobileSchema, sanitizeIndianMobileInput } from '../utils/phoneValidation'
+import SEO from '../components/SEO'
+import { breadcrumbSchema, serviceSchema } from '../utils/schema'
+import { getAbsoluteUrl } from '../utils/seo'
 
 const SERVICE_DETAIL_FALLBACKS = {
   'background-verification': {
@@ -96,10 +98,22 @@ export default function ServiceDetail() {
 
   return (
     <>
-      <Helmet>
-        <title>{service.name} | ProLink Consultancy</title>
-        <meta name="description" content={service.metaDescription || service.shortDescription || service.description} />
-      </Helmet>
+      <SEO
+        title={`${service.metaTitle || service.name} | ProLink Consultancy`}
+        description={service.metaDescription || service.shortDescription || service.description}
+        keywords={[service.name, service.category, 'ProLink Consultancy service'].filter(Boolean).join(', ')}
+        image={service.image?.url}
+        url={getAbsoluteUrl(`/services/${service.slug || slug}`)}
+        canonical={getAbsoluteUrl(`/services/${service.slug || slug}`)}
+        schemas={[
+          breadcrumbSchema([
+            { name: 'Home', url: '/' },
+            { name: 'Services', url: '/services' },
+            { name: service.name, url: `/services/${service.slug || slug}` },
+          ]),
+          serviceSchema(service),
+        ]}
+      />
       <div className="pt-16">
         <div className="bg-gradient-to-r from-primary-700 to-primary-900 py-16">
           <div className="page-container">

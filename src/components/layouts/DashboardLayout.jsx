@@ -327,7 +327,7 @@ export default function DashboardLayout({ variant = 'jobseeker' }) {
       <div className="px-4 py-4 border-b border-slate-100 dark:border-slate-800">
         <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800">
           {user?.avatar?.url
-            ? <img src={user.avatar.url} alt="" className="w-10 h-10 rounded-full object-cover flex-shrink-0" />
+            ? <img src={user.avatar.url} alt={`${user.firstName || 'User'} profile`} loading="lazy" className="w-10 h-10 rounded-full object-cover flex-shrink-0" />
             : <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center flex-shrink-0">
                 <span className="text-white font-bold">{user?.firstName?.[0]}</span>
               </div>

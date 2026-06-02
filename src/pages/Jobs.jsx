@@ -251,7 +251,7 @@ export default function Jobs() {
                       <Link to={`/jobs/${job.slug}`} className="card-hover p-5 flex gap-4 group">
                         {/* Company logo */}
                         <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary-50 to-primary-100 dark:from-primary-900/20 dark:to-primary-800/20 flex items-center justify-center flex-shrink-0 font-bold text-xl text-primary-600">
-                          {job.company?.logo ? <img src={job.company.logo} alt={job.company.name} className="w-10 h-10 object-contain rounded-lg" /> : job.company?.name?.[0]}
+                          {job.company?.logo ? <img src={job.company.logo} alt={`${job.company.name} logo`} loading="lazy" className="w-10 h-10 object-contain rounded-lg" /> : job.company?.name?.[0]}
                         </div>
 
                         <div className="flex-1 min-w-0">

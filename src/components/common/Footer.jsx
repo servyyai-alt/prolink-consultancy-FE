@@ -48,8 +48,8 @@ const footerLinks = {
 const socials = [
   { icon: FaLinkedin, href: "#", label: "LinkedIn" },
   { icon: FaTwitter, href: "#", label: "Twitter" },
-  { icon: FaFacebook, href: "#", label: "Facebook" },
-  { icon: FaInstagram, href: "#", label: "Instagram" },
+  { icon: FaFacebook, href: "https://www.facebook.com/people/Prolink-Staffing-Consultancy-Pvt-Ltd/61589981516827/", label: "Facebook" },
+  { icon: FaInstagram, href: "https://www.linkedin.com/company/prolink-staffing-consultancy-pvt-ltd/", label: "Instagram" },
   { icon: FaYoutube, href: "#", label: "YouTube" },
 ];
 
@@ -198,6 +198,7 @@ export default function Footer() {
                 <img
                   src={Logo}
                   alt="ProLink Consultancy"
+                  loading="lazy"
                   className="
                     h-16
                     w-auto
@@ -256,7 +257,7 @@ export default function Footer() {
             
               {/* Email */}
               <a
-                href="mailto:admin@prolinkconsultancy.com"
+                href="mailto:admin@prolinkconsultancy.in"
                 className="flex items-center gap-4 group"
               >
                 <div className="w-11 h-11 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center">
@@ -264,7 +265,7 @@ export default function Footer() {
                 </div>
             
                 <span className="text-stone-400 group-hover:text-amber-400 transition-colors break-all">
-                  admin@prolinkconsultancy.com
+                  admin@prolinkconsultancy.in
                 </span>
               </a>
             

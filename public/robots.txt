@@ -1,0 +1,18 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /admin/
+Disallow: /dashboard
+Disallow: /dashboard/
+Disallow: /employer
+Disallow: /employer/
+Disallow: /api
+Disallow: /api/
+Disallow: /login
+Disallow: /register
+Disallow: /verify-otp
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /submit-testimonial
+
+Sitemap: https://prolinkconsultancy.in/sitemap.xml

@@ -1,13 +1,15 @@
 import { useState } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { Helmet } from 'react-helmet-async'
 import { motion } from 'framer-motion'
 import { useSelector } from 'react-redux'
-import { HiLocationMarker, HiBriefcase, HiClock, HiCurrencyRupee, HiBookmark, HiShare, HiArrowLeft, HiCheckCircle, HiExclamation, HiCalendar, HiUsers } from 'react-icons/hi'
+import { HiLocationMarker, HiBriefcase, HiClock, HiCurrencyRupee, HiBookmark, HiArrowLeft, HiCheckCircle, HiExclamation, HiUsers } from 'react-icons/hi'
 import { jobAPI, applicationAPI, userAPI } from '../services/api'
 import { selectIsLoggedIn, selectUser } from '../redux/slices/authSlice'
 import { Badge, Modal } from '../components/ui/index'
+import SEO from '../components/SEO'
+import { breadcrumbSchema, jobPostingSchema } from '../utils/schema'
+import { getAbsoluteUrl, truncateText } from '../utils/seo'
 import toast from 'react-hot-toast'
 
 export default function JobDetail() {
@@ -79,10 +81,23 @@ export default function JobDetail() {
 
   return (
     <>
-      <Helmet>
-        <title>{job.title} at {job.company?.name} | ProLink</title>
-        <meta name="description" content={`Apply for ${job.title} at ${job.company?.name} in ${job.location}.`} />
-      </Helmet>
+      <SEO
+        title={`${job.metaTitle || `${job.title} at ${job.company?.name || 'ProLink'}`} | ProLink Consultancy`}
+        description={job.metaDescription || `Apply for ${job.title} at ${job.company?.name || 'a leading company'} in ${job.location}. ${truncateText(job.description, 90)}`}
+        keywords={[job.title, job.company?.name, job.location, job.category, ...(job.skills || [])].filter(Boolean).join(', ')}
+        image={job.company?.logo}
+        url={getAbsoluteUrl(`/jobs/${job.slug || slug}`)}
+        canonical={getAbsoluteUrl(`/jobs/${job.slug || slug}`)}
+        type="article"
+        schemas={[
+          breadcrumbSchema([
+            { name: 'Home', url: '/' },
+            { name: 'Jobs', url: '/jobs' },
+            { name: job.title, url: `/jobs/${job.slug || slug}` },
+          ]),
+          jobPostingSchema(job),
+        ]}
+      />
       <div className="pt-16 min-h-screen bg-slate-50 dark:bg-slate-950">
         <div className="bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800">
           <div className="page-container py-3.5 flex items-center gap-2 text-sm">

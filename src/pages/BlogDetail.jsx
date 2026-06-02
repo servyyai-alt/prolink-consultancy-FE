@@ -1,12 +1,14 @@
 import { useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Helmet } from 'react-helmet-async'
 import { HiCalendar, HiClock, HiEye, HiArrowLeft } from 'react-icons/hi'
 import { FaFacebook, FaInstagram, FaLinkedin, FaTwitter, FaYoutube } from 'react-icons/fa'
 import { useSelector } from 'react-redux'
 import { blogAPI } from '../services/api'
 import { selectIsLoggedIn, selectUser } from '../redux/slices/authSlice'
+import SEO from '../components/SEO'
+import { articleSchema, breadcrumbSchema } from '../utils/schema'
+import { getAbsoluteUrl, truncateText } from '../utils/seo'
 import toast from 'react-hot-toast'
 
 const SOCIAL_CONFIG = [
@@ -107,13 +109,23 @@ export default function BlogDetail() {
 
   return (
     <>
-      <Helmet>
-        <title>{blog.title} | ProLink Blog</title>
-        <meta name="description" content={blog.excerpt} />
-        <meta property="og:title" content={blog.title} />
-        <meta property="og:description" content={blog.excerpt} />
-        {blog.thumbnail?.url && <meta property="og:image" content={blog.thumbnail.url} />}
-      </Helmet>
+      <SEO
+        title={`${blog.metaTitle || blog.title} | ProLink Blog`}
+        description={blog.metaDescription || blog.excerpt || truncateText(blog.content, 155)}
+        keywords={blog.tags?.join(', ')}
+        image={blog.thumbnail?.url}
+        url={getAbsoluteUrl(`/blogs/${blog.slug || slug}`)}
+        canonical={getAbsoluteUrl(`/blogs/${blog.slug || slug}`)}
+        type="article"
+        schemas={[
+          breadcrumbSchema([
+            { name: 'Home', url: '/' },
+            { name: 'Blog', url: '/blogs' },
+            { name: blog.title, url: `/blogs/${blog.slug || slug}` },
+          ]),
+          articleSchema(blog),
+        ]}
+      />
       <div className="pt-16 min-h-screen bg-white dark:bg-slate-900">
         <div className="page-container py-10 max-w-3xl mx-auto">
           <Link to="/blogs" className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-primary-600 mb-6 transition-colors"><HiArrowLeft className="w-4 h-4" />Back to Blog</Link>
@@ -130,7 +142,7 @@ export default function BlogDetail() {
             {blog.readTime && <span className="flex items-center gap-1"><HiClock className="w-4 h-4" />{blog.readTime} min read</span>}
             <span className="flex items-center gap-1"><HiEye className="w-4 h-4" />{blog.views||0} views</span>
           </div>
-          {blog.thumbnail?.url && <img src={blog.thumbnail.url} alt={blog.title} className="w-full h-64 md:h-80 object-cover rounded-2xl mb-8 shadow-lg" />}
+          {blog.thumbnail?.url && <img src={blog.thumbnail.url} alt={blog.title} loading="lazy" className="w-full h-64 md:h-80 object-cover rounded-2xl mb-8 shadow-lg" />}
           <div className="prose prose-slate dark:prose-invert max-w-none text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap text-base">
             {blog.content}
           </div>
@@ -274,7 +286,7 @@ export default function BlogDetail() {
                   <Link key={post._id} to={`/blogs/${post.slug}`} className="rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden hover:border-primary-400 transition-colors">
                     <div className="h-36 bg-slate-100 dark:bg-slate-800">
                       {post.thumbnail?.url ? (
-                        <img src={post.thumbnail.url} alt={post.title} className="w-full h-full object-cover" />
+                        <img src={post.thumbnail.url} alt={post.title} loading="lazy" className="w-full h-full object-cover" />
                       ) : null}
                     </div>
                     <div className="p-4">

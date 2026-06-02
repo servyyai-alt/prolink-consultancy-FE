@@ -18,7 +18,7 @@ import Logo from '../../assets/logo.jpeg'
 
 const TOP_BAR_CONTACT = [
   { icon: HiPhone, label: '+91 99370 47733', href: 'tel:+9199370 47733' },
-  { icon: HiMail,  label: 'admin@prolinkconsultancy.com', href: 'mailto:admin@prolinkconsultancy.com' },
+  { icon: HiMail,  label: 'admin@prolinkconsultancy.in', href: 'mailto:admin@prolinkconsultancy.in' },
 ]
 
 const fallbackServices = [
@@ -187,6 +187,7 @@ export default function Navbar() {
                <img
                  src={Logo}
                  alt="ProLink Consultancy"
+                 loading="eager"
                  className="
                    h-16
                    w-auto
@@ -357,7 +358,7 @@ export default function Navbar() {
                       className="flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-xl hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors ml-1"
                     >
                       {user?.avatar?.url
-                        ? <img src={user.avatar.url} alt={user.firstName} className="w-8 h-8 rounded-full object-cover ring-2 ring-amber-300/30" />
+                        ? <img src={user.avatar.url} alt={`${user.firstName || 'User'} profile`} loading="lazy" className="w-8 h-8 rounded-full object-cover ring-2 ring-amber-300/30" />
                         : <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#8B2A0F] to-[#5c1c09] flex items-center justify-center ring-2 ring-amber-300/30">
                             <span className="text-white text-sm font-bold">{user?.firstName?.[0]}</span>
                           </div>

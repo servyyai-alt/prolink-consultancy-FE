@@ -245,6 +245,7 @@ export default function About() {
                     <img
                       src={image.url}
                       alt={name}
+                      loading="lazy"
                       className="h-24 w-24 rounded-3xl object-cover border-4 border-white dark:border-slate-800 shadow-xl transition-all duration-500 group-hover:scale-105 group-hover:shadow-primary"
                     />
 

@@ -12,6 +12,7 @@ import DashboardLayout from './components/layouts/DashboardLayout'
 import AdminLayout from './components/layouts/AdminLayout'
 import PageLoader from './components/common/PageLoader'
 import ProtectedRoute from './routes/ProtectedRoute'
+import SEO from './components/SEO'
 
 // Public pages
 const Home          = lazy(() => import('./pages/Home'))
@@ -102,6 +103,7 @@ export default function App() {
 
   return (
     <Suspense fallback={<PageLoader />}>
+      <SEO includeGlobalSchemas />
       <Routes>
         {/* Public Routes */}
         <Route element={<PublicLayout />}>
