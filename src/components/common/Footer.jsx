@@ -16,6 +16,7 @@ import {
 } from "react-icons/hi";
 
 import Logo from "../../assets/logo.jpeg";
+import LALOGO from "../../assets/Leastactionlogo.png"
 import { serviceAPI } from "../../services/api";
 import { getServiceRoute } from "../../utils/serviceRoutes";
 
@@ -46,11 +47,11 @@ const footerLinks = {
 };
 
 const socials = [
-  { icon: FaLinkedin, href: "#", label: "LinkedIn" },
+  { icon: FaLinkedin, href: "https://www.linkedin.com/company/prolink-staffing-consultancy-pvt-ltd/", label: "LinkedIn" },
   { icon: FaTwitter, href: "#", label: "Twitter" },
-  { icon: FaFacebook, href: "https://www.facebook.com/people/Prolink-Staffing-Consultancy-Pvt-Ltd/61589981516827/", label: "Facebook" },
-  { icon: FaInstagram, href: "https://www.linkedin.com/company/prolink-staffing-consultancy-pvt-ltd/", label: "Instagram" },
-  { icon: FaYoutube, href: "#", label: "YouTube" },
+  { icon: FaFacebook, href: "https://www.facebook.com/ProlinkConsultancy0", label: "Facebook" },
+  { icon: FaInstagram, href: "https://www.instagram.com/prolinkindia2026/", label: "Instagram" },
+  { icon: FaYoutube, href: "https://www.youtube.com/@Prolink_Consultancy", label: "YouTube" },
 ];
 
 const fallbackServices = [
@@ -358,6 +359,11 @@ export default function Footer() {
         <p className="text-sm text-stone-600         dark:text-stone-400 text-center md:text-left         leading-relaxed">
           © {new Date().getFullYear()} ProLink Consultancy. 
           All rights reserved. Designed & Developed by{' '}
+          <img
+            src={LALOGO}
+            alt="Least Action Company"
+            className="inline-block w-5 h-5 object-contain rounded-full mx-1"
+          />
           <a
             href="https://www.leastactioncompany.com/"
             target="_blank"

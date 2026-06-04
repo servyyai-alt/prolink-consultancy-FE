@@ -60,7 +60,9 @@ const AuthShell = ({
           ))}
         </div>
       </div>
-      <p className="relative text-primary-300 text-xs">© 2024 ProLink Consultancy. All rights reserved.</p>
+      <p className="relative text-primary-300 text-xs">
+        © {new Date().getFullYear()} ProLink Consultancy. All rights reserved.
+      </p>
     </div>
 
     {/* Right panel */}

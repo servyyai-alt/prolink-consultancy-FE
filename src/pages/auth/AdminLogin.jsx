@@ -565,7 +565,7 @@ export default function AdminLogin() {
               ))}
             </div>
 
-            <p className="relative text-xs text-slate-600">© 2024 ProLink Consultancy</p>
+            <p className="relative text-xs text-slate-600">© {new Date().getFullYear()} ProLink Consultancy</p>
           </div>
 
           {/* ── RIGHT: login form ────────────────────────────────────── */}

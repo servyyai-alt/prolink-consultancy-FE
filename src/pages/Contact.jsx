@@ -224,10 +224,14 @@ export default function Contact() {
                 {
                   icon: HiLocationMarker,
                   label: 'Visit Us',
-                  value: 'Plot no 3010, Cuttack - Puri By pass Near Sapta sati Temple in Palasuni Rasulagarh, Bhubaneswar,',
+                  value:
+                    'Plot no 3010, Cuttack - Puri By pass Near Sapta sati Temple in Palasuni Rasulagarh,                 Bhubaneswar',
                   sub: 'Odisha 751025',
+                  href: 'https://maps.app.goo.gl/h12P6ERfSvVkrR61A',
                   color: 'green',
-                },
+                }
+                
+
               ].map(
                 ({
                   icon: Icon,
@@ -286,12 +290,14 @@ export default function Contact() {
                       </p>
             
                       {href ? (
-                        <a
-                          href={href}
-                          className="font-semibold text-slate-900 dark:text-white hover:text-primary-600             dark:hover:text-primary-400 transition-colors text-sm"
-                        >
-                          {value}
-                        </a>
+                       <a
+                         href={href}
+                         target="_blank"
+                         rel="noopener noreferrer"
+                         className="font-semibold text-slate-900 dark:text-white hover:text-primary-600                        dark:hover:text-primary-400 transition-colors text-sm"
+                       >
+                         {value}
+                       </a>
                       ) : (
                         <p className="font-semibold text-slate-900 dark:text-white text-sm">
                           {value}

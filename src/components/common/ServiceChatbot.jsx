@@ -28,20 +28,6 @@ const CONTACT = {
   hours: 'Monday to Saturday, 9:00 am to 6:00 pm',
 }
 
-const starterMessages = [
-  {
-    role: 'bot',
-    text: 'Hi, I am ProLink Assist. Ask me about our services, pricing, process, contact details, or which service fits your project requirement.',
-  },
-]
-
-const quickPrompts = [
-  'Show all services',
-  'How can I contact ProLink?',
-  'Which service is right for my project?',
-  'Tell me about pricing',
-]
-
 const normalize = (value = '') => value.toLowerCase().replace(/[^a-z0-9\s-]/g, ' ').replace(/\s+/g, ' ').trim()
 
 const compactText = (value = '', limit = 260) => {
@@ -50,16 +36,48 @@ const compactText = (value = '', limit = 260) => {
   return `${clean.slice(0, limit).trim()}...`
 }
 
+const formatCurrency = (value) => {
+  const amount = Number(value)
+  if (!Number.isFinite(amount)) return value ? `${value}` : ''
+  return `INR ${amount.toLocaleString('en-IN')}`
+}
+
+const buildServiceSummary = (service) =>
+  service.shortDescription || compactText(service.description, 130) || 'Professional consultancy support from ProLink.'
+
+const buildWelcomeMessage = (services) => ({
+  kind: 'welcome',
+  role: 'bot',
+  text: 'Hi, I am ProLink Assist. Ask me about our services, pricing, process, contact details, or which service fits your project requirement.',
+  actions: [{ label: 'View Services', to: '/services' }],
+  services: services.slice(0, 4).map((service) => ({
+    name: service.name,
+    description: buildServiceSummary(service),
+    to: getServiceRoute(service.slug),
+  })),
+  suggestions: buildSuggestedQuestions(services),
+})
+
+function buildSuggestedQuestions(services) {
+  const prompts = ['Show all services', 'How can I contact ProLink?', 'Which service is right for my project?', 'Tell me about pricing']
+  const servicePrompts = services.slice(0, 3).flatMap((service) => [
+    `Tell me about ${service.name}`,
+    `What is the process for ${service.name}?`,
+  ])
+
+  return [...servicePrompts, ...prompts].slice(0, 6)
+}
+
 function formatServiceAnswer(service, intent = 'overview') {
   const pieces = []
 
-  pieces.push(`${service.name}: ${service.shortDescription || compactText(service.description, 150) || 'Professional consultancy support from ProLink.'}`)
+  pieces.push(`${service.name}: ${buildServiceSummary(service)}`)
 
   if (intent === 'pricing' && service.pricing?.length) {
     const plans = service.pricing
       .filter((plan) => plan.isActive !== false)
       .slice(0, 3)
-      .map((plan) => `${plan.plan}${plan.price ? ` - INR ${Number(plan.price).toLocaleString('en-IN')}` : ''}${plan.period ? `/${plan.period}` : ''}`)
+      .map((plan) => `${plan.plan}${plan.price ? ` - ${formatCurrency(plan.price)}` : ''}${plan.period ? `/${plan.period}` : ''}`)
       .join('; ')
     pieces.push(`Pricing plans: ${plans}.`)
   } else if (service.description) {
@@ -81,6 +99,14 @@ function formatServiceAnswer(service, intent = 'overview') {
   return pieces.filter(Boolean).join(' ')
 }
 
+function buildServiceShortcuts(services) {
+  return services.slice(0, 6).map((service) => ({
+    name: service.name,
+    description: buildServiceSummary(service),
+    to: getServiceRoute(service.slug),
+  }))
+}
+
 function findService(services, question) {
   const text = normalize(question)
   return services.find((service) => {
@@ -99,12 +125,37 @@ function findService(services, question) {
   })
 }
 
+function buildServiceRecommendations(services, question) {
+  const text = normalize(question)
+
+  if (/\b(hiring|recruit|placement|job|candidate)\b/.test(text)) {
+    return services.filter((service) => /job|placement|recruit/i.test(service.name)).slice(0, 3)
+  }
+
+  if (/\b(campus|college|fresher|drive)\b/.test(text)) {
+    return services.filter((service) => /campus/i.test(service.name)).slice(0, 3)
+  }
+
+  if (/\b(background|verification|check|screening)\b/.test(text)) {
+    return services.filter((service) => /background|verification/i.test(service.name)).slice(0, 3)
+  }
+
+  if (/\b(hr|payroll|onboarding|attendance|operations)\b/.test(text)) {
+    return services.filter((service) => /hr/i.test(service.name)).slice(0, 3)
+  }
+
+  return services.slice(0, 3)
+}
+
 function buildResponse(question, services) {
   const text = normalize(question)
   const matchedService = findService(services, question)
   const wantsPricing = /\b(price|pricing|cost|charge|plan|fee|fees|rate|rates)\b/.test(text)
   const wantsProcess = /\b(process|step|steps|how it works|work)\b/.test(text)
   const wantsFaq = /\b(faq|question|doubt)\b/.test(text)
+  const wantsHours = /\b(hour|hours|timing|timings|open|close|available)\b/.test(text)
+  const wantsRecommendation = /\b(recommend|suggest|best|right service|which service|need help|help me)\b/.test(text)
+  const wantsListing = /\b(all services|services|what do you offer|offerings|service list)\b/.test(text)
 
   if (/\b(contact|phone|mobile|email|mail|address|location|visit|call|reach)\b/.test(text)) {
     return {
@@ -113,22 +164,42 @@ function buildResponse(question, services) {
         { label: 'Open Contact Page', to: '/contact' },
         { label: 'Call Now', href: `tel:${CONTACT.phone.replace(/\s/g, '')}` },
       ],
+      suggestions: ['Show all services', 'Which service is right for my project?', 'Tell me about pricing'],
     }
   }
 
-  if (/\b(all services|services|what do you offer|offerings)\b/.test(text) && !matchedService) {
+  if (wantsHours) {
+    return {
+      text: `Our working hours are ${CONTACT.hours}. If you need to visit the office, the address is ${CONTACT.address}.`,
+      actions: [{ label: 'Contact Team', to: '/contact' }],
+      suggestions: ['How can I contact ProLink?', 'Show all services', 'Which service is right for my project?'],
+    }
+  }
+
+  if (wantsListing && !matchedService) {
     return {
       text: `We currently provide ${services.length} service${services.length === 1 ? '' : 's'}: ${services.map((service) => service.name).join(', ')}. Pick one and I can explain details, pricing, or the process.`,
       actions: [{ label: 'View Services', to: '/services' }],
+      services: buildServiceShortcuts(services),
+      suggestions: buildSuggestedQuestions(services),
     }
   }
 
-  if (/\b(project|requirement|business|company|need help|recommend|suggest|which service)\b/.test(text) && !matchedService) {
+  if (wantsRecommendation && !matchedService) {
+    const recommendations = buildServiceRecommendations(services, text)
     return {
-      text: 'For hiring or placement, start with Job Consultancy. For bulk fresher hiring, Campus Drive is best. For employee checks, choose Background Verification. For HR operations, HR Outsourcing is usually the right fit. Share your exact requirement and I will point you to the closest service.',
+      text: recommendations.length
+        ? `Based on what you shared, these services look most relevant: ${recommendations.map((service) => service.name).join(', ')}. Tell me a little more and I can narrow it down further.`
+        : 'Share your requirement and I will point you to the closest service.',
       actions: [
         { label: 'Explore Services', to: '/services' },
         { label: 'Discuss Requirement', to: '/contact' },
+      ],
+      services: buildServiceShortcuts(recommendations.length ? recommendations : services),
+      suggestions: [
+        'Tell me about pricing',
+        'Show all services',
+        'How can I contact ProLink?',
       ],
     }
   }
@@ -141,6 +212,11 @@ function buildResponse(question, services) {
         { label: `Open ${matchedService.name}`, to: getServiceRoute(matchedService.slug) },
         { label: 'Contact Team', to: '/contact' },
       ],
+      suggestions: [
+        `What is the process for ${matchedService.name}?`,
+        `Tell me about pricing for ${matchedService.name}`,
+        `Does ${matchedService.name} have FAQs?`,
+      ],
     }
   }
 
@@ -151,19 +227,22 @@ function buildResponse(question, services) {
         ? `Pricing depends on the service and scope. Services with listed plans include: ${pricedServices.map((service) => service.name).join(', ')}. Tell me the service name for exact available plans.`
         : 'Pricing depends on your requirement, volume, and timeline. Please contact the team for a custom quote.',
       actions: [{ label: 'Request Quote', to: '/contact' }],
+      suggestions: ['Which service is right for my project?', 'Show all services', 'How can I contact ProLink?'],
     }
   }
 
   return {
     text: 'I can help with ProLink services, service details, pricing, process, project requirements, and contact information. Try asking "Tell me about Campus Drive" or "How do I contact ProLink?"',
     actions: [{ label: 'View Services', to: '/services' }],
+    services: buildServiceShortcuts(services),
+    suggestions: buildSuggestedQuestions(services),
   }
 }
 
 export default function ServiceChatbot() {
   const [isOpen, setIsOpen] = useState(false)
   const [input, setInput] = useState('')
-  const [messages, setMessages] = useState(starterMessages)
+  const [messages, setMessages] = useState(() => [buildWelcomeMessage(fallbackServices)])
   const messagesEndRef = useRef(null)
   const navigate = useNavigate()
 
@@ -177,6 +256,18 @@ export default function ServiceChatbot() {
     const apiServices = data?.data?.data?.services
     return apiServices?.length ? apiServices : fallbackServices
   }, [data])
+
+  const quickPrompts = useMemo(() => buildSuggestedQuestions(services), [services])
+
+  useEffect(() => {
+    setMessages((prev) => {
+      if (prev.length === 1 && prev[0].kind === 'welcome') {
+        return [buildWelcomeMessage(services)]
+      }
+
+      return prev
+    })
+  }, [services])
 
   useEffect(() => {
     if (!isOpen) return
@@ -204,7 +295,7 @@ export default function ServiceChatbot() {
   }
 
   return (
-    <div className="fixed bottom-2 right-6 z-[80]">
+    <div className="fixed bottom-2 left-2 right-2 z-[80] flex justify-end sm:left-auto sm:right-6 pointer-events-none">
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -212,7 +303,7 @@ export default function ServiceChatbot() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 16, scale: 0.96 }}
             transition={{ duration: 0.18 }}
-            className="mb-4 flex h-[min(640px,calc(100vh-120px))] w-[calc(100vw-32px)] max-w-[390px] flex-col overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-2xl dark:border-stone-800 dark:bg-stone-950"
+            className="pointer-events-auto mb-3 flex h-[min(78dvh,760px)] w-full flex-col overflow-hidden rounded-t-3xl border border-stone-200 bg-white shadow-2xl dark:border-stone-800 dark:bg-stone-950 sm:mb-4 sm:h-[min(640px,calc(100dvh-120px))] sm:w-[min(420px,calc(100vw-32px))] sm:max-w-[420px] sm:rounded-2xl"
           >
             <div className="flex items-center justify-between bg-[#1a1108] px-4 py-3 text-white">
               <div className="flex items-center gap-3">
@@ -221,7 +312,7 @@ export default function ServiceChatbot() {
                 </div>
                 <div>
                   <p className="text-sm font-bold">ProLink Assist</p>
-                  <p className="text-xs text-amber-200">{isLoading ? 'Loading services...' : 'Service and contact helper'}</p>
+                  <p className="text-xs text-amber-200">{isLoading ? 'Loading services...' : `${services.length} services ready to explore`}</p>
                 </div>
               </div>
               <button
@@ -234,15 +325,33 @@ export default function ServiceChatbot() {
               </button>
             </div>
 
-            <div className="flex-1 space-y-4 overflow-y-auto bg-stone-50 px-4 py-4 dark:bg-stone-900/70">
+            <div className="flex-1 space-y-4 overflow-y-auto bg-stone-50 px-3 py-3 dark:bg-stone-900/70 sm:px-4 sm:py-4">
               {messages.map((message, index) => (
                 <div key={index} className={message.role === 'user' ? 'flex justify-end' : 'flex justify-start'}>
-                  <div className={`max-w-[86%] rounded-2xl px-4 py-3 text-sm leading-6 shadow-sm ${
+                  <div className={`max-w-[92%] rounded-2xl px-3 py-3 text-sm leading-6 shadow-sm sm:max-w-[86%] sm:px-4 ${
                     message.role === 'user'
                       ? 'bg-[#8B2A0F] text-white'
                       : 'border border-stone-200 bg-white text-stone-700 dark:border-stone-800 dark:bg-stone-950 dark:text-stone-200'
                   }`}>
                     <p>{message.text}</p>
+                    {message.services?.length > 0 && (
+                      <div className="mt-3 grid gap-2">
+                        {message.services.map((service) => (
+                          <button
+                            key={service.to}
+                            type="button"
+                            onClick={() => sendMessage(`Tell me about ${service.name}`)}
+                            className="flex w-full items-start justify-between gap-3 rounded-xl border border-stone-200 bg-stone-50 px-3 py-2 text-left transition-colors hover:border-amber-300 hover:bg-amber-50 dark:border-stone-800 dark:bg-stone-900 dark:hover:bg-amber-900/20"
+                          >
+                            <span className="min-w-0">
+                              <span className="block text-sm font-semibold text-stone-900 dark:text-stone-100">{service.name}</span>
+                              <span className="block text-xs leading-5 text-stone-500 dark:text-stone-400">{service.description}</span>
+                            </span>
+                            <HiChevronDown className="mt-0.5 h-4 w-4 shrink-0 -rotate-90 text-amber-500" />
+                          </button>
+                        ))}
+                      </div>
+                    )}
                     {message.actions?.length > 0 && (
                       <div className="mt-3 flex flex-wrap gap-2">
                         {message.actions.map((action) => (
@@ -269,20 +378,34 @@ export default function ServiceChatbot() {
                         ))}
                       </div>
                     )}
+                    {message.suggestions?.length > 0 && (
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {message.suggestions.map((suggestion) => (
+                          <button
+                            key={suggestion}
+                            type="button"
+                            onClick={() => sendMessage(suggestion)}
+                            className="inline-flex items-center gap-1 rounded-full border border-stone-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-stone-600 transition-colors hover:border-amber-300 hover:bg-amber-50 hover:text-[#8B2A0F] dark:border-stone-800 dark:bg-stone-950 dark:text-stone-300 dark:hover:bg-amber-900/20 dark:hover:text-amber-300"
+                          >
+                            {suggestion}
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
               <div ref={messagesEndRef} />
             </div>
 
-            <div className="border-t border-stone-200 bg-white p-3 dark:border-stone-800 dark:bg-stone-950">
-              <div className="mb-3 flex gap-2 overflow-x-auto pb-1">
+            <div className="border-t border-stone-200 bg-white p-3 dark:border-stone-800 dark:bg-stone-950 sm:p-3">
+              <div className="mb-3 flex flex-wrap gap-2">
                 {quickPrompts.map((prompt) => (
                   <button
                     key={prompt}
                     type="button"
                     onClick={() => sendMessage(prompt)}
-                    className="shrink-0 rounded-full border border-stone-200 px-3 py-1.5 text-xs font-semibold text-stone-600 transition-colors hover:border-amber-300 hover:bg-amber-50 hover:text-[#8B2A0F] dark:border-stone-800 dark:text-stone-300 dark:hover:bg-amber-900/20 dark:hover:text-amber-300"
+                    className="rounded-full border border-stone-200 px-3 py-1.5 text-xs font-semibold text-stone-600 transition-colors hover:border-amber-300 hover:bg-amber-50 hover:text-[#8B2A0F] dark:border-stone-800 dark:text-stone-300 dark:hover:bg-amber-900/20 dark:hover:text-amber-300"
                   >
                     {prompt}
                   </button>
@@ -312,13 +435,13 @@ export default function ServiceChatbot() {
             </div>
           </motion.div>
         )}
-      </AnimatePresence>
+        </AnimatePresence>
 
-      <div className="flex justify-end">
+      <div className="pointer-events-auto flex justify-end">
         <button
           type="button"
           onClick={() => setIsOpen((value) => !value)}
-          className="group flex h-14 w-14 items-center justify-center rounded-full bg-[#8B2A0F] text-white shadow-2xl ring-4 ring-amber-200/40 transition-all hover:bg-[#a03212] hover:scale-105 dark:ring-amber-900/30"
+          className="group relative flex h-14 w-14 items-center justify-center rounded-full bg-[#8B2A0F] text-white shadow-2xl ring-4 ring-amber-200/40 transition-all hover:bg-[#a03212] hover:scale-105 dark:ring-amber-900/30"
           aria-label={isOpen ? 'Minimize chatbot' : 'Open chatbot'}
         >
           {isOpen ? <HiChevronDown className="h-6 w-6" /> : <HiChatAlt2 className="h-7 w-7" />}
@@ -331,7 +454,7 @@ export default function ServiceChatbot() {
       </div>
 
       {!isOpen && (
-        <div className="mt-2 hidden rounded-full border border-stone-200 bg-white px-3 py-1.5 text-xs font-semibold text-stone-600 shadow-lg dark:border-stone-800 dark:bg-stone-950 dark:text-stone-300 sm:flex sm:items-center sm:gap-2">
+        <div className="pointer-events-auto mt-2 hidden rounded-full border border-stone-200 bg-white px-3 py-1.5 text-xs font-semibold text-stone-600 shadow-lg dark:border-stone-800 dark:bg-stone-950 dark:text-stone-300 sm:flex sm:items-center sm:gap-2">
           <HiPhone className="h-3.5 w-3.5 text-amber-500" />
           <span>{CONTACT.phone}</span>
           <HiMail className="h-3.5 w-3.5 text-amber-500" />
