@@ -453,13 +453,13 @@ export default function ServiceChatbot() {
         </button>
       </div>
 
-      {!isOpen && (
+      {/* {!isOpen && (
         <div className="pointer-events-auto mt-2 hidden rounded-full border border-stone-200 bg-white px-3 py-1.5 text-xs font-semibold text-stone-600 shadow-lg dark:border-stone-800 dark:bg-stone-950 dark:text-stone-300 sm:flex sm:items-center sm:gap-2">
           <HiPhone className="h-3.5 w-3.5 text-amber-500" />
           <span>{CONTACT.phone}</span>
           <HiMail className="h-3.5 w-3.5 text-amber-500" />
         </div>
-      )}
+      )} */}
     </div>
   )
 }

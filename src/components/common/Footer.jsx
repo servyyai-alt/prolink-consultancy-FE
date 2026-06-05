@@ -277,7 +277,8 @@ export default function Footer() {
                 </div>
             
                 <span className="text-stone-400 leading-relaxed">
-                  Bhubaneswar, Khurda, Odisha 751010, India
+                  Plot no 3010, Cuttack - Puri By pass Near Sapta sati Temple in Palasuni Rasulagarh, Bhubaneswar,
+                  Odisha 751025, India.
                 </span>
               </div>
             </div>

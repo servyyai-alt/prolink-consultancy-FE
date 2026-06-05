@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Link, useNavigate, useLocation, useParams } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { motion } from 'framer-motion'
@@ -6,7 +6,7 @@ import { useFormik } from 'formik'
 import * as Yup from 'yup'
 import {
   loginUser, registerUser, verifyOTP as verifyOTPThunk,
-  selectAuth,
+  selectAuth, setPendingEmail,
 } from '../../redux/slices/authSlice'
 import { authAPI } from '../../services/api'
 import { HiEye, HiEyeOff, HiMail, HiLockClosed, HiUser, HiPhone } from 'react-icons/hi'
@@ -185,14 +185,18 @@ export function Register() {
       const result = await dispatch(registerUser(data))
       if (!result.error) {
         const registeredUser = result.payload?.data?.user || result.payload?.user
+        const registeredEmail = result.payload?.data?.email || registeredUser?.email || data.email
         const registeredRole = registeredUser?.role
 
-        // OTP flow is temporarily bypassed. Keep this redirect commented for later reuse.
-        // navigate('/verify-otp')
-        if (['admin', 'super_admin', 'recruiter'].includes(registeredRole)) navigate('/admin')
-        else if (registeredRole === 'employer') navigate('/employer')
-        else if (registeredRole) navigate('/dashboard')
-        else navigate('/login')
+        if (result.payload?.data?.accessToken && registeredRole) {
+          if (['admin', 'super_admin', 'recruiter'].includes(registeredRole)) navigate('/admin')
+          else if (registeredRole === 'employer') navigate('/employer')
+          else navigate('/dashboard')
+        } else if (registeredEmail) {
+          navigate('/verify-otp', { state: { email: registeredEmail } })
+        } else {
+          navigate('/login')
+        }
       }
     },
   })
@@ -328,7 +332,16 @@ export function VerifyOTP() {
   const refs = [useRef(), useRef(), useRef(), useRef(), useRef(), useRef()]
   const dispatch = useDispatch()
   const navigate = useNavigate()
+  const location = useLocation()
   const { pendingEmail } = useSelector(selectAuth)
+  const emailFromState = location.state?.email
+  const emailToVerify = pendingEmail || emailFromState || localStorage.getItem('prolink_pending_email')
+
+  useEffect(() => {
+    if (!pendingEmail && emailFromState) {
+      dispatch(setPendingEmail(emailFromState))
+    }
+  }, [dispatch, emailFromState, pendingEmail])
 
   const handleChange = (i, val) => {
     if (!/^\d?$/.test(val)) return
@@ -351,14 +364,14 @@ export function VerifyOTP() {
     const code = otp.join('')
     if (code.length < 6) { toast.error('Enter complete OTP'); return }
     setLoading(true)
-    const result = await dispatch(verifyOTPThunk({ email: pendingEmail, otp: code }))
+    const result = await dispatch(verifyOTPThunk({ email: emailToVerify, otp: code }))
     setLoading(false)
     if (!result.error) navigate('/dashboard')
   }
 
   const handleResend = async () => {
     try {
-      await authAPI.resendOTP({ email: pendingEmail })
+      await authAPI.resendOTP({ email: emailToVerify })
       setResent(true)
       toast.success('OTP resent!')
       setTimeout(() => setResent(false), 30000)
@@ -366,7 +379,7 @@ export function VerifyOTP() {
   }
 
   return (
-    <AuthShell title="Verify your email 📧" subtitle={`We sent a 6-digit code to ${pendingEmail || 'your email'}`}>
+    <AuthShell title="Verify your email 📧" subtitle={`We sent a 6-digit code to ${emailToVerify || 'your email'}`}>
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="flex gap-3 justify-center" onPaste={handlePaste}>
           {otp.map((digit, i) => (

@@ -5,6 +5,7 @@ import toast from 'react-hot-toast'
 const TOKEN_KEY = 'prolink_access_token'
 const REFRESH_KEY = 'prolink_refresh_token'
 const USER_KEY = 'prolink_user'
+const PENDING_EMAIL_KEY = 'prolink_pending_email'
 
 // Thunks
 export const loginUser = createAsyncThunk('auth/login', async (credentials, { rejectWithValue }) => {
@@ -58,24 +59,32 @@ const authSlice = createSlice({
     isLoading:   false,
     isInitialized: false,
     error:       null,
-    pendingEmail: null,
+    pendingEmail: localStorage.getItem(PENDING_EMAIL_KEY) || null,
   },
   reducers: {
     setCredentials: (state, { payload }) => {
       state.user = payload.user
       state.accessToken = payload.accessToken
+      state.pendingEmail = null
       localStorage.setItem(TOKEN_KEY, payload.accessToken)
       localStorage.setItem(REFRESH_KEY, payload.refreshToken)
       localStorage.setItem(USER_KEY, JSON.stringify(payload.user))
+      localStorage.removeItem(PENDING_EMAIL_KEY)
     },
     clearCredentials: (state) => {
       state.user = null
       state.accessToken = null
+      state.pendingEmail = null
       localStorage.removeItem(TOKEN_KEY)
       localStorage.removeItem(REFRESH_KEY)
       localStorage.removeItem(USER_KEY)
+      localStorage.removeItem(PENDING_EMAIL_KEY)
     },
-    setPendingEmail: (state, { payload }) => { state.pendingEmail = payload },
+    setPendingEmail: (state, { payload }) => {
+      state.pendingEmail = payload
+      if (payload) localStorage.setItem(PENDING_EMAIL_KEY, payload)
+      else localStorage.removeItem(PENDING_EMAIL_KEY)
+    },
     updateUser: (state, { payload }) => {
       state.user = { ...state.user, ...payload }
       localStorage.setItem(USER_KEY, JSON.stringify(state.user))
@@ -89,8 +98,10 @@ const authSlice = createSlice({
       state.isLoading = false
       state.user = payload.user
       state.accessToken = payload.accessToken
+      state.pendingEmail = null
       localStorage.setItem(TOKEN_KEY, payload.accessToken)
       localStorage.setItem(REFRESH_KEY, payload.refreshToken)
+      localStorage.removeItem(PENDING_EMAIL_KEY)
       localStorage.setItem(USER_KEY, JSON.stringify(payload.user))
       toast.success('Welcome back! 👋')
     })
@@ -103,9 +114,7 @@ const authSlice = createSlice({
     builder.addCase(registerUser.fulfilled, (state, { payload }) => {
       state.isLoading = false
       const authData = payload?.data || payload
-
-      // OTP flow is temporarily bypassed. Keep the old pending-email flow commented for later reuse.
-      // state.pendingEmail = payload.data?.email
+      const pendingEmail = authData?.email || authData?.user?.email || null
       if (authData?.user && authData?.accessToken) {
         state.user = authData.user
         state.accessToken = authData.accessToken
@@ -113,9 +122,12 @@ const authSlice = createSlice({
         localStorage.setItem(TOKEN_KEY, authData.accessToken)
         if (authData.refreshToken) localStorage.setItem(REFRESH_KEY, authData.refreshToken)
         localStorage.setItem(USER_KEY, JSON.stringify(authData.user))
+        localStorage.removeItem(PENDING_EMAIL_KEY)
         toast.success('Account created successfully!')
       } else {
-        toast.success('Registration submitted successfully. Please sign in.')
+        state.pendingEmail = pendingEmail
+        if (pendingEmail) localStorage.setItem(PENDING_EMAIL_KEY, pendingEmail)
+        toast.success('Registration successful. Please verify your email.')
       }
     })
     builder.addCase(registerUser.rejected,  (state, { payload }) => {
@@ -132,6 +144,7 @@ const authSlice = createSlice({
       localStorage.setItem(TOKEN_KEY, payload.accessToken)
       localStorage.setItem(REFRESH_KEY, payload.refreshToken)
       localStorage.setItem(USER_KEY, JSON.stringify(payload.user))
+      localStorage.removeItem(PENDING_EMAIL_KEY)
       toast.success('Email verified! Welcome to ProLink 🎉')
     })
     builder.addCase(verifyOTP.rejected,  (state, { payload }) => {
@@ -148,7 +161,7 @@ const authSlice = createSlice({
     // Logout
     builder.addCase(logoutUser.fulfilled, (state) => {
       state.user = null; state.accessToken = null
-      localStorage.removeItem(TOKEN_KEY); localStorage.removeItem(REFRESH_KEY); localStorage.removeItem(USER_KEY)
+      localStorage.removeItem(TOKEN_KEY); localStorage.removeItem(REFRESH_KEY); localStorage.removeItem(USER_KEY); localStorage.removeItem(PENDING_EMAIL_KEY)
     })
   },
 })
