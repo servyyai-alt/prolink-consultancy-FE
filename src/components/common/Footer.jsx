@@ -48,7 +48,7 @@ const footerLinks = {
 
 const socials = [
   { icon: FaLinkedin, href: "https://www.linkedin.com/company/prolink-staffing-consultancy-pvt-ltd/", label: "LinkedIn" },
-  { icon: FaTwitter, href: "#", label: "Twitter" },
+  { icon: FaTwitter, href: "https://x.com/prolink_india", label: "Twitter" },
   { icon: FaFacebook, href: "https://www.facebook.com/ProlinkConsultancy0", label: "Facebook" },
   { icon: FaInstagram, href: "https://www.instagram.com/prolinkindia2026/", label: "Instagram" },
   { icon: FaYoutube, href: "https://www.youtube.com/@Prolink_Consultancy", label: "YouTube" },
