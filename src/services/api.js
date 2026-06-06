@@ -1,9 +1,9 @@
 import axios from 'axios'
 
-const BASE_URL = import.meta.env.VITE_API_URL || '/api/v1'
+export const API_BASE_URL = import.meta.env.VITE_API_URL || '/api/v1'
 
 const api = axios.create({
-  baseURL: BASE_URL,
+  baseURL: API_BASE_URL,
   timeout: 30000,
   headers: { 'Content-Type': 'application/json' },
 })
@@ -50,7 +50,7 @@ api.interceptors.response.use(
       }
 
       try {
-        const { data } = await axios.post(`${BASE_URL}/auth/refresh-token`, { refreshToken })
+        const { data } = await axios.post(`${API_BASE_URL}/auth/refresh-token`, { refreshToken })
         const newToken = data.data.accessToken
         localStorage.setItem('prolink_access_token', newToken)
         api.defaults.headers.common.Authorization = `Bearer ${newToken}`

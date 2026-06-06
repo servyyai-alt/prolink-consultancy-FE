@@ -1,6 +1,8 @@
 import { HiDocumentText, HiExternalLink, HiTrash } from 'react-icons/hi'
+import { API_BASE_URL } from '../../services/api'
 
-const getOpenUrl = (brochure) => brochure?.url || ''
+const getOpenUrl = (brochure) =>
+  brochure?._id ? `${API_BASE_URL}/brochures/${brochure._id}/open` : (brochure?.url || '')
 
 export default function BrochureList({
   brochures = [],
