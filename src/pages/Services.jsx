@@ -41,8 +41,8 @@ export default function Services() {
                     to={getServiceRoute(service.slug)}
                     className="card-hover group flex h-full flex-col gap-4 p-7"
                   >
-                    <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary-50 text-primary-700 shadow-sm ring-1 ring-primary-100 transition-colors group-hover:bg-primary-600 group-hover:text-white group-hover:ring-primary-600 dark:bg-primary-900/20 dark:text-primary-300 dark:ring-primary-800">
-                      <Icon className="h-7 w-7" strokeWidth={1.9} />
+                    <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-100 via-white to-primary-50 text-[#8B2A0F] shadow-[0_12px_30px_rgba(139,42,15,0.14)] ring-1 ring-white/50 transition-all duration-300 group-hover:-translate-y-0.5 group-hover:from-[#8B2A0F] group-hover:via-[#a13a18] group-hover:to-[#5c1c09] group-hover:text-white group-hover:shadow-[0_16px_38px_rgba(139,42,15,0.28)] dark:from-amber-400/20 dark:via-stone-900 dark:to-stone-900 dark:text-amber-300 dark:ring-white/10 dark:group-hover:from-amber-400 dark:group-hover:via-amber-500 dark:group-hover:to-[#8B2A0F]">
+                      <Icon className="h-7 w-7 drop-shadow-sm" strokeWidth={1.9} />
                     </div>
                     <div className="flex-1">
                       <h3 className="mb-2 text-lg font-bold text-slate-900 transition-colors group-hover:text-primary-600 dark:text-white">{service.name}</h3>

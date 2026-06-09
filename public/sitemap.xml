@@ -3,11 +3,28 @@
   <url><loc>https://prolinkconsultancy.in/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
   <url><loc>https://prolinkconsultancy.in/about</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
   <url><loc>https://prolinkconsultancy.in/services</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://prolinkconsultancy.in/services/job-consultancy</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://prolinkconsultancy.in/services/permanent-staffing</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://prolinkconsultancy.in/services/temporary-staffing</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://prolinkconsultancy.in/services/contract-staffing</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://prolinkconsultancy.in/services/hr-outsourcing</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://prolinkconsultancy.in/services/campus-recruitment-drive</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://prolinkconsultancy.in/services/lean-consulting-services</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://prolinkconsultancy.in/services/corporate-events</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://prolinkconsultancy.in/services/iso-certification-support</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://prolinkconsultancy.in/services/six-sigma-training-consulting</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://prolinkconsultancy.in/services/housekeeping-services</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://prolinkconsultancy.in/services/indoor-outdoor-catering-services</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://prolinkconsultancy.in/services/complete-plant-setup-support</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://prolinkconsultancy.in/services/medical-check-up-coordination</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://prolinkconsultancy.in/services/wedding-events</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://prolinkconsultancy.in/services/exhibition-events</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://prolinkconsultancy.in/services/background-verification</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://prolinkconsultancy.in/campus-drive</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://prolinkconsultancy.in/cv-writing</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
   <url><loc>https://prolinkconsultancy.in/jobs</loc><changefreq>daily</changefreq><priority>0.9</priority></url>
   <url><loc>https://prolinkconsultancy.in/blogs</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
   <url><loc>https://prolinkconsultancy.in/contact</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://prolinkconsultancy.in/cv-writing</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://prolinkconsultancy.in/campus-drive</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
   <url><loc>https://prolinkconsultancy.in/events</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://prolinkconsultancy.in/catering</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://prolinkconsultancy.in/testimonials</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>

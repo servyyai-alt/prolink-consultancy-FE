@@ -119,8 +119,8 @@ export default function ServiceDetail() {
           <div className="page-container">
             <Link to="/services" className="inline-flex items-center gap-1.5 text-primary-200 hover:text-white mb-6 text-sm transition-colors"><HiArrowLeft className="w-4 h-4" />All Services</Link>
             <div className="flex items-center gap-4">
-              <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-white/12 text-white ring-1 ring-white/20 backdrop-blur-sm">
-                <ServiceIcon className="h-10 w-10" strokeWidth={1.9} />
+              <div className="flex h-20 w-20 items-center justify-center rounded-[1.35rem] bg-gradient-to-br from-amber-100 via-white to-primary-50 text-[#8B2A0F] shadow-[0_18px_50px_rgba(139,42,15,0.25)] ring-1 ring-white/40 backdrop-blur-sm dark:from-amber-400/20 dark:via-stone-900 dark:to-stone-900 dark:text-amber-300 dark:ring-white/10">
+                <ServiceIcon className="h-10 w-10 drop-shadow-sm" strokeWidth={1.9} />
               </div>
               <div>
                 <h1 className="text-3xl md:text-4xl font-display font-bold text-white">{service.name}</h1>
