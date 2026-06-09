@@ -271,16 +271,16 @@ export default function Footer() {
               </a>
             
               {/* Location */}
-              <div className="flex items-start gap-4">
+              <a href="https://maps.app.goo.gl/Gd4wiqyPGsTfE13Z9" target="_blank" rel="noopener noreferrer" className="flex items-start group gap-4">
                 <div className="w-11 h-11 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center             flex-shrink-0">
                   <HiLocationMarker className="w-5 h-5 text-amber-400" />
                 </div>
             
-                <span className="text-stone-400 leading-relaxed">
+                <span className="text-stone-400 group-hover:text-amber-400 transition-colors break-all">
                   Plot no 3010, Cuttack - Puri By pass Near Sapta sati Temple in Palasuni Rasulagarh, Bhubaneswar,
                   Odisha 751025, India.
                 </span>
-              </div>
+              </a>
             </div>
 
             {/* Social */}

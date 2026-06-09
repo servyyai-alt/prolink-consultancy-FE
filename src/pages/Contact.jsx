@@ -227,7 +227,8 @@ export default function Contact() {
                   value:
                     'Plot no 3010, Cuttack - Puri By pass Near Sapta sati Temple in Palasuni Rasulagarh,                 Bhubaneswar',
                   sub: 'Odisha 751025',
-                  href: 'https://maps.app.goo.gl/h12P6ERfSvVkrR61A',
+                  // href: 'https://maps.app.goo.gl/h12P6ERfSvVkrR61A',
+                  href:'https://maps.app.goo.gl/Gd4wiqyPGsTfE13Z9',
                   color: 'green',
                 }
                 
