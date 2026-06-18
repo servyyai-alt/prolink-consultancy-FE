@@ -15,6 +15,7 @@ import {
   getApplicationProgress,
   getApplicationStatusLabel,
 } from '../../constants/applicationStatus'
+import { formatJobLocation } from '../../utils/jobLocation'
 
 const STATUS_TABS = ['all','applied','screening','shortlisted','interview_scheduled','offered','hired','rejected','withdrawn']
 
@@ -118,7 +119,7 @@ export default function JSApplications() {
                       </Badge>
                     </div>
                     <div className="flex flex-wrap gap-4 mt-2.5 text-xs text-slate-500">
-                      {app.job?.location && <span className="flex items-center gap-1"><HiLocationMarker className="w-3.5 h-3.5" />{app.job.location}</span>}
+                      {formatJobLocation(app.job) && <span className="flex items-center gap-1"><HiLocationMarker className="w-3.5 h-3.5" />{formatJobLocation(app.job)}</span>}
                       {app.job?.type && <span className="flex items-center gap-1"><HiBriefcase className="w-3.5 h-3.5" />{app.job.type.replace('_', ' ')}</span>}
                       <span className="flex items-center gap-1"><HiClock className="w-3.5 h-3.5" />Applied {new Date(app.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
                     </div>

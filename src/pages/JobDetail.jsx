@@ -10,6 +10,7 @@ import { Badge, Modal } from '../components/ui/index'
 import SEO from '../components/SEO'
 import { breadcrumbSchema, jobPostingSchema } from '../utils/schema'
 import { getAbsoluteUrl, truncateText } from '../utils/seo'
+import { formatJobLocation } from '../utils/jobLocation'
 import toast from 'react-hot-toast'
 
 export default function JobDetail() {
@@ -83,8 +84,8 @@ export default function JobDetail() {
     <>
       <SEO
         title={`${job.metaTitle || `${job.title} at ${job.company?.name || 'ProLink'}`} | ProLink Consultancy`}
-        description={job.metaDescription || `Apply for ${job.title} at ${job.company?.name || 'a leading company'} in ${job.location}. ${truncateText(job.description, 90)}`}
-        keywords={[job.title, job.company?.name, job.location, job.category, ...(job.skills || [])].filter(Boolean).join(', ')}
+        description={job.metaDescription || `Apply for ${job.title} at ${job.company?.name || 'a leading company'} in ${formatJobLocation(job) || 'India'}. ${truncateText(job.description, 90)}`}
+        keywords={[job.title, job.company?.name, formatJobLocation(job), job.category, ...(job.skills || [])].filter(Boolean).join(', ')}
         image={job.company?.logo}
         url={getAbsoluteUrl(`/jobs/${job.slug || slug}`)}
         canonical={getAbsoluteUrl(`/jobs/${job.slug || slug}`)}
@@ -129,7 +130,7 @@ export default function JobDetail() {
                   </div>
                 </div>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 py-4 border-y border-slate-100 dark:border-slate-700">
-                  {[[HiLocationMarker,'Location',job.location],[HiBriefcase,'Type',job.type?.replace('_',' ')],[HiClock,'Mode',job.locationType],[HiUsers,'Openings',`${job.openings}`]].map(([Icon,label,val]) => (
+                  {[[HiLocationMarker,'Location',formatJobLocation(job) || 'Not specified'],[HiBriefcase,'Type',job.type?.replace('_',' ')],[HiClock,'Mode',job.locationType],[HiUsers,'Openings',`${job.openings}`]].map(([Icon,label,val]) => (
                     <div key={label} className="flex items-center gap-2.5">
                       <div className="w-8 h-8 rounded-lg bg-slate-50 dark:bg-slate-800 flex items-center justify-center"><Icon className="w-4 h-4 text-slate-400" /></div>
                       <div><p className="text-[10px] text-slate-400 uppercase tracking-wider">{label}</p><p className="text-sm font-semibold text-slate-700 dark:text-slate-200 capitalize">{val}</p></div>

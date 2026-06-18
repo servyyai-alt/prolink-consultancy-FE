@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import CountUp from "react-countup";
 import { Helmet } from "react-helmet-async";
+import { formatJobLocation } from "../utils/jobLocation";
 import {
   HiArrowRight,
   HiChevronDown,
@@ -738,7 +739,7 @@ export default function Home() {
                           {job.title}
                         </h3>
                         <p className="text-sm text-stone-400 mt-0.5">
-                          {job.company?.name} · {job.location}
+                          {job.company?.name} · {formatJobLocation(job) || job.location}
                         </p>
                       </div>
                     </div>

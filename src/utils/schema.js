@@ -81,7 +81,9 @@ export const jobPostingSchema = (job = {}) => ({
     '@type': 'Place',
     address: {
       '@type': 'PostalAddress',
-      addressLocality: job.location,
+      addressLocality: job.district || job.location,
+      addressRegion: job.state || undefined,
+      streetAddress: job.address || undefined,
       addressCountry: 'IN',
     },
   },

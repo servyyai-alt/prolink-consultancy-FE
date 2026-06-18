@@ -8,6 +8,7 @@ import { jobAPI } from '../../services/api'
 import { Pagination, Badge, EmptyState } from '../../components/ui/index'
 import ConfirmDialog from '../../components/common/ConfirmDialog'
 import toast from 'react-hot-toast'
+import { formatJobLocation } from '../../utils/jobLocation'
 
 const STATUS_COLOR = { active:'success', paused:'warning', closed:'gray', draft:'primary', expired:'danger' }
 
@@ -75,7 +76,7 @@ export default function EmpMyJobs() {
                   <div className="flex flex-wrap gap-4 mt-1.5 text-xs text-slate-500">
                     <span className="flex items-center gap-1"><HiEye className="w-3.5 h-3.5" />{job.views||0} views</span>
                     <span className="flex items-center gap-1"><HiUserGroup className="w-3.5 h-3.5" />{job.applications||0} applicants</span>
-                    <span>{job.location} · {job.type?.replace('_',' ')}</span>
+                    <span>{formatJobLocation(job) || 'Location not specified'} · {job.type?.replace('_',' ')}</span>
                   </div>
                 </div>
                   <div className="flex items-center gap-2 flex-shrink-0">

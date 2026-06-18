@@ -14,15 +14,16 @@ import {
   JOB_CATEGORIES,
   JOB_TYPES,
   LOCATION_TYPES,
-  INDIAN_CITIES,
+  INDIAN_STATES,
 } from '../../constants/index'
+import { buildJobLocation, splitLegacyJobLocation, formatJobLocation } from '../../utils/jobLocation'
 
 const STEPS = ['Basic Info', 'Job Details', 'Skills & Salary', 'Preview']
 const ADMIN_ROLES = ['admin', 'super_admin', 'recruiter']
 
 const websiteRegex = /^(https?:\/\/)?([\w-])+\.{1}[a-zA-Z]{2,}(\/.*)?$/i
 const STEP_FIELDS = [
-  ['title', 'category', 'type', 'locationType', 'location', 'openings', 'education'],
+  ['title', 'category', 'type', 'locationType', 'state', 'district', 'address', 'openings', 'education'],
   ['description', 'requirements', 'responsibilities', 'deadline'],
   ['experience.min', 'experience.max', 'salary.min', 'salary.max', 'company.name', 'company.website', 'company.description'],
 ]
@@ -141,7 +142,9 @@ export default function EmpPostJob() {
       category: '',
       type: 'full_time',
       locationType: 'onsite',
-      location: '',
+      state: '',
+      district: '',
+      address: '',
       experience: {
         min: 0,
         max: 5,
@@ -170,7 +173,21 @@ export default function EmpPostJob() {
       category: Yup.string().required('Category required'),
       type: Yup.string().required('Job type required'),
       locationType: Yup.string().required('Location type required'),
-      location: Yup.string().required('Location required'),
+      state: Yup.string().when('locationType', {
+        is: (value) => value !== 'remote',
+        then: (schema) => schema.required('State required'),
+        otherwise: (schema) => schema.notRequired(),
+      }),
+      district: Yup.string().when('locationType', {
+        is: (value) => value !== 'remote',
+        then: (schema) => schema.required('District required'),
+        otherwise: (schema) => schema.notRequired(),
+      }),
+      address: Yup.string().when('locationType', {
+        is: (value) => value !== 'remote',
+        then: (schema) => schema.trim().min(5, 'Address must be at least 5 characters').required('Address required'),
+        otherwise: (schema) => schema.notRequired(),
+      }),
       openings: Yup.number().min(1, 'Minimum 1 opening required').max(1000, 'Too many openings').required('Openings required'),
       education: Yup.string().trim().required('Education required'),
       deadline: Yup.date().nullable().test('future-date', 'Deadline must be future date', (value) => {
@@ -222,7 +239,14 @@ export default function EmpPostJob() {
           category: values.category,
           type: values.type,
           locationType: values.locationType,
-          location: values.location,
+          state: clean(values.state),
+          district: clean(values.district),
+          address: clean(values.address),
+          location: buildJobLocation({
+            address: values.address,
+            district: values.district,
+            state: values.state,
+          }) || (values.locationType === 'remote' ? 'Remote' : ''),
           experience: {
             min: Number(values.experience.min),
             max: Number(values.experience.max),
@@ -281,6 +305,7 @@ export default function EmpPostJob() {
         if (!job) return
         setEditingJobId(job._id)
         setSkills(job.skills || [])
+        const legacyLocation = splitLegacyJobLocation(job.location)
         formik.setValues({
           title: job.title || '',
           description: job.description || '',
@@ -289,7 +314,9 @@ export default function EmpPostJob() {
           category: job.category || '',
           type: job.type || 'full_time',
           locationType: job.locationType || 'onsite',
-          location: job.location || '',
+          state: job.state || legacyLocation.state || '',
+          district: job.district || legacyLocation.district || '',
+          address: job.address || legacyLocation.address || '',
           experience: { min: job.experience?.min || 0, max: job.experience?.max || 5 },
           salary: { min: job.salary?.min || '', max: job.salary?.max || '', isVisible: job.salary?.isVisible !== false },
           openings: job.openings || 1,
@@ -410,7 +437,9 @@ export default function EmpPostJob() {
                   <F formik={formik} name="category" label="Category" required as="select" options={JOB_CATEGORIES} />
                   <F formik={formik} name="type" label="Job Type" required as="select" options={JOB_TYPES} />
                   <F formik={formik} name="locationType" label="Work Mode" required as="select" options={LOCATION_TYPES} />
-                  <F formik={formik} name="location" label="Location" required as="select" options={INDIAN_CITIES} />
+                  <F formik={formik} name="state" label="State" required as="select" options={INDIAN_STATES} />
+                  <F formik={formik} name="district" label="District" required placeholder="Enter district or city" />
+                  <F formik={formik} name="address" label="Address" required as="textarea" rows={3} placeholder="House / office number, street, area, landmark" />
                   <F formik={formik} name="openings" label="No. of Openings" type="number" />
                   <F formik={formik} name="education" label="Education" />
                 </div>
@@ -492,7 +521,7 @@ export default function EmpPostJob() {
                       <div>
                         <h2 className="text-2xl font-bold text-slate-900 dark:text-white">{formik.values.title || 'Job Title'}</h2>
                         <p className="mt-1 text-slate-600 dark:text-slate-300">
-                          {formik.values.company.name || 'Company Name'} • {formik.values.location}
+                          {formik.values.company.name || 'Company Name'} • {formatJobLocation(formik.values) || 'Location not set'}
                         </p>
                       </div>
 
@@ -531,6 +560,11 @@ export default function EmpPostJob() {
                   <div className="rounded-xl bg-slate-50 p-4 dark:bg-slate-800">
                     <p className="mb-1 text-xs text-slate-500">Education</p>
                     <h4 className="font-semibold text-slate-900 dark:text-white">{formik.values.education}</h4>
+                  </div>
+
+                  <div className="rounded-xl bg-slate-50 p-4 dark:bg-slate-800 sm:col-span-2">
+                    <p className="mb-1 text-xs text-slate-500">Location</p>
+                    <h4 className="font-semibold text-slate-900 dark:text-white">{formatJobLocation(formik.values) || 'Not specified'}</h4>
                   </div>
 
                   <div className="rounded-xl bg-slate-50 p-4 dark:bg-slate-800">

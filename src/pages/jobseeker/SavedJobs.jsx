@@ -6,6 +6,7 @@ import { HiBriefcase, HiLocationMarker, HiBookmark, HiExternalLink } from 'react
 import { userAPI } from '../../services/api'
 import { Badge, EmptyState } from '../../components/ui/index'
 import toast from 'react-hot-toast'
+import { formatJobLocation } from '../../utils/jobLocation'
 
 export default function JSSavedJobs() {
   const qc = useQueryClient()
@@ -70,7 +71,7 @@ export default function JSSavedJobs() {
                     </div>
                   </div>
                   <div className="flex flex-wrap gap-3 mt-2 text-xs text-slate-500">
-                    {job.location && <span className="flex items-center gap-1"><HiLocationMarker className="w-3.5 h-3.5" />{job.location}</span>}
+                    {formatJobLocation(job) && <span className="flex items-center gap-1"><HiLocationMarker className="w-3.5 h-3.5" />{formatJobLocation(job)}</span>}
                     {job.type && <span className="flex items-center gap-1"><HiBriefcase className="w-3.5 h-3.5" />{job.type.replace('_',' ')}</span>}
                     {job.salary?.isVisible && job.salary?.min && (
                       <span className="text-green-600 font-semibold">₹{(job.salary.min/100000).toFixed(1)}L–{(job.salary.max/100000).toFixed(1)}L</span>

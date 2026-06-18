@@ -10,6 +10,7 @@ import { selectIsLoggedIn } from '../redux/slices/authSlice'
 import { Pagination, Badge, JobCardSkeleton, EmptyState } from '../components/ui/index'
 import toast from 'react-hot-toast'
 import jobsBg from "../assets/jobs.png";
+import { formatJobLocation } from '../utils/jobLocation'
 
 
 const JOB_TYPES    = ['full_time', 'part_time', 'contract', 'internship', 'freelance']
@@ -112,7 +113,7 @@ export default function Jobs() {
         <input
           value={filters.location}
           onChange={(e) => updateFilter("location", e.target.value)}
-          placeholder="City or state…"
+          placeholder="City, district, or state…"
           className="flex-1 bg-transparent outline-none text-slate-900 dark:text-white placeholder-slate-400 py-3 w-40"
         />
       </div>
@@ -267,7 +268,7 @@ export default function Jobs() {
                           </div>
 
                           <div className="flex flex-wrap gap-2 mt-2.5">
-                            <span className="flex items-center gap-1 text-xs text-slate-500"><HiLocationMarker className="w-3 h-3" />{job.location}</span>
+                            <span className="flex items-center gap-1 text-xs text-slate-500"><HiLocationMarker className="w-3 h-3" />{formatJobLocation(job) || 'Location not specified'}</span>
                             <span className="flex items-center gap-1 text-xs text-slate-500"><HiBriefcase className="w-3 h-3" />{job.type?.replace('_', ' ')}</span>
                             <span className="flex items-center gap-1 text-xs text-slate-500"><HiClock className="w-3 h-3" />{job.experience?.min}-{job.experience?.max} yrs</span>
                           </div>

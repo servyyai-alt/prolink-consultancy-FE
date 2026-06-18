@@ -11,6 +11,7 @@ import { Pagination, Badge } from '../../components/ui/index'
 import ConfirmDialog from '../../components/common/ConfirmDialog'
 import toast from 'react-hot-toast'
 import { Link } from 'react-router-dom'
+import { formatJobLocation } from '../../utils/jobLocation'
 
 const JOB_STATUS_COLOR = { active: 'success', paused: 'warning', closed: 'gray', draft: 'primary', expired: 'danger' }
 
@@ -77,7 +78,7 @@ export function AdminJobs() {
                       <tr key={job._id} className="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
                         <td className="px-4 py-4">
                           <p className="font-semibold text-slate-900 dark:text-white line-clamp-1 max-w-[200px]">{job.title}</p>
-                          <p className="text-xs text-slate-500">{job.location} · {job.type?.replace('_', ' ')}</p>
+                          <p className="text-xs text-slate-500">{formatJobLocation(job) || 'Location not specified'} · {job.type?.replace('_', ' ')}</p>
                         </td>
                         <td className="px-4 py-4 text-slate-600 dark:text-slate-300 text-xs">{job.company?.name}</td>
                         <td className="px-4 py-4 text-slate-600 dark:text-slate-300 text-xs">{job.category}</td>

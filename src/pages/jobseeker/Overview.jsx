@@ -7,6 +7,7 @@ import { HiBriefcase, HiBookmark, HiCalendar, HiArrowRight } from 'react-icons/h
 import { applicationAPI, userAPI } from '../../services/api'
 import { selectUser } from '../../redux/slices/authSlice'
 import { Badge } from '../../components/ui/index'
+import { formatJobLocation } from '../../utils/jobLocation'
 
 const APP_STATUS_COLOR = {
   applied: 'primary', screening: 'warning', shortlisted: 'teal', interview_scheduled: 'purple',
@@ -195,7 +196,7 @@ export default function JSOverview() {
           </p>
 
           <p className="text-xs text-slate-500 truncate">
-            {app.job?.company?.name} · {app.job?.location}
+            {app.job?.company?.name} · {formatJobLocation(app.job) || app.job?.location}
           </p>
         </div>
       </div>
