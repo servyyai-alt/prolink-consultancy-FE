@@ -359,7 +359,8 @@ export default function Footer() {
 
         <p className="text-sm text-stone-600         dark:text-stone-400 text-center md:text-left         leading-relaxed">
           © {new Date().getFullYear()} ProLink Consultancy. 
-          All rights reserved. Designed & Developed by{' '}
+          All rights reserved. 
+          {/* Designed & Developed by{' '}
           <img
             src={LALOGO}
             alt="Least Action Company"
@@ -372,7 +373,7 @@ export default function Footer() {
             className="font-medium text-amber-500         hover:text-amber-400 transition-colors         duration-200 hover:underline"
           >
             Least Action Company Pvt Ltd
-          </a>.
+          </a>. */}
         </p>
 
             <div className="flex items-center gap-5 text-sm text-stone-600">
