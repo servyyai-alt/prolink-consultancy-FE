@@ -159,12 +159,12 @@ export default function Contact() {
     <>
       <Helmet>
         <title>
-          Contact Us | ProLink Consultancy
+          Contact ProLink Consultancy | Jobs, Staffing & HR Solutions Company
         </title>
 
         <meta
           name="description"
-          content="Get in touch with ProLink Consultancy for Job Consultancy, Campus Drive, and Background Verification services."
+          content="Get in touch with ProLink Consultancy for recruitment, staffing, HR solutions, CV writing, campus hiring, and business consulting services. Our experts are ready to help businesses and job seekers achieve their goals."
         />
       </Helmet>
 

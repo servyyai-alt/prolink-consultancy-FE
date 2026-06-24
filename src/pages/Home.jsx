@@ -169,11 +169,11 @@ export default function Home() {
     <>
       <Helmet>
         <title>
-          ProLink Consultancy | Premium Staffing, Hiring & Career Solutions
+          Best Staffing & Recruitment Agency in Odisha, India | ProLink Consultancy
         </title>
         <meta
           name="description"
-          content="ProLink Consultancy delivers premium staffing, recruitment, campus hiring, CV writing, and workforce support for ambitious businesses and professionals."
+          content="ProLink Consultancy is a leading staffing and recruitment agency in Odisha, India, offering professional hiring, talent acquisition, workforce management, and HR solutions. We help businesses find skilled professionals and connect job seekers with the right career opportunities through reliable recruitment and staffing services."
         />
       </Helmet>
 

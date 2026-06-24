@@ -56,8 +56,8 @@ export default function About() {
   return (
     <>
       <Helmet>
-        <title>About Us | ProLink Consultancy</title>
-        <meta name="description" content="Learn about ProLink Consultancy — India's trusted HR and recruitment partner since 2015." />
+        <title>About ProLink Consultancy | Leading Recruitment, Staffing & HR Solutions Company</title>
+        <meta name="description" content="Discover ProLink Consultancy, a leading recruitment and staffing agency in Odisha. We provide talent acquisition, HR consulting, workforce management, and career solutions for businesses and job seekers across India" />
       </Helmet>
 
       <div className="pt-16">

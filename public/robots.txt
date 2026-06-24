@@ -14,4 +14,4 @@ Disallow: /forgot-password
 Disallow: /reset-password
 Disallow: /submit-testimonial
 
-Sitemap: https://prolinkconsultancy.in/sitemap.xml
+Sitemap: https://www.prolinkconsultancy.in/sitemap.xml
