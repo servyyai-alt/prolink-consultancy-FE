@@ -19,6 +19,7 @@ import Logo from "../../assets/logo.jpeg";
 import LALOGO from "../../assets/Leastactionlogo.png"
 import { serviceAPI } from "../../services/api";
 import { getServiceRoute } from "../../utils/serviceRoutes";
+import { mergeServiceCatalog } from "../../utils/seoContent";
 
 const footerLinks = {
   company: [
@@ -54,15 +55,9 @@ const socials = [
   { icon: FaYoutube, href: "https://www.youtube.com/@Prolink_Consultancy", label: "YouTube" },
 ];
 
-const fallbackServices = [
-  { slug: "job-consultancy", name: "Job Consultancy" },
-  { slug: "campus-drive", name: "Campus Drive" },
-  { slug: "background-verification", name: "Background Verification" },
-];
-
 export default function Footer() {
   const { data } = useQuery({ queryKey: ["services"], queryFn: serviceAPI.getServices });
-  const services = (data?.data?.data?.services?.length ? data.data.data.services : fallbackServices).map((service) => ({
+  const services = mergeServiceCatalog(data?.data?.data?.services || []).map((service) => ({
     label: service.name,
     to: getServiceRoute(service.slug),
   }));

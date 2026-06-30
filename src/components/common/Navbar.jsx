@@ -15,16 +15,11 @@ import { getServiceRoute } from '../../utils/serviceRoutes'
 import ConfirmDialog from './ConfirmDialog'
 import NotificationMenu from './NotificationMenu'
 import Logo from '../../assets/logo.jpeg'
+import { mergeServiceCatalog } from '../../utils/seoContent'
 
 const TOP_BAR_CONTACT = [
   { icon: HiPhone, label: '+91 99370 47733', href: 'tel:+9199370 47733' },
-  { icon: HiMail,  label: 'admin@prolinkconsultancy.in', href: 'mailto:admin@prolinkconsultancy.in' },
-]
-
-const fallbackServices = [
-  { slug: 'job-consultancy', name: 'Job Consultancy', shortDescription: 'Executive & mid-level placements' },
-  { slug: 'campus-drive', name: 'Campus Drive', shortDescription: 'Structured volume hiring' },
-  { slug: 'background-verification', name: 'Background Verification', shortDescription: 'Trust-led candidate checks' },
+  { icon: HiMail, label: 'admin@prolinkconsultancy.in', href: 'mailto:admin@prolinkconsultancy.in' },
 ]
 
 const navLinks = [
@@ -55,7 +50,15 @@ export default function Navbar() {
   const theme       = useSelector(selectTheme)
   const canSubmitTestimonial = role === 'job_seeker'
   const { data } = useQuery({ queryKey: ['services'], queryFn: serviceAPI.getServices })
-  const services = data?.data?.data?.services?.length ? data.data.data.services : fallbackServices
+  const services = mergeServiceCatalog(data?.data?.data?.services || [])
+  const closeServicesMenu = () => setServicesOpen(false)
+  const closeProfileMenu = () => setProfileOpen(false)
+  const closeMobileMenu = () => setMobileOpen(false)
+  const closeAllMenus = () => {
+    closeServicesMenu()
+    closeProfileMenu()
+    closeMobileMenu()
+  }
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40)
@@ -65,36 +68,42 @@ export default function Navbar() {
 
   useEffect(() => {
     const handler = (e) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) setServicesOpen(false)
-      if (profileRef.current  && !profileRef.current.contains(e.target))  setProfileOpen(false)
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) closeServicesMenu()
+      if (profileRef.current  && !profileRef.current.contains(e.target))  closeProfileMenu()
     }
+    const onEscape = (event) => {
+      if (event.key === 'Escape') closeAllMenus()
+    }
+
     document.addEventListener('pointerdown', handler)
-    return () => document.removeEventListener('pointerdown', handler)
+    document.addEventListener('keydown', onEscape)
+    return () => {
+      document.removeEventListener('pointerdown', handler)
+      document.removeEventListener('keydown', onEscape)
+    }
   }, [])
 
   useEffect(() => {
     if (!mobileOpen) return undefined
 
-    const closeMobileMenu = (e) => {
+    const closeMobileMenuOutside = (e) => {
       if (navRef.current && !navRef.current.contains(e.target)) {
-        setMobileOpen(false)
+        closeAllMenus()
       }
     }
 
-    document.addEventListener('pointerdown', closeMobileMenu, true)
-    return () => document.removeEventListener('pointerdown', closeMobileMenu, true)
+    document.addEventListener('pointerdown', closeMobileMenuOutside, true)
+    return () => document.removeEventListener('pointerdown', closeMobileMenuOutside, true)
   }, [mobileOpen])
 
   useEffect(() => {
-    setServicesOpen(false)
-    setMobileOpen(false)
-    setProfileOpen(false)
+    closeAllMenus()
   }, [location.pathname])
 
   const handleLogout = async () => {
     await dispatch(logoutUser())
     navigate('/')
-    setProfileOpen(false)
+    closeProfileMenu()
     setShowLogoutConfirm(false)
   }
 
@@ -104,8 +113,6 @@ export default function Navbar() {
     if (user.role === 'employer') return '/employer'
     return '/dashboard'
   }
-
-  const closeMobileMenu = () => setMobileOpen(false)
 
   return (
     <div ref={navRef}>
@@ -138,8 +145,8 @@ export default function Navbar() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-[60] bg-black/10 lg:hidden"
-            onPointerDown={closeMobileMenu}
-            onClick={closeMobileMenu}
+            onPointerDown={closeAllMenus}
+            onClick={closeAllMenus}
           />
         )}
       </AnimatePresence>
@@ -249,7 +256,7 @@ export default function Navbar() {
             {/* Desktop Nav */}
             <nav className="hidden lg:flex items-center gap-0.5">
               {navLinks.map(({ label, to }) => (
-                <NavLink key={to} to={to}
+                <NavLink key={to} to={to} onClick={closeAllMenus}
                   className={({ isActive }) =>
                     `relative px-4 py-2.5 text-[13.5px] font-semibold tracking-wide transition-colors rounded-lg ${
                       isActive
@@ -272,7 +279,12 @@ export default function Navbar() {
               {/* Services Mega-dropdown */}
               <div ref={dropdownRef}>
                 <button
-                  onClick={() => setServicesOpen(prev => !prev)}
+                  type="button"
+                  onPointerDown={(e) => e.stopPropagation()} 
+                  onClick={() => {
+                    closeProfileMenu()
+                    setServicesOpen((prev) => !prev)
+                  }}
                   className={`flex items-center gap-1.5 px-4 py-2.5 text-[13.5px] font-semibold tracking-wide transition-colors rounded-lg ${
                     servicesOpen
                       ? 'text-[#8B2A0F] dark:text-amber-400'
@@ -299,7 +311,7 @@ export default function Navbar() {
                           <h3 className="text-white font-bold text-lg mt-0.5">What we do best</h3>
                         </div>
                         <Link to="/services"
-                          onClick={() => setServicesOpen(false)}
+                          onClick={closeServicesMenu}
                           className="text-xs font-semibold text-amber-300 hover:text-amber-200 flex items-center gap-1 border border-amber-800/60 rounded-lg px-3 py-1.5 hover:bg-amber-400/10 transition-colors">
                           All Services →
                         </Link>
@@ -311,7 +323,7 @@ export default function Navbar() {
                           <Link
                             key={s.slug || s.name}
                             to={getServiceRoute(s.slug)}
-                            onClick={() => setServicesOpen(false)}
+                            onClick={closeServicesMenu}
                             className="group flex items-start gap-3 px-5 py-4 bg-white dark:bg-stone-900 hover:bg-amber-50 dark:hover:bg-stone-800 transition-colors"
                           >
                             <span className="mt-0.5 flex-shrink-0 w-1.5 h-1.5 rounded-full bg-amber-400 group-hover:bg-[#8B2A0F] transition-colors" />
@@ -334,6 +346,7 @@ export default function Navbar() {
             <div className="flex items-center gap-1.5">
               <Link
                 to="/brochures"
+                onClick={closeAllMenus}
                 className="hidden lg:inline-flex items-center gap-2 rounded-lg px-3 py-2 text-[13px] font-semibold tracking-wide text-stone-600 transition-colors hover:bg-stone-100 hover:text-stone-900 dark:text-stone-300 dark:hover:bg-stone-800 dark:hover:text-white"
               >
                 <HiDocumentText className="h-4 w-4" />
@@ -354,7 +367,11 @@ export default function Navbar() {
 
                   <div className="relative" ref={profileRef}>
                     <button
-                      onClick={() => setProfileOpen(!profileOpen)}
+                    onPointerDown={(e) => e.stopPropagation()} 
+                      onClick={() => {
+                        closeServicesMenu()
+                        setProfileOpen((prev) => !prev)
+                      }}
                       className="flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-xl hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors ml-1"
                     >
                       {user?.avatar?.url
@@ -387,13 +404,13 @@ export default function Navbar() {
                             { icon: HiUser, label: 'My Profile', to: `${getDashboardLink()}/profile` },
                             ...(canSubmitTestimonial ? [{ icon: HiChatAlt2, label: 'Submit Testimonial', to: '/submit-testimonial' }] : []),
                           ].map(({ icon: Icon, label, to }) => (
-                            <Link key={to} to={to} onClick={() => setProfileOpen(false)}
+                            <Link key={to} to={to} onClick={closeProfileMenu}
                               className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-stone-700 dark:text-stone-300 hover:text-[#8B2A0F] dark:hover:text-amber-400 hover:bg-amber-50 dark:hover:bg-stone-800 transition-colors">
                               <Icon className="w-4 h-4" /> {label}
                             </Link>
                           ))}
                           <div className="border-t border-stone-200 dark:border-stone-800 mt-1 pt-1">
-                            <button onClick={() => setShowLogoutConfirm(true)}
+                            <button onClick={() => { closeAllMenus(); setShowLogoutConfirm(true) }}
                               className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
                               <HiLogout className="w-4 h-4" /> Logout
                             </button>
@@ -438,7 +455,7 @@ export default function Navbar() {
             >
               <div className="page-container py-4 flex flex-col gap-0.5">
                 {navLinks.map(({ label, to }) => (
-                  <NavLink key={to} to={to} onClickCapture={closeMobileMenu}
+                  <NavLink key={to} to={to} onClickCapture={closeAllMenus}
                     className={({ isActive }) =>
                       `px-4 py-3 rounded-xl text-sm font-semibold ${
                         isActive
@@ -450,7 +467,7 @@ export default function Navbar() {
 
                 <NavLink
                   to="/brochures"
-                  onClickCapture={closeMobileMenu}
+                  onClickCapture={closeAllMenus}
                   className={({ isActive }) =>
                     `px-4 py-3 rounded-xl text-sm font-semibold ${
                       isActive
@@ -465,7 +482,7 @@ export default function Navbar() {
                 <div className="border-t border-stone-200 dark:border-stone-800 mt-2 pt-3">
                   <p className="px-4 py-1 text-[10px] font-bold text-stone-400 uppercase tracking-[0.28em]">Services</p>
                   {services.map((s) => (
-                    <Link key={s.slug || s.name} to={getServiceRoute(s.slug)} onClickCapture={closeMobileMenu}
+                    <Link key={s.slug || s.name} to={getServiceRoute(s.slug)} onClickCapture={closeAllMenus}
                       className="flex items-center gap-2 px-4 py-2.5 text-sm text-stone-600 dark:text-stone-400 hover:text-[#8B2A0F] dark:hover:text-amber-400 transition-colors">
                       <span className="w-1 h-1 rounded-full bg-amber-400 flex-shrink-0" />
                       {s.name}
@@ -475,11 +492,11 @@ export default function Navbar() {
 
                 {!isLoggedIn && (
                   <div className="flex gap-2 mt-3 pt-3 border-t border-stone-200 dark:border-stone-800">
-                    <Link to="/login" onClickCapture={closeMobileMenu}
+                    <Link to="/login" onClickCapture={closeAllMenus}
                       className="flex-1 py-2.5 text-sm font-semibold text-center border border-stone-300 dark:border-stone-700 rounded-xl text-stone-700 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-900 transition-colors">
                       Sign In
                     </Link>
-                    <Link to="/register" onClickCapture={closeMobileMenu}
+                    <Link to="/register" onClickCapture={closeAllMenus}
                       className="flex-1 py-2.5 text-sm font-bold text-center bg-[#8B2A0F] text-white rounded-xl hover:bg-[#a03212] transition-colors">
                       Register
                     </Link>

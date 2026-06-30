@@ -1,7 +1,7 @@
 import webLogo from '../assets/web-logo.jpeg'
 
 export const SITE_NAME = 'ProLink Consultancy'
-export const DEFAULT_SITE_URL = 'https://prolinkconsultancy.in'
+export const DEFAULT_SITE_URL = 'https://www.prolinkconsultancy.in'
 
 export const getSiteUrl = () => {
   const rawUrl = import.meta.env.VITE_SITE_URL || import.meta.env.VITE_APP_URL || DEFAULT_SITE_URL
@@ -30,54 +30,59 @@ export const truncateText = (value = '', maxLength = 155) => {
 
 export const seoConfig = {
   default: {
-    title: 'ProLink Consultancy | Jobs, Staffing & HR Solutions',
+    title: 'Manpower Recruitment Agency in Bhubaneswar | ProLink Consultancy',
     description:
-      'ProLink Consultancy connects job seekers, employers, colleges, and businesses through recruitment, HR, CV writing, campus drive, event, and catering solutions.',
-    keywords: 'ProLink Consultancy, jobs in India, staffing agency, HR consultancy, recruitment services',
+      'ProLink Consultancy delivers recruitment and staffing services in Odisha, including manpower consultancy in Bhubaneswar, job consultancy, CV writing, and HR outsourcing.',
+    keywords:
+      'ProLink Consultancy, manpower recruitment agency, recruitment and staffing services, manpower consultancy in Bhubaneswar, manpower recruitment agency in Odisha',
     robots: 'index,follow',
   },
   routes: {
     '/': {
-      title: 'ProLink Consultancy | Jobs, Staffing & HR Solutions',
+      title: 'Manpower Recruitment Agency in Bhubaneswar | ProLink Consultancy',
       description:
-        'Find jobs, hire talent, improve resumes, organize campus drives, and access business services with ProLink Consultancy.',
-      keywords: 'jobs, staffing, recruitment, HR consultancy, career services',
+        'ProLink Consultancy delivers recruitment and staffing services in Odisha, including manpower consultancy in Bhubaneswar, permanent staffing, temporary staffing, contract staffing, CV writing, and HR outsourcing.',
+      keywords:
+        'manpower recruitment agency, recruitment and staffing services, manpower consultancy in Bhubaneswar, manpower recruitment agency in Odisha, manpower recruitment agency in Bhubaneswar',
     },
     '/about': {
-      title: 'About ProLink Consultancy | Recruitment & HR Partner',
+      title: 'About ProLink Consultancy | Recruitment Partner in Odisha',
       description:
-        'Learn about ProLink Consultancy, a trusted partner for recruitment, HR outsourcing, campus hiring, and career growth services.',
-      keywords: 'about ProLink, recruitment consultancy, HR partner',
+        'Learn how ProLink Consultancy supports recruitment consultancy, workforce planning, campus hiring, and HR solutions for businesses in Odisha and beyond.',
+      keywords: 'about ProLink, recruitment consultancy, HR partner, Odisha recruitment company',
     },
     '/services': {
-      title: 'Consultancy Services | ProLink Consultancy',
+      title: 'Recruitment & Staffing Services in Odisha | ProLink Consultancy',
       description:
-        'Explore ProLink services including job consultancy, CV writing, campus drives, event management, catering, background verification, and HR outsourcing.',
-      keywords: 'consultancy services, job placement, CV writing, campus drive, background verification',
+        'Explore job consultancy, permanent staffing, temporary staffing, contract staffing, CV writing, campus drive, background verification, and HR outsourcing services.',
+      keywords:
+        'recruitment and staffing services, job consultancy, permanent staffing, temporary staffing, contract staffing, CV writing, HR outsourcing',
     },
     '/jobs': {
-      title: 'Browse Jobs in India | ProLink Consultancy',
+      title: 'Find Jobs in India | ProLink Consultancy',
       description:
         'Search active job openings by title, company, category, location, experience, salary, and work mode with ProLink Consultancy.',
       keywords: 'jobs in India, job openings, hiring, careers, recruitment',
     },
     '/blogs': {
-      title: 'Career Blog | ProLink Consultancy',
+      title: 'Career Advice Blog | ProLink Consultancy',
       description:
         'Read career advice, resume writing tips, interview preparation guides, salary insights, and HR updates from ProLink Consultancy.',
       keywords: 'career blog, resume tips, interview tips, HR insights, salary guide',
     },
     '/contact': {
-      title: 'Contact ProLink Consultancy | Hiring & Career Support',
+      title: 'Contact ProLink Consultancy | Bhubaneswar Staffing & HR',
       description:
-        'Contact ProLink Consultancy for recruitment, job placement, HR services, CV writing, campus drives, events, and catering enquiries.',
-      keywords: 'contact ProLink, recruitment enquiry, HR service enquiry',
+        'Contact ProLink Consultancy for manpower recruitment agency support, job consultancy, CV writing, campus drives, HR outsourcing, and staffing enquiries in Odisha.',
+      keywords:
+        'contact ProLink, recruitment enquiry, HR service enquiry, Bhubaneswar staffing support',
     },
     '/cv-writing': {
-      title: 'Professional CV Writing Services | ProLink Consultancy',
+      title: 'Professional CV Writing Services in Odisha | ProLink Consultancy',
       description:
         'Get ATS-friendly CV writing support, resume optimization, and career profile improvements from ProLink Consultancy.',
-      keywords: 'CV writing, resume writing, ATS resume, career profile',
+      keywords:
+        'professional CV writing services, CV writing agency in Bhubaneswar, executive resume writing, ATS resume',
     },
     '/campus-drive': {
       title: 'Campus Drive & Placement Services | ProLink Consultancy',
@@ -86,25 +91,25 @@ export const seoConfig = {
       keywords: 'campus drive, college placement, fresher hiring, placement services',
     },
     '/events': {
-      title: 'Event Management Services | ProLink Consultancy',
+      title: 'Event Management Services in India | ProLink Consultancy',
       description:
         'Organize corporate events, recruitment events, campus programs, and business gatherings with ProLink Consultancy.',
       keywords: 'event management, corporate events, recruitment events',
     },
     '/catering': {
-      title: 'Catering Services | ProLink Consultancy',
+      title: 'Catering Services for Corporate Events | ProLink Consultancy',
       description:
         'Book catering support for corporate events, campus programs, business meetings, and special occasions.',
       keywords: 'catering services, corporate catering, event catering',
     },
     '/testimonials': {
-      title: 'Client Testimonials | ProLink Consultancy',
+      title: 'Client Testimonials & Success Stories | ProLink Consultancy',
       description:
         'Read testimonials from candidates, employers, and partners who have worked with ProLink Consultancy.',
       keywords: 'ProLink testimonials, client reviews, recruitment reviews',
     },
     '/brochures': {
-      title: 'Brochures | ProLink Consultancy',
+      title: 'Brochures & Service Guides | ProLink Consultancy',
       description:
         'View and download ProLink Consultancy brochures for services, recruitment support, and business solutions.',
       keywords: 'ProLink brochures, service brochure, consultancy brochure',

@@ -9,8 +9,9 @@ import toast from 'react-hot-toast'
 import { getServiceIcon } from '../constants/serviceIcons'
 import { requiredIndianMobileSchema, sanitizeIndianMobileInput } from '../utils/phoneValidation'
 import SEO from '../components/SEO'
-import { breadcrumbSchema, serviceSchema } from '../utils/schema'
+import { breadcrumbSchema, faqSchema, serviceSchema } from '../utils/schema'
 import { getAbsoluteUrl } from '../utils/seo'
+import { buildServiceFaqs, getServiceSeoContent } from '../utils/seoContent'
 
 const SERVICE_DETAIL_FALLBACKS = {
   'background-verification': {
@@ -25,16 +26,46 @@ export default function ServiceDetail() {
   const { slug } = useParams()
   const { data, isLoading } = useQuery({ queryKey: ['service', slug], queryFn: () => serviceAPI.getService(slug) })
   const serviceData = data?.data?.data?.service
+  const seoContent = getServiceSeoContent(slug)
+  const safeSeoContent = seoContent || {
+    name: 'Service',
+    intro: '',
+    metaTitle: '',
+    metaDescription: '',
+    keywords: '',
+    relatedServices: [],
+    faqs: [],
+  }
+  const isUnknownService = !isLoading && !serviceData && !seoContent
   const service = serviceData
     ? {
         ...SERVICE_DETAIL_FALLBACKS[slug],
         ...serviceData,
-        description: serviceData.description && serviceData.description !== '...'
-          ? serviceData.description
-          : SERVICE_DETAIL_FALLBACKS[slug]?.description || serviceData.description,
+        name: serviceData?.name || safeSeoContent?.name,
+        shortDescription: serviceData?.shortDescription || safeSeoContent?.intro,
+        description: serviceData?.description && serviceData?.description !== '...'
+          ? serviceData?.description
+          : SERVICE_DETAIL_FALLBACKS[slug]?.description || safeSeoContent?.intro,
+        metaTitle: serviceData.metaTitle || safeSeoContent?.metaTitle,
+        metaDescription: serviceData.metaDescription || safeSeoContent?.metaDescription,
+        keywords: serviceData.keywords || safeSeoContent?.keywords,
       }
-    : serviceData
+    : {
+        slug,
+        name: safeSeoContent?.name,
+        shortDescription: safeSeoContent?.intro,
+        description: safeSeoContent?.intro,
+        metaTitle: safeSeoContent?.metaTitle,
+        metaDescription: safeSeoContent?.metaDescription,
+        keywords: safeSeoContent?.keywords,
+        features: [],
+        process: [],
+        pricing: [],
+        faqs: safeSeoContent?.faqs,
+      }
   const ServiceIcon = getServiceIcon(slug)
+  const serviceFaqs = service.faqs?.length ? service.faqs : buildServiceFaqs(service)
+  const relatedServices = safeSeoContent?.relatedServices || []
 
   // const formik = useFormik({
   //   initialValues: { name:'', email:'', phone:'', message:'' },
@@ -90,7 +121,7 @@ export default function ServiceDetail() {
 
   if (isLoading) return <div className="pt-20 min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center"><div className="w-10 h-10 border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin" /></div>
 
-  if (!service) return (
+  if (isUnknownService) return (
     <div className="pt-20 min-h-screen flex items-center justify-center text-center">
       <div><div className="text-6xl mb-4">⚠️</div><h2 className="text-xl font-bold mb-2">Service Not Found</h2><Link to="/services" className="btn-primary mt-4">All Services</Link></div>
     </div>
@@ -101,7 +132,7 @@ export default function ServiceDetail() {
       <SEO
         title={`${service.metaTitle || service.name} | ProLink Consultancy`}
         description={service.metaDescription || service.shortDescription || service.description}
-        keywords={[service.name, service.category, 'ProLink Consultancy service'].filter(Boolean).join(', ')}
+        keywords={[service.keywords || service.name, service.category, 'ProLink Consultancy service'].filter(Boolean).join(', ')}
         image={service.image?.url}
         url={getAbsoluteUrl(`/services/${service.slug || slug}`)}
         canonical={getAbsoluteUrl(`/services/${service.slug || slug}`)}
@@ -112,6 +143,7 @@ export default function ServiceDetail() {
             { name: service.name, url: `/services/${service.slug || slug}` },
           ]),
           serviceSchema(service),
+          faqSchema(serviceFaqs),
         ]}
       />
       <div className="pt-16">
@@ -130,8 +162,28 @@ export default function ServiceDetail() {
           </div>
         </div>
         <div className="page-container py-14">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
             <div className="lg:col-span-2 space-y-10">
+              <motion.div initial={{ opacity:0, y:16 }} animate={{ opacity:1, y:0 }}>
+                <div className="rounded-3xl border border-primary-100 bg-primary-50/70 p-6 dark:border-primary-900/40 dark:bg-primary-900/20">
+                  <p className="text-xs font-bold uppercase tracking-[0.28em] text-primary-600 dark:text-primary-300 mb-2">
+                    Service Snapshot
+                  </p>
+                  <p className="text-sm leading-relaxed text-slate-700 dark:text-slate-200">
+                    {seoContent?.intro}
+                  </p>
+                  {seoContent?.highlights?.length > 0 && (
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      {seoContent.highlights.map((item) => (
+                        <span key={item} className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-primary-700 shadow-sm dark:bg-slate-900 dark:text-primary-300">
+                          {item}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+
               {service.description && (
                 <motion.div initial={{ opacity:0, y:16 }} animate={{ opacity:1, y:0 }}>
                   <h2 className="text-xl font-display font-bold text-slate-900 dark:text-white mb-4">Overview</h2>
@@ -186,17 +238,39 @@ export default function ServiceDetail() {
                   </div>
                 </motion.div>
               )}
-              {service.faqs?.length > 0 && (
+              {serviceFaqs.length > 0 && (
                 <motion.div initial={{ opacity:0, y:16 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.15 }}>
                   <h2 className="text-xl font-display font-bold text-slate-900 dark:text-white mb-5">FAQs</h2>
                   <div className="space-y-3">
-                    {service.faqs.map(faq => (
+                    {serviceFaqs.map(faq => (
                       <details key={faq.question} className="card p-5 group">
                         <summary className="font-semibold text-slate-900 dark:text-white cursor-pointer text-sm flex items-center justify-between">
                           {faq.question}<HiArrowRight className="w-4 h-4 text-slate-400 group-open:rotate-90 transition-transform flex-shrink-0" />
                         </summary>
                         <p className="mt-3 text-slate-500 text-sm leading-relaxed">{faq.answer}</p>
                       </details>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+
+              {relatedServices.length > 0 && (
+                <motion.div initial={{ opacity:0, y:16 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.18 }}>
+                  <h2 className="text-xl font-display font-bold text-slate-900 dark:text-white mb-5">Related Services</h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {relatedServices.map((relatedSlug) => (
+                      <Link
+                        key={relatedSlug}
+                        to={relatedSlug === 'campus-drive' ? '/campus-drive' : `/services/${relatedSlug}`}
+                        className="card p-5 hover:border-primary-400 transition-colors"
+                      >
+                        <p className="text-sm font-semibold text-primary-600 dark:text-primary-300">
+                          {getServiceSeoContent(relatedSlug).name}
+                        </p>
+                        <p className="mt-2 text-sm text-slate-500">
+                          {getServiceSeoContent(relatedSlug).intro}
+                        </p>
+                      </Link>
                     ))}
                   </div>
                 </motion.div>

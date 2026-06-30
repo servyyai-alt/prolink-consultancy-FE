@@ -14,12 +14,7 @@ import {
 } from 'react-icons/hi'
 import { serviceAPI } from '../../services/api'
 import { getServiceRoute } from '../../utils/serviceRoutes'
-
-const fallbackServices = [
-  { slug: 'job-consultancy', name: 'Job Consultancy', shortDescription: 'End-to-end recruitment and placement support' },
-  { slug: 'campus-drive', name: 'Campus Drive', shortDescription: 'Structured college-to-company hiring drives' },
-  { slug: 'background-verification', name: 'Background Verification', shortDescription: 'Candidate verification and background checks' },
-]
+import { mergeServiceCatalog, PUBLIC_SERVICE_FALLBACKS } from '../../utils/seoContent'
 
 const CONTACT = {
   phone: '+91 99370 47733',
@@ -242,7 +237,7 @@ function buildResponse(question, services) {
 export default function ServiceChatbot() {
   const [isOpen, setIsOpen] = useState(false)
   const [input, setInput] = useState('')
-  const [messages, setMessages] = useState(() => [buildWelcomeMessage(fallbackServices)])
+  const [messages, setMessages] = useState(() => [buildWelcomeMessage(PUBLIC_SERVICE_FALLBACKS)])
   const messagesEndRef = useRef(null)
   const navigate = useNavigate()
 
@@ -254,7 +249,7 @@ export default function ServiceChatbot() {
 
   const services = useMemo(() => {
     const apiServices = data?.data?.data?.services
-    return apiServices?.length ? apiServices : fallbackServices
+    return mergeServiceCatalog(apiServices || [])
   }, [data])
 
   const quickPrompts = useMemo(() => buildSuggestedQuestions(services), [services])

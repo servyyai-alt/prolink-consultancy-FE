@@ -1,4 +1,3 @@
-import { Helmet } from 'react-helmet-async'
 import { motion } from 'framer-motion'
 import { useFormik } from 'formik'
 import * as Yup from 'yup'
@@ -6,6 +5,8 @@ import { contactAPI } from '../services/api'
 import toast from 'react-hot-toast'
 import { HiCheckCircle, HiAcademicCap, HiBriefcase, HiCalendar } from 'react-icons/hi'
 import { requiredIndianMobileSchema, sanitizeIndianMobileInput } from '../utils/phoneValidation'
+import SEO from '../components/SEO'
+import { webPageSchema } from '../utils/schema'
 
 const STATS = [{ v:'500+', l:'Colleges Partnered' },{ v:'200+', l:'Companies Hiring' },{ v:'15,000+', l:'Students Placed' },{ v:'92%', l:'Placement Rate' }]
 
@@ -29,10 +30,18 @@ export default function CampusDrive() {
 
   return (
     <>
-      <Helmet>
-        <title>Campus Drive | ProLink Consultancy</title>
-        <meta name="description" content="Register your college for campus drives and placement support. ProLink connects 500+ colleges with 200+ hiring companies." />
-      </Helmet>
+      <SEO
+        title="Campus Drive & Placement Services | ProLink Consultancy"
+        description="Plan structured campus drives, college placement programs, and fresher hiring campaigns with ProLink Consultancy."
+        keywords="campus drive, college placement, fresher hiring, placement services"
+        schemas={[
+          webPageSchema({
+            name: 'Campus Drive & Placement Services',
+            description:
+              'Structured campus drives, college placement programs, and fresher hiring campaigns with ProLink Consultancy.',
+          }),
+        ]}
+      />
       <div className="pt-16">
         <div className="bg-gradient-to-br from-slate-900 via-primary-950 to-slate-900 py-20 relative overflow-hidden">
           <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-5" />

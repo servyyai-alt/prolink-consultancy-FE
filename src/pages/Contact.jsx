@@ -1,7 +1,6 @@
 // Contact.jsx
 
 import { useEffect, useState } from 'react'
-import { Helmet } from 'react-helmet-async'
 import { useFormik } from 'formik'
 import * as Yup from 'yup'
 import { useSelector } from 'react-redux'
@@ -23,6 +22,8 @@ import {
 
 import bgImage from '../assets/contact.png'
 import { selectUser } from '../redux/slices/authSlice'
+import SEO from '../components/SEO'
+import { localBusinessSchema, webPageSchema } from '../utils/schema'
 
 export default function Contact() {
   const user = useSelector(selectUser)
@@ -157,16 +158,19 @@ export default function Contact() {
 
   return (
     <>
-      <Helmet>
-        <title>
-          Contact ProLink Consultancy | Jobs, Staffing & HR Solutions Company
-        </title>
-
-        <meta
-          name="description"
-          content="Get in touch with ProLink Consultancy for recruitment, staffing, HR solutions, CV writing, campus hiring, and business consulting services. Our experts are ready to help businesses and job seekers achieve their goals."
-        />
-      </Helmet>
+      <SEO
+        title="Contact ProLink Consultancy | Bhubaneswar Staffing & HR"
+        description="Contact ProLink Consultancy for manpower recruitment agency support, job consultancy, CV writing, campus drives, HR outsourcing, and staffing enquiries in Odisha."
+        keywords="contact ProLink, recruitment enquiry, HR service enquiry, Bhubaneswar staffing support"
+        schemas={[
+          localBusinessSchema(),
+          webPageSchema({
+            name: 'Contact ProLink Consultancy',
+            description:
+              'Manpower recruitment agency support, job consultancy, CV writing, campus drives, HR outsourcing, and staffing enquiries in Odisha.',
+          }),
+        ]}
+      />
 
       <div className="pt-16">
 
@@ -184,11 +188,11 @@ export default function Contact() {
               animate={{ opacity: 1, y: 0 }}
               className="text-3xl md:text-4xl font-display font-bold text-white mb-3"
             >
-              Get in Touch
+              Get in Touch with Our Bhubaneswar Team
             </motion.h1>
 
             <p className="text-white/90">
-              Our team is ready to help you with any query
+              Our team is ready to help you with recruitment, staffing, and HR queries across Odisha and India.
             </p>
 
           </div>

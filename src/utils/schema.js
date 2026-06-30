@@ -1,4 +1,5 @@
 import { getAbsoluteUrl, getDefaultImage, getSiteUrl, SITE_NAME, truncateText } from './seo'
+import { SITE_ADDRESS } from './seoContent'
 
 export const organizationSchema = () => ({
   '@context': 'https://schema.org',
@@ -27,6 +28,41 @@ export const websiteSchema = () => ({
     target: `${getSiteUrl()}/jobs?search={search_term_string}`,
     'query-input': 'required name=search_term_string',
   },
+})
+
+export const webPageSchema = ({ name, description, url } = {}) => ({
+  '@context': 'https://schema.org',
+  '@type': 'WebPage',
+  name: name || SITE_NAME,
+  description: truncateText(description || '', 180),
+  url: url || (typeof window !== 'undefined' ? window.location.href : getSiteUrl()),
+  isPartOf: {
+    '@type': 'WebSite',
+    name: SITE_NAME,
+    url: getSiteUrl(),
+  },
+})
+
+export const localBusinessSchema = () => ({
+  '@context': 'https://schema.org',
+  '@type': 'EmploymentAgency',
+  name: SITE_NAME,
+  url: getSiteUrl(),
+  logo: getDefaultImage(),
+  image: getDefaultImage(),
+  telephone: '+91 99370 47733',
+  email: 'admin@prolinkconsultancy.in',
+  address: {
+    '@type': 'PostalAddress',
+    streetAddress: SITE_ADDRESS,
+    addressLocality: 'Bhubaneswar',
+    addressRegion: 'Odisha',
+    postalCode: '751025',
+    addressCountry: 'IN',
+  },
+  areaServed: ['Bhubaneswar', 'Odisha', 'India'],
+  hasMap: 'https://maps.app.goo.gl/Gd4wiqyPGsTfE13Z9',
+  sameAs: [],
 })
 
 export const breadcrumbSchema = (items = []) => ({
@@ -111,4 +147,19 @@ export const serviceSchema = (service = {}) => ({
   },
   areaServed: 'IN',
   url: getAbsoluteUrl(`/services/${service.slug}`),
+})
+
+export const faqSchema = (faqs = []) => ({
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqs
+    .filter((faq) => faq?.question && faq?.answer)
+    .map((faq) => ({
+      '@type': 'Question',
+      name: faq.question,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: truncateText(faq.answer, 1000),
+      },
+    })),
 })

@@ -1,10 +1,12 @@
-import { Helmet } from 'react-helmet-async'
 import { motion } from 'framer-motion'
 import { useFormik } from 'formik'
 import * as Yup from 'yup'
 import { contactAPI } from '../services/api'
 import toast from 'react-hot-toast'
 import { HiCheckCircle } from 'react-icons/hi'
+import SEO from '../components/SEO'
+import { webPageSchema } from '../utils/schema'
+import { requiredIndianMobileSchema, sanitizeIndianMobileInput } from '../utils/phoneValidation'
 
 const EVENT_TYPES = ['Corporate Event','Conference / Seminar','Product Launch','Team Outing','Exhibition','Award Ceremony','Other']
 const PACKAGES = [
@@ -33,10 +35,18 @@ export default function Events() {
 
   return (
     <>
-      <Helmet>
-        <title>Event Management | ProLink Consultancy</title>
-        <meta name="description" content="ProLink Event Management — corporate events, conferences, product launches and more. End-to-end planning across India." />
-      </Helmet>
+      <SEO
+        title="Event Management Services in India | ProLink Consultancy"
+        description="Organize corporate events, recruitment events, campus programs, and business gatherings with ProLink Consultancy."
+        keywords="event management, corporate events, recruitment events"
+        schemas={[
+          webPageSchema({
+            name: 'Event Management Services',
+            description:
+              'Organize corporate events, recruitment events, campus programs, and business gatherings with ProLink Consultancy.',
+          }),
+        ]}
+      />
       <div className="pt-16">
         <div className="bg-gradient-to-r from-primary-700 to-primary-900 py-16">
           <div className="page-container text-center">

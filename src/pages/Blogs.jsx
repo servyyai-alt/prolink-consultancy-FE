@@ -1,12 +1,13 @@
 import { useDeferredValue, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { Helmet } from 'react-helmet-async'
 import { motion } from 'framer-motion'
 import { HiSearch, HiCalendar, HiClock, HiEye } from 'react-icons/hi'
 import { blogAPI } from '../services/api'
 import { Pagination, Skeleton } from '../components/ui/index'
 import career from "../assets/career.png";
+import SEO from '../components/SEO'
+import { webPageSchema } from '../utils/schema'
 
 const CATEGORIES = ['All', 'Career Tips', 'Resume Writing', 'Interview Prep', 'Industry News', 'HR Insights', 'Salary Guide']
 
@@ -26,10 +27,18 @@ export default function Blogs() {
 
   return (
     <>
-      <Helmet>
-        <title>Career Blog | ProLink Consultancy</title>
-        <meta name="description" content="Career tips, resume writing advice, interview preparation guides and HR insights from ProLink Consultancy." />
-      </Helmet>
+      <SEO
+        title="Career Advice Blog | ProLink Consultancy"
+        description="Read career advice, resume writing tips, interview preparation guides, salary insights, and HR updates from ProLink Consultancy."
+        keywords="career blog, resume tips, interview tips, HR insights, salary guide"
+        schemas={[
+          webPageSchema({
+            name: 'Career Advice Blog',
+            description:
+              'Career advice, resume writing tips, interview preparation guides, salary insights, and HR updates from ProLink Consultancy.',
+          }),
+        ]}
+      />
       <div className="pt-16">
 
 <div

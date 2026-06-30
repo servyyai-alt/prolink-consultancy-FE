@@ -1,33 +1,37 @@
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
-import { Helmet } from 'react-helmet-async'
 import { motion } from 'framer-motion'
 import { HiArrowRight } from 'react-icons/hi'
 import { serviceAPI } from '../services/api'
 import { getServiceIcon } from '../constants/serviceIcons'
 import { getServiceRoute } from '../utils/serviceRoutes'
-
-const FALLBACK = [
-  { slug: 'job-consultancy', name: 'Job Consultancy', shortDescription: 'End-to-end recruitment solutions' },
-  { slug: 'campus-drive', name: 'Campus Drive', shortDescription: 'College-to-company placement drives' },
-  { slug: 'background-verification', name: 'Background Verification', shortDescription: 'Comprehensive background checks' },
-]
+import SEO from '../components/SEO'
+import { mergeServiceCatalog } from '../utils/seoContent'
+import { webPageSchema } from '../utils/schema'
 
 export default function Services() {
   const { data } = useQuery({ queryKey: ['services'], queryFn: serviceAPI.getServices })
-  const services = data?.data?.data?.services?.length ? data.data.data.services : FALLBACK
+  const services = mergeServiceCatalog(data?.data?.data?.services || [])
 
   return (
     <>
-      <Helmet>
-        <title>Our Services | ProLink Consultancy</title>
-        <meta name="description" content="ProLink Consultancy offers 9 comprehensive services: Job Placement, CV Writing, Campus Drive, Event Management, Catering, HR Outsourcing and more." />
-      </Helmet>
+      <SEO
+        title="Recruitment & Staffing Services in Odisha | ProLink Consultancy"
+        description="Explore job consultancy, permanent staffing, temporary staffing, contract staffing, CV writing, campus drive, background verification, and HR outsourcing services."
+        keywords="recruitment and staffing services, job consultancy, permanent staffing, temporary staffing, contract staffing, CV writing, HR outsourcing"
+        schemas={[
+          webPageSchema({
+            name: 'Recruitment & Staffing Services in Odisha',
+            description:
+              'Explore job consultancy, permanent staffing, temporary staffing, contract staffing, CV writing, campus drive, background verification, and HR outsourcing services.',
+          }),
+        ]}
+      />
       <div className="pt-16">
         <div className="bg-gradient-to-r from-primary-700 to-primary-900 py-16">
           <div className="page-container text-center">
-            <h1 className="text-4xl font-display font-bold text-white mb-3">Our Services</h1>
-            <p className="text-primary-200 text-lg max-w-2xl mx-auto">Focused consultancy services for hiring, campus recruitment, and candidate verification across India</p>
+            <h1 className="text-4xl font-display font-bold text-white mb-3">Recruitment & Staffing Services</h1>
+            <p className="text-primary-200 text-lg max-w-2xl mx-auto">Job consultancy, permanent staffing, temporary staffing, contract staffing, CV writing, HR outsourcing, and placement support across Odisha and India.</p>
           </div>
         </div>
         <div className="page-container py-16">

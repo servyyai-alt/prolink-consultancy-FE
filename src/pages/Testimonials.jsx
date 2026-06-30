@@ -1,12 +1,13 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { Helmet } from 'react-helmet-async'
 import { HiChatAlt2, HiArrowRight, HiStar } from 'react-icons/hi'
 import { testimonialAPI } from '../services/api'
 import { useSelector } from 'react-redux'
 import { selectIsLoggedIn, selectRole } from '../redux/slices/authSlice'
 import { Badge, Button, EmptyState, Pagination } from '../components/ui/index'
+import SEO from '../components/SEO'
+import { webPageSchema } from '../utils/schema'
 
 export default function Testimonials() {
   const [page, setPage] = useState(1)
@@ -26,7 +27,18 @@ export default function Testimonials() {
 
   return (
     <>
-      <Helmet><title>Testimonials | ProLink Consultancy</title></Helmet>
+      <SEO
+        title="Client Testimonials & Success Stories | ProLink Consultancy"
+        description="Read testimonials from candidates, employers, and partners who have worked with ProLink Consultancy."
+        keywords="ProLink testimonials, client reviews, recruitment reviews"
+        schemas={[
+          webPageSchema({
+            name: 'Client Testimonials & Success Stories',
+            description:
+              'Read testimonials from candidates, employers, and partners who have worked with ProLink Consultancy.',
+          }),
+        ]}
+      />
       
       {/* Hero Section */}
       <section className="bg-gradient-to-b from-slate-50 to-white dark:from-slate-900 dark:to-slate-950 py-12 md:py-16">

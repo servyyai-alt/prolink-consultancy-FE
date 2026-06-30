@@ -1,10 +1,11 @@
 import { motion } from 'framer-motion'
-import { Helmet } from 'react-helmet-async'
 import { useInView } from 'react-intersection-observer'
 import { useQuery } from '@tanstack/react-query'
 import { FaLinkedin } from 'react-icons/fa'
 import { Target, Eye, Handshake, Rocket, HeartHandshake } from 'lucide-react'
 import { teamMemberAPI } from '../services/api'
+import SEO from '../components/SEO'
+import { webPageSchema } from '../utils/schema'
 
 
 const TEAM = [
@@ -55,10 +56,18 @@ export default function About() {
 
   return (
     <>
-      <Helmet>
-        <title>About ProLink Consultancy | Leading Recruitment, Staffing & HR Solutions Company</title>
-        <meta name="description" content="Discover ProLink Consultancy, a leading recruitment and staffing agency in Odisha. We provide talent acquisition, HR consulting, workforce management, and career solutions for businesses and job seekers across India" />
-      </Helmet>
+      <SEO
+        title="About ProLink Consultancy | Recruitment Partner in Odisha"
+        description="Learn how ProLink Consultancy supports recruitment consultancy, workforce planning, campus hiring, and HR solutions for businesses in Odisha and beyond."
+        keywords="about ProLink, recruitment consultancy, HR partner, Odisha recruitment company"
+        schemas={[
+          webPageSchema({
+            name: 'About ProLink Consultancy',
+            description:
+              'Recruitment consultancy, workforce planning, campus hiring, and HR solutions for businesses in Odisha and beyond.',
+          }),
+        ]}
+      />
 
       <div className="pt-16">
         <div className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-primary-950 to-slate-900 py-20">
@@ -69,10 +78,10 @@ export default function About() {
                 About ProLink
               </span>
               <h1 className="mb-5 text-4xl font-display font-bold text-white md:text-5xl">
-                India&apos;s Trusted <span className="bg-gradient-to-r from-primary-400 to-blue-400 bg-clip-text text-transparent">Consultancy Partner</span>
+                India&apos;s Trusted <span className="bg-gradient-to-r from-primary-400 to-blue-400 bg-clip-text text-transparent">Recruitment Partner</span>
               </h1>
               <p className="mx-auto max-w-2xl text-lg text-slate-300">
-                For nearly a decade, ProLink Consultancy has connected top talent with leading companies through job consultancy, campus drives, and trusted background verification.
+                For nearly a decade, ProLink Consultancy has connected top talent with leading companies through job consultancy, manpower recruitment, campus drives, and trusted background verification in Bhubaneswar, Odisha, and across India.
               </p>
             </FadeUp>
           </div>

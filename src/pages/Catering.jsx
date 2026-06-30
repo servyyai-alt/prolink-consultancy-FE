@@ -1,10 +1,12 @@
-import { Helmet } from 'react-helmet-async'
 import { motion } from 'framer-motion'
 import { useFormik } from 'formik'
 import * as Yup from 'yup'
 import { cateringAPI } from '../services/api'
 import toast from 'react-hot-toast'
 import { HiCheckCircle } from 'react-icons/hi'
+import SEO from '../components/SEO'
+import { webPageSchema } from '../utils/schema'
+import { requiredIndianMobileSchema, sanitizeIndianMobileInput } from '../utils/phoneValidation'
 
 const MENUS = [
   { name:'Veg Buffet',     price:350,  desc:'Per person — South Indian + North Indian veg spread',     items:['Starters (3)','Dal + Sabzi (2)','Rice + Roti','Dessert (2)','Beverages'] },
@@ -32,10 +34,18 @@ export default function Catering() {
 
   return (
     <>
-      <Helmet>
-        <title>Catering Services | ProLink Consultancy</title>
-        <meta name="description" content="Indoor and outdoor catering services for corporate events, weddings and celebrations across India. Starting ₹350 per person." />
-      </Helmet>
+      <SEO
+        title="Catering Services for Corporate Events | ProLink Consultancy"
+        description="Book catering support for corporate events, campus programs, business meetings, and special occasions."
+        keywords="catering services, corporate catering, event catering"
+        schemas={[
+          webPageSchema({
+            name: 'Catering Services for Corporate Events',
+            description:
+              'Book catering support for corporate events, campus programs, business meetings, and special occasions.',
+          }),
+        ]}
+      />
       <div className="pt-16">
         <div className="bg-gradient-to-r from-amber-700 to-orange-800 py-16">
           <div className="page-container text-center">

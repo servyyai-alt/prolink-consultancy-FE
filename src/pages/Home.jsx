@@ -4,8 +4,9 @@ import { useInView } from "react-intersection-observer";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import CountUp from "react-countup";
-import { Helmet } from "react-helmet-async";
 import { formatJobLocation } from "../utils/jobLocation";
+import SEO from "../components/SEO";
+import { localBusinessSchema, webPageSchema } from "../utils/schema";
 import {
   HiArrowRight,
   HiChevronDown,
@@ -26,27 +27,35 @@ import HeroSection from "../assets/video/herosection.mp4";
 const SERVICES = [
   {
     num: "01",
-    title: "Executive Staffing",
+    title: "Job Consultancy",
     description:
-      "Targeted leadership hiring for growing companies that need capability, speed, and cultural fit.",
-    detail: "Leadership hires delivered in 21–45 days",
+      "Recruitment consultant jobs, job placement agency support, and professional job consultancy for employers and candidates.",
+    detail: "Professional job consultancy in Odisha and Bhubaneswar",
     icon: HiBriefcase,
   },
   {
     num: "02",
-    title: "Campus & Volume Hiring",
+    title: "Permanent Staffing Solutions",
     description:
-      "Structured drives, assessment coordination, and onboarding support for scale-ready teams.",
-    detail: "500+ partner institutions and employers",
+      "Permanent staffing agency support for stable, long-term hires across Odisha, Bhubaneswar, and India.",
+    detail: "Permanent recruitment agency support for growth teams",
     icon: HiUserGroup,
   },
   {
     num: "03",
-    title: "Background Verification",
+    title: "Temporary and Contract Staffing",
     description:
-      "Structured verification checks that help employers hire with confidence and reduce onboarding risk.",
-    detail: "Shortlist-focused candidate presentation",
+      "Temporary staffing agency and contract staffing solutions for project-based, seasonal, and flexible hiring needs.",
+    detail: "Flexible workforce support when demand changes",
     icon: HiOfficeBuilding,
+  },
+  {
+    num: "04",
+    title: "CV Writing and HR Outsourcing",
+    description:
+      "Professional CV writing services and HR outsourcing solutions for job seekers, founders, and growing businesses.",
+    detail: "ATS-friendly resumes and scalable HR support",
+    icon: HiShieldCheck,
   },
 ];
 
@@ -167,15 +176,19 @@ export default function Home() {
 
   return (
     <>
-      <Helmet>
-        <title>
-          Best Staffing & Recruitment Agency in Odisha, India | ProLink Consultancy
-        </title>
-        <meta
-          name="description"
-          content="ProLink Consultancy is a leading staffing and recruitment agency in Odisha, India, offering professional hiring, talent acquisition, workforce management, and HR solutions. We help businesses find skilled professionals and connect job seekers with the right career opportunities through reliable recruitment and staffing services."
-        />
-      </Helmet>
+      <SEO
+        title="Manpower Recruitment Agency in Bhubaneswar | ProLink Consultancy"
+        description="ProLink Consultancy delivers recruitment and staffing services in Odisha, including manpower consultancy in Bhubaneswar, job consultancy, permanent staffing, temporary staffing, contract staffing, CV writing, and HR outsourcing."
+        keywords="manpower recruitment agency, recruitment and staffing services, manpower consultancy in Bhubaneswar, manpower recruitment agency in Odisha, manpower recruitment agency in Bhubaneswar"
+        schemas={[
+          localBusinessSchema(),
+          webPageSchema({
+            name: "Manpower Recruitment Agency in Bhubaneswar",
+            description:
+              "Recruitment and staffing services in Odisha, including job consultancy, permanent staffing, temporary staffing, contract staffing, CV writing, and HR outsourcing.",
+          }),
+        ]}
+      />
 
       {/* ════════════════════════════════════════
           HERO
@@ -223,7 +236,7 @@ export default function Home() {
                   <span className="w-8 h-px bg-amber-400" />
 
                   <span className="text-[10px] uppercase tracking-[0.32em] text-amber-400 font-bold">
-                    Strategic Staffing Consultancy
+                    Manpower recruitment agency in Odisha
                   </span>
                 </div>
               </Reveal>
@@ -241,7 +254,8 @@ export default function Home() {
       "
                   style={{ fontFamily: "'Georgia', serif" }}
                 >
-                  Helping businesses hire better.{" "}
+                  Manpower recruitment agency in Bhubaneswar for businesses
+                  that hire better.{" "}
                   <span className="text-amber-400">
                     Helping professionals grow faster.
                   </span>
@@ -251,8 +265,9 @@ export default function Home() {
               <Reveal delay={0.1}>
                 <p className="text-base md:text-lg text-stone-300 leading-relaxed mb-8 max-w-xl">
                   ProLink Consultancy connects ambitious companies with
-                  exceptional talent while helping professionals unlock better
-                  career opportunities with confidence and clarity.
+                  exceptional talent through recruitment and staffing services
+                  in Odisha while helping professionals unlock better career
+                  opportunities with confidence and clarity.
                 </p>
               </Reveal>
 
