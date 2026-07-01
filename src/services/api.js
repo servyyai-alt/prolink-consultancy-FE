@@ -111,6 +111,7 @@ export const userAPI = {
   uploadAvatar:  (formData)   => api.post('/users/upload-avatar', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
   uploadCompanyLogo: (formData) => api.post('/users/upload-company-logo', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
   uploadResume:  (formData)   => api.post('/users/upload-resume', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
+  downloadResume: (userId)    => api.get(`/users/${userId}/resume/download`, { responseType: 'blob' }),
   saveJob:       (jobId)      => api.post(`/users/save-job/${jobId}`),
   getSavedJobs:  ()           => api.get('/users/saved-jobs'),
 }

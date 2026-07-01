@@ -4,7 +4,7 @@ import { Helmet } from 'react-helmet-async'
 import { useSearchParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { HiSearch, HiDownload, HiCalendar, HiCheckCircle } from 'react-icons/hi'
-import { applicationAPI, jobAPI } from '../../services/api'
+import { applicationAPI, jobAPI, userAPI } from '../../services/api'
 import { Pagination, Badge, Modal, EmptyState, Button } from '../../components/ui/index'
 import toast from 'react-hot-toast'
 import {
@@ -15,6 +15,32 @@ import {
   getApplicationProgress,
   getApplicationStatusLabel,
 } from '../../constants/applicationStatus'
+
+const getFilenameFromContentDisposition = (headerValue, fallbackName) => {
+  if (!headerValue) return fallbackName
+
+  const utf8Match = headerValue.match(/filename\*\s*=\s*UTF-8''([^;]+)/i)
+  if (utf8Match?.[1]) return decodeURIComponent(utf8Match[1])
+
+  const quotedMatch = headerValue.match(/filename\s*=\s*"([^"]+)"/i)
+  if (quotedMatch?.[1]) return quotedMatch[1]
+
+  const plainMatch = headerValue.match(/filename\s*=\s*([^;]+)/i)
+  if (plainMatch?.[1]) return plainMatch[1].trim()
+
+  return fallbackName
+}
+
+const triggerBlobDownload = (blob, filename) => {
+  const objectUrl = window.URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = objectUrl
+  link.download = filename
+  document.body.appendChild(link)
+  link.click()
+  link.remove()
+  window.setTimeout(() => window.URL.revokeObjectURL(objectUrl), 1000)
+}
 
 export default function EmpApplicants() {
   const [searchParams] = useSearchParams()
@@ -73,6 +99,29 @@ export default function EmpApplicants() {
 
     setStatusModal({ application, nextStatus })
     setStatusNote('')
+  }
+
+  const handleResumeDownload = async (applicant) => {
+    if (!applicant?._id) return
+
+    try {
+      const response = await userAPI.downloadResume(applicant._id)
+      const fallbackName = `${[applicant.firstName, applicant.lastName, 'resume']
+        .filter(Boolean)
+        .join('-')
+        .toLowerCase()
+        .replace(/[^a-z0-9-]+/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-|-$/g, '') || 'resume'}.pdf`
+      const filename = getFilenameFromContentDisposition(response.headers?.['content-disposition'], fallbackName)
+      const blob = response.data instanceof Blob
+        ? response.data
+        : new Blob([response.data], { type: response.headers?.['content-type'] || 'application/octet-stream' })
+
+      triggerBlobDownload(blob, filename)
+    } catch (err) {
+      toast.error(err?.response?.data?.message || 'Failed to download resume')
+    }
   }
 
   return (
@@ -141,10 +190,13 @@ export default function EmpApplicants() {
                     )}
                     <div className="flex flex-wrap gap-2 mt-3">
                       {app.applicant?.profile?.resume?.url && (
-                        <a href={app.applicant.profile.resume.url} target="_blank" rel="noreferrer"
-                          className="flex items-center gap-1 text-xs font-semibold text-primary-600 bg-primary-50 dark:bg-primary-900/20 px-3 py-1.5 rounded-full hover:bg-primary-100 transition-colors">
-                          <HiDownload className="w-3.5 h-3.5" /> Resume
-                        </a>
+                        <button
+                          type="button"
+                          onClick={() => handleResumeDownload(app.applicant)}
+                          className="flex items-center gap-1 text-xs font-semibold text-primary-600 bg-primary-50 dark:bg-primary-900/20 px-3 py-1.5 rounded-full hover:bg-primary-100 transition-colors"
+                        >
+                          <HiDownload className="w-3.5 h-3.5" /> Download Resume
+                        </button>
                       )}
                       {APPLICATION_NEXT_STATUSES[app.status]?.map(nextStatus => (
                         <button key={nextStatus} onClick={() => openStatusModal(app, nextStatus)}
