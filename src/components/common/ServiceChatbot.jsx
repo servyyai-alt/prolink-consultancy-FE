@@ -14,7 +14,7 @@ import {
 } from 'react-icons/hi'
 import { serviceAPI } from '../../services/api'
 import { getServiceRoute } from '../../utils/serviceRoutes'
-import { mergeServiceCatalog, PUBLIC_SERVICE_FALLBACKS } from '../../utils/seoContent'
+import { mergeServiceCatalog } from '../../utils/seoContent'
 
 const CONTACT = {
   phone: '+91 99370 47733',
@@ -237,7 +237,7 @@ function buildResponse(question, services) {
 export default function ServiceChatbot() {
   const [isOpen, setIsOpen] = useState(false)
   const [input, setInput] = useState('')
-  const [messages, setMessages] = useState(() => [buildWelcomeMessage(PUBLIC_SERVICE_FALLBACKS)])
+  const [messages, setMessages] = useState(() => [buildWelcomeMessage([])])
   const messagesEndRef = useRef(null)
   const navigate = useNavigate()
 
