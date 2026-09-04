@@ -218,16 +218,35 @@ export function getServiceSeoContent(slug = 'job-consultancy') {
 }
 
 export function mergeServiceCatalog(apiServices = []) {
-  const catalog = new Map()
+  if (!Array.isArray(apiServices) || apiServices.length === 0) {
+    return []
+  }
 
-  PUBLIC_SERVICE_FALLBACKS.forEach((service) => {
-    catalog.set(service.slug, { ...service })
-  })
+  const seenSlugs = new Set()
+  const seenNames = new Set()
+  const result = []
 
-  apiServices.forEach((service) => {
-    if (!service?.slug) return
-    const fallback = catalog.get(service.slug) || {}
-    catalog.set(service.slug, {
+  for (const service of apiServices) {
+    if (!service) continue
+    const normSlug = (service.slug || '').toLowerCase().trim()
+    const normName = (service.name || '').toLowerCase().trim()
+
+    if (normSlug && seenSlugs.has(normSlug)) continue
+    if (normName && seenNames.has(normName)) continue
+
+    if (normSlug) seenSlugs.add(normSlug)
+    if (normName) seenNames.add(normName)
+
+    const fallback =
+      PUBLIC_SERVICE_FALLBACKS.find(
+        (f) =>
+          f.slug === service.slug ||
+          f.name.toLowerCase() === normName ||
+          (f.slug === 'campus-drive' && service.slug === 'campus-recruitment-drive') ||
+          (f.slug === 'cv-writing' && service.slug === 'cv-writing-services')
+      ) || {}
+
+    result.push({
       ...fallback,
       ...service,
       shortDescription:
@@ -237,9 +256,9 @@ export function mergeServiceCatalog(apiServices = []) {
         fallback.description ||
         '',
     })
-  })
+  }
 
-  return Array.from(catalog.values())
+  return result
 }
 
 export function buildServiceFaqs(service = {}) {

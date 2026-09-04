@@ -56,7 +56,7 @@ const socials = [
 ];
 
 export default function Footer() {
-  const { data } = useQuery({ queryKey: ["services"], queryFn: serviceAPI.getServices });
+  const { data } = useQuery({ queryKey: ["services"], queryFn: () => serviceAPI.getServices() });
   const services = mergeServiceCatalog(data?.data?.data?.services || []).map((service) => ({
     label: service.name,
     to: getServiceRoute(service.slug),
@@ -321,24 +321,28 @@ export default function Footer() {
 
               <ul className="space-y-3">
 
-                {links.map(({ label, to }) => (
-                  <li key={label}>
+                {links && links.length > 0 ? (
+                  links.map(({ label, to }) => (
+                    <li key={label}>
 
-                    <Link
-                      to={to}
-                      className="
-                        text-stone-500
-                        hover:text-amber-400
-                        transition-all duration-300
-                        inline-flex items-center gap-2 group
-                      "
-                    >
-                      <span className="w-0 group-hover:w-3 h-px bg-amber-400 transition-all duration-300" />
+                      <Link
+                        to={to}
+                        className="
+                          text-stone-500
+                          hover:text-amber-400
+                          transition-all duration-300
+                          inline-flex items-center gap-2 group
+                        "
+                      >
+                        <span className="w-0 group-hover:w-3 h-px bg-amber-400 transition-all duration-300" />
 
-                      {label}
-                    </Link>
-                  </li>
-                ))}
+                        {label}
+                      </Link>
+                    </li>
+                  ))
+                ) : (
+                  <li className="text-stone-600 text-xs">No data available</li>
+                )}
               </ul>
             </div>
           ))}

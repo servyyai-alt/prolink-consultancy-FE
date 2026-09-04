@@ -2,18 +2,10 @@ import { motion } from 'framer-motion'
 import { useInView } from 'react-intersection-observer'
 import { useQuery } from '@tanstack/react-query'
 import { FaLinkedin } from 'react-icons/fa'
-import { Target, Eye, Handshake, Rocket, HeartHandshake } from 'lucide-react'
+import { Target, Eye, Handshake, Rocket, HeartHandshake, Users } from 'lucide-react'
 import { teamMemberAPI } from '../services/api'
 import SEO from '../components/SEO'
 import { webPageSchema } from '../utils/schema'
-
-
-const TEAM = [
-  { name: 'Ramesh Kumar', role: 'Founder & CEO', bio: '15+ years in HR and recruitment across India.' },
-  { name: 'Priya Nair', role: 'Head of Operations', bio: 'Expert in campus recruitment and talent acquisition.' },
-  { name: 'Suresh Menon', role: 'Director - BD', bio: 'Leads strategic partnerships with employers across sectors.' },
-  { name: 'Ananya Reddy', role: 'Lead Verification Specialist', bio: 'Focused on compliant background screening and hiring trust.' },
-]
 
 const VALUES = [
   { icon: Target, title: 'Excellence', desc: 'We deliver polished, outcome-focused work on every engagement.' },
@@ -47,12 +39,12 @@ function FadeUp({ children, delay = 0 }) {
 }
 
 export default function About() {
-  const { data } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     queryKey: ['team-members'],
     queryFn: () => teamMemberAPI.getTeamMembers(),
   })
 
-  const teamMembers = data?.data?.data?.teamMembers?.length ? data.data.data.teamMembers : TEAM
+  const teamMembers = data?.data?.data?.teamMembers || []
 
   return (
     <>
@@ -211,106 +203,123 @@ export default function About() {
       </div>
     </FadeUp>
 
-    <div className="grid grid-cols-1 gap-7 sm:grid-cols-2 lg:grid-cols-4">
-
-      {teamMembers.map(
-        (
-          {
-            _id,
-            name,
-            role,
-            bio,
-            linkedinUrl,
-            image,
-          },
-          index
-        ) => (
-
-          <FadeUp
-            key={_id || `${name}-${index}`}
-            delay={index * 0.08}
+    {isLoading ? (
+      <div className="grid grid-cols-1 gap-7 sm:grid-cols-2 lg:grid-cols-4">
+        {[...Array(4)].map((_, index) => (
+          <div
+            key={index}
+            className="h-80 rounded-3xl border border-slate-200/70 bg-white/50 p-6 shadow-sm animate-pulse dark:border-slate-800 dark:bg-slate-900/50"
           >
+            <div className="mx-auto mb-5 h-24 w-24 rounded-3xl bg-slate-200 dark:bg-slate-800" />
+            <div className="mx-auto mb-3 h-5 w-3/4 rounded-lg bg-slate-200 dark:bg-slate-800" />
+            <div className="mx-auto mb-4 h-4 w-1/2 rounded-full bg-slate-200 dark:bg-slate-800" />
+            <div className="space-y-2">
+              <div className="h-3 w-full rounded bg-slate-200 dark:bg-slate-800" />
+              <div className="h-3 w-5/6 rounded bg-slate-200 dark:bg-slate-800" />
+            </div>
+          </div>
+        ))}
+      </div>
+    ) : isError || teamMembers.length === 0 ? (
+      <FadeUp>
+        <div className="mx-auto max-w-md rounded-3xl border border-slate-200/80 bg-white/90 p-10 text-center shadow-sm dark:border-slate-800 dark:bg-slate-900/80">
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+            <Users className="h-8 w-8" />
+          </div>
+          <h3 className="text-xl font-bold text-slate-900 dark:text-white">No data available</h3>
+          <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+            Team members are currently being updated. Please check back soon.
+          </p>
+        </div>
+      </FadeUp>
+    ) : (
+      <div className="grid grid-cols-1 gap-7 sm:grid-cols-2 lg:grid-cols-4">
+        {teamMembers.map(
+          (
+            {
+              _id,
+              name,
+              role,
+              bio,
+              linkedinUrl,
+              image,
+            },
+            index
+          ) => (
+            <FadeUp
+              key={_id || `${name}-${index}`}
+              delay={index * 0.08}
+            >
+              <div className="group relative overflow-hidden rounded-3xl border border-slate-200/70 bg-white/80 backdrop-blur-xl p-6 shadow-sm transition-all duration-500 hover:-translate-y-3 hover:shadow-2xl dark:border-slate-800 dark:bg-slate-900/70">
+                {/* PRIMARY GLOW */}
+                <div className="absolute -top-10 -right-10 h-36 w-36 rounded-full bg-primary/10 blur-3xl transition-all duration-500 group-hover:bg-primary/20" />
 
-            <div className="group relative overflow-hidden rounded-3xl border border-slate-200/70 bg-white/80 backdrop-blur-xl p-6 shadow-sm transition-all duration-500 hover:-translate-y-3 hover:shadow-2xl dark:border-slate-800 dark:bg-slate-900/70">
+                {/* SECONDARY GLOW */}
+                <div className="absolute -bottom-10 -left-10 h-36 w-36 rounded-full bg-blue-500/10 blur-3xl transition-all duration-500 group-hover:bg-blue-500/20" />
 
-              {/* PRIMARY GLOW */}
-              <div className="absolute -top-10 -right-10 h-36 w-36 rounded-full bg-primary/10 blur-3xl transition-all duration-500 group-hover:bg-primary/20" />
+                {/* SHINE EFFECT */}
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 bg-gradient-to-tr from-transparent via-white/10 to-transparent" />
 
-              {/* SECONDARY GLOW */}
-              <div className="absolute -bottom-10 -left-10 h-36 w-36 rounded-full bg-blue-500/10 blur-3xl transition-all duration-500 group-hover:bg-blue-500/20" />
+                {/* TOP BORDER */}
+                <div className="absolute left-0 top-0 h-1 w-0 bg-gradient-to-r from-primary via-blue-500 to-primary transition-all duration-500 group-hover:w-full" />
 
-              {/* SHINE EFFECT */}
-              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 bg-gradient-to-tr from-transparent via-white/10 to-transparent" />
+                <div className="relative z-10 text-center">
+                  {/* IMAGE */}
+                  {image?.url ? (
+                    <div className="relative mx-auto mb-5 w-fit">
+                      <img
+                        src={image.url}
+                        alt={name}
+                        loading="lazy"
+                        className="h-24 w-24 rounded-3xl object-cover border-4 border-white dark:border-slate-800 shadow-xl transition-all duration-500 group-hover:scale-105 group-hover:shadow-primary"
+                      />
+                      <div className="absolute inset-0 rounded-3xl ring-2 ring-primary/20 transition-all duration-500 group-hover:ring-primary/40" />
+                    </div>
+                  ) : (
+                    <div className="relative mx-auto mb-5 flex h-24 w-24 items-center justify-center rounded-3xl bg-gradient-to-br from-primary-500 to-primary-700 shadow-xl transition-all duration-500 group-hover:scale-105 group-hover:shadow-primary">
+                      <span className="text-3xl font-bold text-white">
+                        {name[0]}
+                      </span>
+                    </div>
+                  )}
 
-              {/* TOP BORDER */}
-              <div className="absolute left-0 top-0 h-1 w-0 bg-gradient-to-r from-primary via-blue-500 to-primary transition-all duration-500 group-hover:w-full" />
+                  {/* NAME */}
+                  <h3 className="text-xl font-bold text-slate-900 transition-colors duration-300 group-hover:text-primary dark:text-white">
+                    {name}
+                  </h3>
 
-              <div className="relative z-10 text-center">
-
-                {/* IMAGE */}
-                {image?.url ? (
-                  <div className="relative mx-auto mb-5 w-fit">
-
-                    <img
-                      src={image.url}
-                      alt={name}
-                      loading="lazy"
-                      className="h-24 w-24 rounded-3xl object-cover border-4 border-white dark:border-slate-800 shadow-xl transition-all duration-500 group-hover:scale-105 group-hover:shadow-primary"
-                    />
-
-                    <div className="absolute inset-0 rounded-3xl ring-2 ring-primary/20 transition-all duration-500 group-hover:ring-primary/40" />
-
+                  {/* ROLE */}
+                  <div className="mt-3 inline-flex items-center rounded-full border border-primary/20 bg-primary/10 px-4 py-1 text-xs font-semibold tracking-wide text-primary dark:border-primary/30 dark:bg-primary/20">
+                    {role}
                   </div>
-                ) : (
-                  <div className="relative mx-auto mb-5 flex h-24 w-24 items-center justify-center rounded-3xl bg-gradient-to-br from-primary-500 to-primary-700 shadow-xl transition-all duration-500 group-hover:scale-105 group-hover:shadow-primary">
 
-                    <span className="text-3xl font-bold text-white">
-                      {name[0]}
-                    </span>
+                  {/* BIO */}
+                  <p className="mt-4 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+                    {bio}
+                  </p>
 
-                  </div>
-                )}
-
-                {/* NAME */}
-                <h3 className="text-xl font-bold text-slate-900 transition-colors duration-300 group-hover:text-primary dark:text-white">
-                  {name}
-                </h3>
-
-                {/* ROLE */}
-                <div className="mt-3 inline-flex items-center rounded-full border border-primary/20 bg-primary/10 px-4 py-1 text-xs font-semibold tracking-wide text-primary dark:border-primary/30 dark:bg-primary/20">
-                  {role}
+                  {/* LINKEDIN BUTTON */}
+                  {linkedinUrl ? (
+                    <a
+                      href={linkedinUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="mt-6 inline-flex items-center gap-2 rounded-2xl border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-600 transition-all duration-300 hover:-translate-y-0.5 hover:bg-blue-100 hover:shadow-md dark:border-blue-500/20 dark:bg-blue-500/10 dark:text-blue-400 dark:hover:bg-blue-500/20"
+                    >
+                      <FaLinkedin className="h-4 w-4" />
+                      Connect
+                    </a>
+                  ) : null}
                 </div>
 
-                {/* BIO */}
-                <p className="mt-4 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
-                  {bio}
-                </p>
-
-                {/* LINKEDIN BUTTON */}
-                {linkedinUrl ? (
-                  <a
-                    href={linkedinUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="mt-6 inline-flex items-center gap-2 rounded-2xl border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-600 transition-all duration-300 hover:-translate-y-0.5 hover:bg-blue-100 hover:shadow-md dark:border-blue-500/20 dark:bg-blue-500/10 dark:text-blue-400 dark:hover:bg-blue-500/20"
-                  >
-                    <FaLinkedin className="h-4 w-4" />
-                    Connect
-                  </a>
-                ) : null}
-
+                {/* BOTTOM BORDER */}
+                <div className="absolute bottom-0 left-0 h-1 w-0 bg-gradient-to-r from-primary via-blue-500 to-primary transition-all duration-500 group-hover:w-full" />
               </div>
-
-              {/* BOTTOM BORDER */}
-              <div className="absolute bottom-0 left-0 h-1 w-0 bg-gradient-to-r from-primary via-blue-500 to-primary transition-all duration-500 group-hover:w-full" />
-
-            </div>
-
-          </FadeUp>
-        )
-      )}
-
-    </div>
+            </FadeUp>
+          )
+        )}
+      </div>
+    )}
         </div>
       </section>
       </div>

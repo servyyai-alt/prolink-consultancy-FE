@@ -49,7 +49,7 @@ export default function Navbar() {
   const role        = useSelector(selectRole)
   const theme       = useSelector(selectTheme)
   const canSubmitTestimonial = role === 'job_seeker'
-  const { data } = useQuery({ queryKey: ['services'], queryFn: serviceAPI.getServices })
+  const { data } = useQuery({ queryKey: ['services'], queryFn: () => serviceAPI.getServices() })
   const services = mergeServiceCatalog(data?.data?.data?.services || [])
   const closeServicesMenu = () => setServicesOpen(false)
   const closeProfileMenu = () => setProfileOpen(false)
@@ -319,22 +319,28 @@ export default function Navbar() {
 
                       {/* Service grid */}
                       <div className="grid grid-cols-2 gap-px bg-stone-100 dark:bg-stone-800 p-px">
-                        {services.map((s) => (
-                          <Link
-                            key={s.slug || s.name}
-                            to={getServiceRoute(s.slug)}
-                            onClick={closeServicesMenu}
-                            className="group flex items-start gap-3 px-5 py-4 bg-white dark:bg-stone-900 hover:bg-amber-50 dark:hover:bg-stone-800 transition-colors"
-                          >
-                            <span className="mt-0.5 flex-shrink-0 w-1.5 h-1.5 rounded-full bg-amber-400 group-hover:bg-[#8B2A0F] transition-colors" />
-                            <div>
-                              <p className="text-sm font-semibold text-stone-800 dark:text-stone-200 group-hover:text-[#8B2A0F] dark:group-hover:text-amber-400 transition-colors leading-tight">
-                                {s.name}
-                              </p>
-                              <p className="text-xs text-stone-400 dark:text-stone-500 mt-0.5">{s.shortDescription || s.description || 'Professional consultancy support'}</p>
-                            </div>
-                          </Link>
-                        ))}
+                        {services.length > 0 ? (
+                          services.map((s) => (
+                            <Link
+                              key={s.slug || s.name}
+                              to={getServiceRoute(s.slug)}
+                              onClick={closeServicesMenu}
+                              className="group flex items-start gap-3 px-5 py-4 bg-white dark:bg-stone-900 hover:bg-amber-50 dark:hover:bg-stone-800 transition-colors"
+                            >
+                              <span className="mt-0.5 flex-shrink-0 w-1.5 h-1.5 rounded-full bg-amber-400 group-hover:bg-[#8B2A0F] transition-colors" />
+                              <div>
+                                <p className="text-sm font-semibold text-stone-800 dark:text-stone-200 group-hover:text-[#8B2A0F] dark:group-hover:text-amber-400 transition-colors leading-tight">
+                                  {s.name}
+                                </p>
+                                <p className="text-xs text-stone-400 dark:text-stone-500 mt-0.5">{s.shortDescription || s.description || 'Professional consultancy support'}</p>
+                              </div>
+                            </Link>
+                          ))
+                        ) : (
+                          <div className="col-span-2 py-8 text-center text-xs text-stone-500 dark:text-stone-400 bg-white dark:bg-stone-900">
+                            No services available
+                          </div>
+                        )}
                       </div>
                     </motion.div>
                   )}
@@ -481,13 +487,17 @@ export default function Navbar() {
 
                 <div className="border-t border-stone-200 dark:border-stone-800 mt-2 pt-3">
                   <p className="px-4 py-1 text-[10px] font-bold text-stone-400 uppercase tracking-[0.28em]">Services</p>
-                  {services.map((s) => (
-                    <Link key={s.slug || s.name} to={getServiceRoute(s.slug)} onClickCapture={closeAllMenus}
-                      className="flex items-center gap-2 px-4 py-2.5 text-sm text-stone-600 dark:text-stone-400 hover:text-[#8B2A0F] dark:hover:text-amber-400 transition-colors">
-                      <span className="w-1 h-1 rounded-full bg-amber-400 flex-shrink-0" />
-                      {s.name}
-                    </Link>
-                  ))}
+                  {services.length > 0 ? (
+                    services.map((s) => (
+                      <Link key={s.slug || s.name} to={getServiceRoute(s.slug)} onClickCapture={closeAllMenus}
+                        className="flex items-center gap-2 px-4 py-2.5 text-sm text-stone-600 dark:text-stone-400 hover:text-[#8B2A0F] dark:hover:text-amber-400 transition-colors">
+                        <span className="w-1 h-1 rounded-full bg-amber-400 flex-shrink-0" />
+                        {s.name}
+                      </Link>
+                    ))
+                  ) : (
+                    <p className="px-4 py-2 text-xs text-stone-400">No services available</p>
+                  )}
                 </div>
 
                 {!isLoggedIn && (

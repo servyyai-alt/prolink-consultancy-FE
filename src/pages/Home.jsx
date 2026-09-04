@@ -87,30 +87,6 @@ const DIFFERENTIATORS = [
   },
 ];
 
-const TESTIMONIALS = [
-  {
-    quote:
-      "ProLink helped us move from reactive hiring to a confident, repeatable recruitment process.",
-    name: "Arun Prakash",
-    role: "Managing Director, Industrial Operations",
-    initials: "AP",
-  },
-  {
-    quote:
-      "The quality of presentation, follow-up, and candidate fit made the brand feel bigger than a staffing vendor.",
-    name: "Meera Nair",
-    role: "HR Head, Technology Hiring Partner",
-    initials: "MN",
-  },
-  {
-    quote:
-      "From resume refinement to offer support, the experience felt premium and deeply personal.",
-    name: "Vignesh Kumar",
-    role: "Placed Candidate, Senior Analyst Role",
-    initials: "VK",
-  },
-];
-
 const getInitials = (name = "") =>
   name
     .split(" ")
@@ -150,29 +126,20 @@ function SectionLabel({ children }) {
 /* ─── Home ─── */
 export default function Home() {
   const [openService, setOpenService] = useState(null);
-  const { data } = useQuery({
+  const { data, isLoading: isJobsLoading } = useQuery({
     queryKey: ["featuredJobs"],
     queryFn: () => jobAPI.getJobs({ limit: 4, featured: true }),
     staleTime: 5 * 60 * 1000,
   });
   const featuredJobs = data?.data?.data || [];
 
-  const { data: testimonialData } = useQuery({
+  const { data: testimonialData, isLoading: isTestimonialsLoading } = useQuery({
     queryKey: ["home-testimonials"],
     queryFn: () => testimonialAPI.getTestimonials({ limit: 3 }),
     staleTime: 5 * 60 * 1000,
   });
 
-  const approvedTestimonials = testimonialData?.data?.data?.length
-    ? testimonialData.data.data
-    : TESTIMONIALS.map((item) => ({
-        _id: item.name,
-        name: item.name,
-        content: item.quote,
-        rating: 5,
-        avatar: null,
-        designation: item.role,
-      }));
+  const approvedTestimonials = testimonialData?.data?.data || [];
 
   return (
     <>
@@ -727,19 +694,15 @@ export default function Home() {
           </div>
 
           <div className="grid gap-4">
-            {(featuredJobs.length
-              ? featuredJobs
-              : Array.from({ length: 4 }, (_, i) => ({
-                  _id: i,
-                  title: "Senior Recruitment Consultant",
-                  type: "full_time",
-                  company: { name: "ProLink Partner" },
-                  location: "Chennai",
-                  slug: "jobs",
-                }))
-            )
-              .slice(0, 4)
-              .map((job, i) => (
+            {isJobsLoading ? (
+              Array.from({ length: 4 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="h-24 rounded-2xl border border-stone-200 dark:border-stone-800 bg-stone-100 dark:bg-stone-900/60 animate-pulse"
+                />
+              ))
+            ) : featuredJobs.length > 0 ? (
+              featuredJobs.slice(0, 4).map((job, i) => (
                 <Reveal key={job._id} delay={i * 0.06}>
                   <Link
                     to={job.slug ? `/jobs/${job.slug}` : "/jobs"}
@@ -768,7 +731,14 @@ export default function Home() {
                     </div>
                   </Link>
                 </Reveal>
-              ))}
+              ))
+            ) : (
+              <div className="rounded-2xl border border-stone-200 dark:border-stone-800 p-8 text-center bg-stone-50/50 dark:bg-stone-900/30">
+                <HiBriefcase className="w-8 h-8 mx-auto text-stone-400 mb-2" />
+                <p className="font-semibold text-stone-700 dark:text-stone-300">No featured jobs available</p>
+                <p className="text-xs text-stone-500 mt-1">Please check back later or explore all open listings.</p>
+              </div>
+            )}
           </div>
         </div>
       </section>
@@ -819,7 +789,14 @@ export default function Home() {
          {/* TESTIMONIAL GRID */}
          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
 
-         {approvedTestimonials &&
+         {isTestimonialsLoading ? (
+           Array.from({ length: 3 }).map((_, i) => (
+             <div
+               key={i}
+               className="h-64 rounded-3xl border border-stone-200 dark:border-stone-800 bg-stone-100 dark:bg-stone-900/60 animate-pulse"
+             />
+           ))
+         ) : approvedTestimonials &&
          approvedTestimonials.length > 0 ? (
 
         approvedTestimonials.map((testimonial, i) => (

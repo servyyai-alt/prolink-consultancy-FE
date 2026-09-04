@@ -72,6 +72,13 @@ api.interceptors.response.use(
 
 export default api
 
+const cleanParams = (params) => {
+  if (!params || typeof params !== 'object' || Array.isArray(params) || 'queryKey' in params || 'client' in params || 'signal' in params) {
+    return undefined
+  }
+  return params
+}
+
 // Convenience methods
 export const authAPI = {
   register:       (data) => api.post('/auth/register', data),
@@ -86,10 +93,10 @@ export const authAPI = {
 }
 
 export const jobAPI = {
-  getJobs:      (params) => api.get('/jobs', { params }),
+  getJobs:      (params) => api.get('/jobs', { params: cleanParams(params) }),
   getJob:       (slug)   => api.get(`/jobs/${slug}`),
   getCategories:()       => api.get('/jobs/categories'),
-  getMyJobs:    (params) => api.get('/jobs/my-jobs', { params }),
+  getMyJobs:    (params) => api.get('/jobs/my-jobs', { params: cleanParams(params) }),
   createJob:    (data)   => api.post('/jobs', data),
   updateJob:    (id, data) => api.put(`/jobs/${id}`, data),
   deleteJob:    (id)     => api.delete(`/jobs/${id}`),
@@ -97,8 +104,8 @@ export const jobAPI = {
 
 export const applicationAPI = {
   apply:            (data)   => api.post('/applications', data),
-  getMyApplications:(params) => api.get('/applications/my-applications', { params }),
-  getJobApplications:(jobId, params) => api.get(`/applications/job/${jobId}`, { params }),
+  getMyApplications:(params) => api.get('/applications/my-applications', { params: cleanParams(params) }),
+  getJobApplications:(jobId, params) => api.get(`/applications/job/${jobId}`, { params: cleanParams(params) }),
   updateStatus:     (id, data) => api.put(`/applications/${id}/status`, data),
   withdraw:         (id, data) => api.put(`/applications/${id}/withdraw`, data),
   scheduleInterview:(id, data) => api.put(`/applications/${id}/schedule-interview`, data),
@@ -117,7 +124,7 @@ export const userAPI = {
 }
 
 export const serviceAPI = {
-  getServices: (params)      => api.get('/services', { params }),
+  getServices: (params)      => api.get('/services', { params: cleanParams(params) }),
   getService:  (slug)        => api.get(`/services/${slug}`),
   create:      (data)        => api.post('/services', data),
   update:      (id, data)    => api.put(`/services/${id}`, data),
@@ -125,14 +132,14 @@ export const serviceAPI = {
 }
 
 export const teamMemberAPI = {
-  getTeamMembers: (params)   => api.get('/team-members', { params }),
+  getTeamMembers: (params)   => api.get('/team-members', { params: cleanParams(params) }),
   create:         (data)     => api.post('/team-members', data),
   update:         (id, data) => api.put(`/team-members/${id}`, data),
   delete:         (id)       => api.delete(`/team-members/${id}`),
 }
 
 export const blogAPI = {
-  getBlogs:             (params) => api.get('/blogs', { params }),
+  getBlogs:             (params) => api.get('/blogs', { params: cleanParams(params) }),
   getBlog:              (slug) => api.get(`/blogs/${slug}`),
   create:               (data) => api.post('/blogs', data),
   update:               (id, data) => api.put(`/blogs/${id}`, data),
@@ -144,11 +151,11 @@ export const blogAPI = {
 
 export const contactAPI = {
   submit:         (data) => api.post('/contact', data),
-  getMyInquiries: (params) => api.get('/contact/my-inquiries', { params }),
+  getMyInquiries: (params) => api.get('/contact/my-inquiries', { params: cleanParams(params) }),
 }
 
 export const testimonialAPI = {
-  getTestimonials: (params) => api.get('/testimonials', { params }),
+  getTestimonials: (params) => api.get('/testimonials', { params: cleanParams(params) }),
   create:          (data)   => api.post('/testimonials', data),
 }
 
@@ -187,20 +194,20 @@ export const notificationAPI = {
 
 export const adminAPI = {
   getDashboard:      ()       => api.get('/admin/dashboard-stats'),
-  getUsers:          (params) => api.get('/admin/users', { params }),
+  getUsers:          (params) => api.get('/admin/users', { params: cleanParams(params) }),
   createUser:        (data)   => api.post('/admin/users', data),
   toggleBlock:       (id)     => api.patch(`/admin/users/${id}/block`),
   changeRole:        (id, data) => api.patch(`/admin/users/${id}/role`, data),
   approveUser:       (id, data) => api.patch(`/admin/users/${id}/approve`, data),
   deleteUser:        (id)     => api.delete(`/admin/users/${id}`),
-  getContacts:       (params) => api.get('/admin/contacts', { params }),
+  getContacts:       (params) => api.get('/admin/contacts', { params: cleanParams(params) }),
   updateContact:     (id, data) => api.patch(`/admin/contacts/${id}`, data),
-  getPayments:       (params) => api.get('/admin/payments', { params }),
-  getApplications:   (params) => api.get('/admin/applications', { params }),
-  getBlogs:          (params) => api.get('/admin/blogs', { params }),
-  getServices:       (params) => api.get('/admin/services', { params }),
-  getTeamMembers:    (params) => api.get('/admin/team-members', { params }),
-  getTestimonials:   (params) => api.get('/admin/testimonials', { params }),
+  getPayments:       (params) => api.get('/admin/payments', { params: cleanParams(params) }),
+  getApplications:   (params) => api.get('/admin/applications', { params: cleanParams(params) }),
+  getBlogs:          (params) => api.get('/admin/blogs', { params: cleanParams(params) }),
+  getServices:       (params) => api.get('/admin/services', { params: cleanParams(params) }),
+  getTeamMembers:    (params) => api.get('/admin/team-members', { params: cleanParams(params) }),
+  getTestimonials:   (params) => api.get('/admin/testimonials', { params: cleanParams(params) }),
   approveTestimonial:(id)     => api.patch(`/admin/testimonials/${id}/approve`),
   updateTestimonial: (id, data) => api.patch(`/admin/testimonials/${id}`, data),
   deleteTestimonial: (id)     => api.delete(`/admin/testimonials/${id}`),

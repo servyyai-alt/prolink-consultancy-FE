@@ -243,7 +243,7 @@ export default function ServiceChatbot() {
 
   const { data, isLoading } = useQuery({
     queryKey: ['services'],
-    queryFn: serviceAPI.getServices,
+    queryFn: () => serviceAPI.getServices(),
     staleTime: 5 * 60 * 1000,
   })
 
