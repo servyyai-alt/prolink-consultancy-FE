@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Helmet } from 'react-helmet-async'
-import { HiBriefcase, HiCalendar, HiCheckCircle, HiSearch, HiUserGroup } from 'react-icons/hi'
+import { HiBriefcase, HiCalendar, HiCheckCircle, HiSearch, HiUserGroup, HiDownload, HiDocumentText } from 'react-icons/hi'
 import { adminAPI, applicationAPI } from '../../services/api'
 import { Badge, Button, EmptyState, Modal, Pagination } from '../../components/ui/index'
 import toast from 'react-hot-toast'
@@ -22,12 +22,20 @@ export default function AdminApplications() {
   const [statusNote, setStatusNote] = useState('')
   const [scheduleModal, setScheduleModal] = useState(null)
   const [interview, setInterview] = useState({ scheduledAt: '', type: 'video', link: '', notes: '' })
+  const [exportJobId, setExportJobId] = useState(null)
   const qc = useQueryClient()
 
   const { data, isLoading } = useQuery({
     queryKey: ['admin-applications', { page, search, status }],
     queryFn: () => adminAPI.getApplications({ page, limit: 15, search: search || undefined, status: status || undefined }),
     keepPreviousData: true,
+  })
+
+  // Query for per-job resume export
+  const { data: exportData, isLoading: exportLoading } = useQuery({
+    queryKey: ['admin-job-resumes', exportJobId],
+    queryFn: () => adminAPI.getJobApplicantResumes(exportJobId),
+    enabled: !!exportJobId,
   })
 
   const applications = data?.data?.data || []
@@ -69,9 +77,17 @@ export default function AdminApplications() {
     <>
       <Helmet><title>Applications | Admin | ProLink</title></Helmet>
       <div className="space-y-5">
-        <div>
-          <h1 className="text-xl font-display font-bold text-slate-900 dark:text-white">Applications</h1>
-          <p className="text-sm text-slate-500">{pagination?.total || 0} total applications</p>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div>
+            <h1 className="text-xl font-display font-bold text-slate-900 dark:text-white">Applications</h1>
+            <p className="text-sm text-slate-500">{pagination?.total || 0} total applications</p>
+          </div>
+          <a
+            href="/admin/resumes"
+            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-xl bg-primary-600 text-white hover:bg-primary-700 transition-colors"
+          >
+            <HiDocumentText className="w-4 h-4" /> View All Resumes
+          </a>
         </div>
 
         <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-slate-100 dark:border-slate-700 flex flex-col sm:flex-row gap-3">
@@ -118,6 +134,20 @@ export default function AdminApplications() {
                         <Badge variant={APPLICATION_STATUS_VARIANTS[application.status] || 'gray'}>
                           {getApplicationStatusLabel(application.status)}
                         </Badge>
+                        {/* Resume download button */}
+                        {(application.resume?.url || application.applicant?.profile?.resume?.url) ? (
+                          <a
+                            href={application.resume?.url || application.applicant?.profile?.resume?.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            title="Download Resume"
+                            className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-green-50 text-green-700 hover:bg-green-100 dark:bg-green-900/20 dark:text-green-400 transition-colors"
+                          >
+                            <HiDownload className="w-3.5 h-3.5" /> Resume
+                          </a>
+                        ) : (
+                          <span className="text-xs text-slate-400 px-2 py-1 rounded-full bg-slate-50 dark:bg-slate-700">No resume</span>
+                        )}
                       </div>
                       <div className="flex flex-wrap gap-4 text-sm text-slate-500">
                         <span className="inline-flex items-center gap-1.5">
@@ -128,8 +158,20 @@ export default function AdminApplications() {
                         <span>{application.applicant?.email}</span>
                       </div>
                     </div>
-                    <div className="text-sm text-slate-500">
-                      Applied {new Date(application.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                    <div className="flex flex-col items-end gap-2">
+                      <div className="text-sm text-slate-500">
+                        Applied {new Date(application.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                      </div>
+                      {/* Export all resumes for this job */}
+                      {application.job?._id && (
+                        <button
+                          onClick={() => setExportJobId(application.job._id)}
+                          className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-300 transition-colors"
+                          title="Export all applicant resumes for this job"
+                        >
+                          <HiDocumentText className="w-3.5 h-3.5" /> All resumes for this job
+                        </button>
+                      )}
                     </div>
                   </div>
 
@@ -302,6 +344,75 @@ export default function AdminApplications() {
               {interviewMutation.isPending ? 'Scheduling...' : 'Schedule Interview'}
             </button>
           </div>
+        </div>
+      </Modal>
+
+      {/* Export: all resumes for a specific job */}
+      <Modal
+        isOpen={!!exportJobId}
+        onClose={() => setExportJobId(null)}
+        title={exportData?.data?.data?.job?.title ? `Resumes — ${exportData.data.data.job.title}` : 'Job Applicant Resumes'}
+        size="xl"
+      >
+        <div className="p-6 space-y-4">
+          {exportLoading ? (
+            <div className="space-y-3">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="h-14 rounded-xl bg-slate-100 dark:bg-slate-700 animate-pulse" />
+              ))}
+            </div>
+          ) : (
+            <>
+              <p className="text-sm text-slate-500">
+                {exportData?.data?.data?.withResume || 0} of {exportData?.data?.data?.total || 0} applicants have resumes
+              </p>
+              <div className="overflow-x-auto rounded-xl border border-slate-100 dark:border-slate-700">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-slate-100 dark:border-slate-700 text-left bg-slate-50 dark:bg-slate-800">
+                      <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-slate-400">Applicant</th>
+                      <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-slate-400">Contact</th>
+                      <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-slate-400">Status</th>
+                      <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-slate-400 text-right">Resume</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-50 dark:divide-slate-700/50 bg-white dark:bg-slate-800">
+                    {(exportData?.data?.data?.applicants || []).map((a) => (
+                      <tr key={a.applicationId} className="hover:bg-slate-50 dark:hover:bg-slate-700/30">
+                        <td className="px-4 py-3">
+                          <p className="font-semibold text-slate-900 dark:text-white">{a.name}</p>
+                          {a.headline && <p className="text-xs text-slate-500">{a.headline}</p>}
+                        </td>
+                        <td className="px-4 py-3">
+                          <p className="text-slate-700 dark:text-slate-300 text-xs">{a.email}</p>
+                          {a.phone && <p className="text-xs text-slate-500">{a.phone}</p>}
+                        </td>
+                        <td className="px-4 py-3">
+                          <Badge variant={APPLICATION_STATUS_VARIANTS[a.status] || 'gray'}>
+                            {getApplicationStatusLabel(a.status)}
+                          </Badge>
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          {a.resumeUrl ? (
+                            <a
+                              href={a.resumeUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-primary-50 text-primary-700 hover:bg-primary-100 dark:bg-primary-900/20 dark:text-primary-400 transition-colors"
+                            >
+                              <HiDownload className="w-3.5 h-3.5" /> Download
+                            </a>
+                          ) : (
+                            <span className="text-xs text-slate-400">No resume</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          )}
         </div>
       </Modal>
     </>

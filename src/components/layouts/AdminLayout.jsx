@@ -226,6 +226,8 @@ const ADMIN_NAV = [
   { to: '/admin/team-members',icon: HiUsers,         label: 'Team' },
   // { to: '/admin/payments',    icon: HiCurrencyRupee, label: 'Payments' },
   { to: '/admin/testimonials',icon: HiStar,          label: 'Testimonials' },
+  { to: '/admin/job-seeker-leads', icon: HiUsers,       label: 'Job Seeker Leads' },
+  { to: '/admin/resumes',         icon: HiDocumentText, label: 'All Resumes' },
 ]
 
 export default function AdminLayout() {

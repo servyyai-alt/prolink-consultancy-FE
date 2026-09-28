@@ -70,6 +70,8 @@ const AdminTeamMembers = lazy(() => import('./pages/admin/TeamMembers'))
 const AdminPayments = lazy(() => import('./pages/admin/Payments'))
 const AdminTestimonials = lazy(() => import('./pages/admin/Testimonials'))
 const SubmitTestimonial = lazy(() => import('./pages/SubmitTestimonial'))
+const AdminJobSeekerLeads = lazy(() => import('./pages/admin/JobSeekerLeads'))
+const AdminAllResumes = lazy(() => import('./pages/admin/AllResumes'))
 
 const NotFound = lazy(() => import('./pages/NotFound'))
 
@@ -186,6 +188,8 @@ export default function App() {
           <Route path="team-members" element={<AdminTeamMembers />} />
           <Route path="payments"     element={<AdminPayments />} />
           <Route path="testimonials" element={<AdminTestimonials />} />
+          <Route path="job-seeker-leads" element={<AdminJobSeekerLeads />} />
+          <Route path="resumes" element={<AdminAllResumes />} />
         </Route>
 
         {/* Redirect /dashboard to role-specific */}

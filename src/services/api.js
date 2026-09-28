@@ -211,13 +211,22 @@ export const adminAPI = {
   approveTestimonial:(id)     => api.patch(`/admin/testimonials/${id}/approve`),
   updateTestimonial: (id, data) => api.patch(`/admin/testimonials/${id}`, data),
   deleteTestimonial: (id)     => api.delete(`/admin/testimonials/${id}`),
+  getJobApplicantResumes: (jobId) => api.get(`/admin/jobs/${jobId}/resumes/download`),
+  getAllResumes:          (params) => api.get('/admin/resumes/download-all', { params: cleanParams(params) }),
+  getJobSeekerLeads:     (params) => api.get('/admin/job-seeker-leads', { params: cleanParams(params) }),
+  updateJobSeekerLead:   (id, data) => api.patch(`/admin/job-seeker-leads/${id}`, data),
 }
+
 
 export const paymentAPI = {
   createRazorpayOrder: (data) => api.post('/payments/razorpay/create-order', data),
   verifyRazorpay:      (data) => api.post('/payments/razorpay/verify', data),
   createStripeIntent:  (data) => api.post('/payments/stripe/create-intent', data),
   getMyPayments:       ()     => api.get('/payments/my-payments'),
+}
+
+export const jobSeekerLeadAPI = {
+  submit: (formData) => api.post('/job-seeker-leads', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
 }
 
 export const analyticsAPI = {

@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useInView } from "react-intersection-observer";
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import CountUp from "react-countup";
 import { formatJobLocation } from "../utils/jobLocation";
 import SEO from "../components/SEO";
@@ -19,8 +19,11 @@ import {
   HiClock,
   HiStar,
   HiPhone,
+  HiUpload,
+  HiPaperAirplane,
 } from "react-icons/hi";
-import { jobAPI, testimonialAPI } from "../services/api";
+import { jobAPI, testimonialAPI, jobSeekerLeadAPI } from "../services/api";
+import toast from "react-hot-toast";
 import HeroSection from "../assets/video/herosection.mp4";
 
 /* ─── Data ─── */
@@ -120,6 +123,283 @@ function SectionLabel({ children }) {
         {children}
       </span>
     </div>
+  );
+}
+
+/* ─── Job Seeker Lead Capture Section ─── */
+const BENEFITS = [
+  "Free placement assistance — no cost to job seekers",
+  "Access to 500+ hiring employers across India",
+  "Resume reviewed by our expert consultants",
+  "Get shortlisted within 3–7 working days",
+];
+
+const EXPERIENCE_OPTIONS = [
+  "Fresher (0 years)",
+  "1–2 years",
+  "3–5 years",
+  "5–10 years",
+  "10+ years",
+];
+
+function JobSeekerSection() {
+  const [form, setForm] = useState({
+    name: "", email: "", phone: "", currentRole: "",
+    experience: "", location: "", skills: "", message: "",
+  });
+  const [resumeFile, setResumeFile] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const fileRef = useRef(null);
+
+  const handleChange = (e) => {
+    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!form.name.trim() || !form.email.trim() || !form.phone.trim()) {
+      toast.error("Please fill in Name, Email and Phone");
+      return;
+    }
+    setLoading(true);
+    try {
+      const fd = new FormData();
+      Object.entries(form).forEach(([k, v]) => { if (v) fd.append(k, v); });
+      if (resumeFile) fd.append("resume", resumeFile);
+      await jobSeekerLeadAPI.submit(fd);
+      setSubmitted(true);
+      toast.success("Details submitted! Our team will contact you soon.");
+    } catch (err) {
+      toast.error(err?.response?.data?.message || "Submission failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const { ref, inView } = useInView({ triggerOnce: true, threshold: 0.1 });
+
+  return (
+    <section ref={ref} className="relative py-20 md:py-28 bg-gradient-to-br from-orange-50 via-amber-50 to-orange-100 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 overflow-hidden">
+      {/* Background decoration */}
+      <div className="absolute top-0 right-0 w-96 h-96 bg-orange-200/40 dark:bg-orange-900/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-64 h-64 bg-amber-200/40 dark:bg-amber-900/10 rounded-full blur-2xl translate-y-1/2 -translate-x-1/3 pointer-events-none" />
+
+      <div className="page-container relative z-10">
+        <div className="grid lg:grid-cols-2 gap-12 xl:gap-20 items-center">
+
+          {/* Left: Pitch */}
+          <motion.div
+            initial={{ opacity: 0, x: -30 }}
+            animate={inView ? { opacity: 1, x: 0 } : {}}
+            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <div className="inline-flex items-center gap-2 bg-orange-100 dark:bg-orange-900/30 px-3 py-1.5 rounded-full mb-5">
+              <span className="w-2 h-2 bg-orange-500 rounded-full animate-pulse" />
+              <span className="text-xs font-bold uppercase tracking-wider text-orange-600 dark:text-orange-400">
+                Free for Job Seekers
+              </span>
+            </div>
+
+            <h2 className="font-display text-3xl md:text-4xl lg:text-[42px] font-bold text-slate-900 dark:text-white leading-tight mb-5">
+              Looking for a Job?{" "}
+              <span className="text-orange-600 dark:text-orange-400">Let Us Find One For You.</span>
+            </h2>
+
+            <p className="text-base text-slate-600 dark:text-slate-400 leading-relaxed mb-8 max-w-lg">
+              Register with ProLink Consultancy and get matched with the right opportunities. Our expert recruiters personally review every profile and connect you with top employers.
+            </p>
+
+            <ul className="space-y-3">
+              {BENEFITS.map((benefit) => (
+                <li key={benefit} className="flex items-start gap-3">
+                  <div className="w-5 h-5 rounded-full bg-orange-100 dark:bg-orange-900/40 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <HiCheckCircle className="w-4 h-4 text-orange-600 dark:text-orange-400" />
+                  </div>
+                  <span className="text-sm text-slate-700 dark:text-slate-300">{benefit}</span>
+                </li>
+              ))}
+            </ul>
+
+            <div className="mt-10 flex items-center gap-4 p-4 bg-white dark:bg-slate-800 rounded-2xl border border-orange-100 dark:border-slate-700 shadow-sm">
+              <div className="w-12 h-12 rounded-xl bg-orange-600 flex items-center justify-center flex-shrink-0">
+                <HiPhone className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <p className="text-xs text-slate-500 uppercase tracking-wide font-semibold">Call us directly</p>
+                <a href="tel:+919937047733" className="text-base font-bold text-slate-900 dark:text-white hover:text-orange-600 transition-colors">
+                  +91 99370 47733
+                </a>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Right: Form */}
+          <motion.div
+            initial={{ opacity: 0, x: 30 }}
+            animate={inView ? { opacity: 1, x: 0 } : {}}
+            transition={{ duration: 0.7, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl shadow-orange-100/50 dark:shadow-black/30 border border-orange-50 dark:border-slate-700 p-8">
+              {submitted ? (
+                <div className="text-center py-10">
+                  <div className="w-20 h-20 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mx-auto mb-5">
+                    <HiCheckCircle className="w-10 h-10 text-green-600 dark:text-green-400" />
+                  </div>
+                  <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Thank You!</h3>
+                  <p className="text-slate-600 dark:text-slate-400">
+                    Your details have been submitted. Our consultant will review your profile and get in touch within 3–7 working days.
+                  </p>
+                  <button
+                    onClick={() => { setSubmitted(false); setForm({ name: "", email: "", phone: "", currentRole: "", experience: "", location: "", skills: "", message: "" }); setResumeFile(null); }}
+                    className="mt-6 text-sm font-semibold text-orange-600 hover:underline"
+                  >
+                    Submit another profile →
+                  </button>
+                </div>
+              ) : (
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div>
+                    <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1">Register as a Job Seeker</h3>
+                    <p className="text-xs text-slate-500">100% free • No hidden charges • Confidential</p>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
+                        Full Name <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        name="name" value={form.name} onChange={handleChange} required
+                        placeholder="Your full name"
+                        className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-400"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
+                        Phone Number <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        name="phone" value={form.phone} onChange={handleChange} required
+                        type="tel" placeholder="+91 98765 43210"
+                        className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-400"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
+                      Email Address <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      name="email" value={form.email} onChange={handleChange} required
+                      type="email" placeholder="you@example.com"
+                      className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-400"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Current Role / Job Title</label>
+                      <input
+                        name="currentRole" value={form.currentRole} onChange={handleChange}
+                        placeholder="e.g. Software Engineer"
+                        className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-400"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Years of Experience</label>
+                      <select
+                        name="experience" value={form.experience} onChange={handleChange}
+                        className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-400"
+                      >
+                        <option value="">Select experience</option>
+                        {EXPERIENCE_OPTIONS.map((opt) => <option key={opt} value={opt}>{opt}</option>)}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Location (City)</label>
+                      <input
+                        name="location" value={form.location} onChange={handleChange}
+                        placeholder="e.g. Chennai, Tamil Nadu"
+                        className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-400"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Key Skills</label>
+                      <input
+                        name="skills" value={form.skills} onChange={handleChange}
+                        placeholder="React, Node.js, SQL..."
+                        className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-400"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Resume Upload */}
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Upload Resume (Optional)</label>
+                    <input
+                      ref={fileRef} type="file" accept=".pdf,.doc,.docx"
+                      className="hidden"
+                      onChange={(e) => setResumeFile(e.target.files[0] || null)}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => fileRef.current?.click()}
+                      className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border-2 border-dashed border-orange-200 dark:border-slate-600 hover:border-orange-400 dark:hover:border-orange-500 bg-orange-50/50 dark:bg-slate-700/50 text-sm text-slate-600 dark:text-slate-400 transition-colors"
+                    >
+                      <HiUpload className="w-5 h-5 text-orange-400 flex-shrink-0" />
+                      {resumeFile ? (
+                        <span className="font-medium text-orange-600 dark:text-orange-400 truncate">{resumeFile.name}</span>
+                      ) : (
+                        <span>Click to upload PDF or DOC (max 10MB)</span>
+                      )}
+                    </button>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Additional Message</label>
+                    <textarea
+                      name="message" value={form.message} onChange={handleChange}
+                      rows={2} placeholder="Any specific job type, salary expectation, or note for our team..."
+                      className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none"
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-2xl bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-bold text-sm shadow-lg shadow-orange-200/50 dark:shadow-orange-900/30 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+                  >
+                    {loading ? (
+                      <span className="flex items-center gap-2">
+                        <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                        </svg>
+                        Submitting...
+                      </span>
+                    ) : (
+                      <>
+                        <HiPaperAirplane className="w-4 h-4" />
+                        Submit My Profile — It's Free
+                      </>
+                    )}
+                  </button>
+
+                  <p className="text-center text-xs text-slate-400">
+                    By submitting, you agree that ProLink may contact you regarding job opportunities.
+                  </p>
+                </form>
+              )}
+            </div>
+          </motion.div>
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -911,6 +1191,11 @@ export default function Home() {
         </div>
       
       </section>
+
+      {/* ════════════════════════════════════════
+          JOB SEEKER LEAD CAPTURE
+      ════════════════════════════════════════ */}
+      <JobSeekerSection />
 
       {/* ════════════════════════════════════════
           CTA STRIP
