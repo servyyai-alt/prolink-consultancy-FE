@@ -215,6 +215,7 @@ export const adminAPI = {
   getAllResumes:          (params) => api.get('/admin/resumes/download-all', { params: cleanParams(params) }),
   getJobSeekerLeads:     (params) => api.get('/admin/job-seeker-leads', { params: cleanParams(params) }),
   updateJobSeekerLead:   (id, data) => api.patch(`/admin/job-seeker-leads/${id}`, data),
+  downloadJobSeekerLeadResume: (id) => api.get(`/admin/job-seeker-leads/${id}/resume/download`, { responseType: 'blob' }),
 }
 
 

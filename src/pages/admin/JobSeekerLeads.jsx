@@ -8,6 +8,7 @@ import {
 import { adminAPI } from '../../services/api'
 import { Badge, Button, EmptyState, Modal, Pagination } from '../../components/ui/index'
 import toast from 'react-hot-toast'
+import { downloadResumeFile } from '../../utils/download'
 
 const STATUS_VARIANTS = {
   new:     'blue',
@@ -65,6 +66,33 @@ export default function AdminJobSeekerLeads() {
     if (!lead) return null
     if (lead.service && lead.service.startsWith('http')) return lead.service
     return null
+  }
+
+  const handleDownloadResume = async (lead) => {
+    const resumeUrl = getResumeUrl(lead)
+    if (!resumeUrl) return
+
+    try {
+      if (lead._id) {
+        const response = await adminAPI.downloadJobSeekerLeadResume(lead._id)
+        const isDocx = resumeUrl.toLowerCase().includes('.docx')
+        const ext = isDocx ? '.docx' : '.pdf'
+        const filename = `${(lead.name || 'candidate').replace(/[^a-zA-Z0-9_-]/g, '_')}-Resume${ext}`
+        const blob = response.data instanceof Blob ? response.data : new Blob([response.data], { type: isDocx ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' : 'application/pdf' })
+        const objUrl = window.URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = objUrl
+        a.download = filename
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        setTimeout(() => window.URL.revokeObjectURL(objUrl), 1000)
+        return
+      }
+    } catch {
+      // Fallback to client-side fetch helper
+    }
+    downloadResumeFile(resumeUrl, `${lead.name}-Resume`)
   }
 
   return (
@@ -160,15 +188,14 @@ export default function AdminJobSeekerLeads() {
                       {/* Actions */}
                       <div className="flex gap-2 flex-shrink-0">
                         {resumeUrl && (
-                          <a
-                            href={resumeUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
+                          <button
+                            type="button"
+                            onClick={() => handleDownloadResume(lead)}
                             title="Download Resume"
                             className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-primary-50 text-primary-700 hover:bg-primary-100 dark:bg-primary-900/20 dark:text-primary-400 transition-colors"
                           >
                             <HiDownload className="w-3.5 h-3.5" /> Resume
-                          </a>
+                          </button>
                         )}
                         <button
                           onClick={() => openLead(lead)}
@@ -228,14 +255,13 @@ export default function AdminJobSeekerLeads() {
               <div>
                 <p className="text-xs uppercase tracking-wide text-slate-400 mb-1">Resume</p>
                 {getResumeUrl(selected) ? (
-                  <a
-                    href={getResumeUrl(selected)}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                  <button
+                    type="button"
+                    onClick={() => handleDownloadResume(selected)}
                     className="inline-flex items-center gap-1.5 text-sm font-medium text-primary-600 hover:underline"
                   >
                     <HiDownload className="w-4 h-4" /> Download Resume
-                  </a>
+                  </button>
                 ) : (
                   <span className="text-sm text-slate-400">No resume uploaded</span>
                 )}

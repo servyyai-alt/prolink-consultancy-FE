@@ -9,6 +9,7 @@ import { userAPI } from '../../services/api'
 import { updateUser, selectUser } from '../../redux/slices/authSlice'
 import toast from 'react-hot-toast'
 import { optionalIndianMobileSchema, sanitizeIndianMobileInput } from '../../utils/phoneValidation'
+import { viewResumeFile, downloadResumeFile } from '../../utils/download'
 
 const SKILL_SUGGESTIONS = ['JavaScript', 'Python', 'React', 'Node.js', 'Java', 'SQL', 'Excel', 'Sales', 'Marketing', 'HR', 'Project Management', 'AutoCAD', 'Tally', 'Leadership']
 
@@ -322,9 +323,11 @@ export default function JSProfile() {
                     <p className="text-xs text-slate-500 truncate">
                       Uploaded {new Date(user.profile.resume.uploadedAt).toLocaleDateString()}
                     </p>
-                    <div className="flex gap-2 mt-2">
-                      <a href={user.profile.resume.url} target="_blank" rel="noreferrer"
-                        className="text-xs text-primary-600 hover:underline font-semibold">View</a>
+                    <div className="flex gap-3 mt-2">
+                      <button type="button" onClick={() => viewResumeFile(user.profile.resume.url, `${user.firstName || 'My'}-Resume`)}
+                        className="text-xs text-primary-600 hover:underline font-semibold">View</button>
+                      <button type="button" onClick={() => downloadResumeFile(user.profile.resume.url, `${user.firstName || 'My'}-Resume`)}
+                        className="text-xs text-primary-600 hover:underline font-semibold">Download</button>
                       <button type="button" onClick={() => resumeRef.current?.click()} className="text-xs text-slate-500 hover:underline">Update</button>
                     </div>
                   </div>

@@ -5,6 +5,7 @@ import { HiBriefcase, HiCalendar, HiCheckCircle, HiSearch, HiUserGroup, HiDownlo
 import { adminAPI, applicationAPI } from '../../services/api'
 import { Badge, Button, EmptyState, Modal, Pagination } from '../../components/ui/index'
 import toast from 'react-hot-toast'
+import { downloadResumeFile } from '../../utils/download'
 import {
   APPLICATION_NEXT_STATUSES,
   APPLICATION_STATUS_DESCRIPTIONS,
@@ -136,15 +137,18 @@ export default function AdminApplications() {
                         </Badge>
                         {/* Resume download button */}
                         {(application.resume?.url || application.applicant?.profile?.resume?.url) ? (
-                          <a
-                            href={application.resume?.url || application.applicant?.profile?.resume?.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const resumeUrl = application.resume?.url || application.applicant?.profile?.resume?.url
+                              const name = `${application.applicant?.firstName || ''} ${application.applicant?.lastName || ''}`.trim() || 'Candidate'
+                              downloadResumeFile(resumeUrl, `${name}-Resume`)
+                            }}
                             title="Download Resume"
                             className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-green-50 text-green-700 hover:bg-green-100 dark:bg-green-900/20 dark:text-green-400 transition-colors"
                           >
                             <HiDownload className="w-3.5 h-3.5" /> Resume
-                          </a>
+                          </button>
                         ) : (
                           <span className="text-xs text-slate-400 px-2 py-1 rounded-full bg-slate-50 dark:bg-slate-700">No resume</span>
                         )}
@@ -394,14 +398,13 @@ export default function AdminApplications() {
                         </td>
                         <td className="px-4 py-3 text-right">
                           {a.resumeUrl ? (
-                            <a
-                              href={a.resumeUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
+                            <button
+                              type="button"
+                              onClick={() => downloadResumeFile(a.resumeUrl, `${a.name || 'Candidate'}-Resume`)}
                               className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-primary-50 text-primary-700 hover:bg-primary-100 dark:bg-primary-900/20 dark:text-primary-400 transition-colors"
                             >
                               <HiDownload className="w-3.5 h-3.5" /> Download
-                            </a>
+                            </button>
                           ) : (
                             <span className="text-xs text-slate-400">No resume</span>
                           )}

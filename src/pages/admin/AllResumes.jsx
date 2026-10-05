@@ -7,6 +7,7 @@ import {
 } from 'react-icons/hi'
 import { adminAPI } from '../../services/api'
 import { Badge, EmptyState, Pagination } from '../../components/ui/index'
+import { downloadResumeFile } from '../../utils/download'
 
 const AVAILABILITY_LABELS = {
   immediate:    'Immediate',
@@ -152,16 +153,15 @@ export default function AdminAllResumes() {
                       </td>
                       <td className="px-5 py-4 text-right">
                         {u.resumeUrl ? (
-                          <a
-                            href={u.resumeUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
+                          <button
+                            type="button"
+                            onClick={() => downloadResumeFile(u.resumeUrl, `${u.name}-Resume`)}
                             title="Download Resume"
                             className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-primary-50 text-primary-700 hover:bg-primary-100 dark:bg-primary-900/20 dark:text-primary-400 transition-colors"
                           >
                             <HiDownload className="w-3.5 h-3.5" />
                             Download
-                          </a>
+                          </button>
                         ) : (
                           <span className="text-xs text-slate-400">No resume</span>
                         )}

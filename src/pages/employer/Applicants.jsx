@@ -7,6 +7,7 @@ import { HiSearch, HiDownload, HiCalendar, HiCheckCircle } from 'react-icons/hi'
 import { applicationAPI, jobAPI, userAPI } from '../../services/api'
 import { Pagination, Badge, Modal, EmptyState, Button } from '../../components/ui/index'
 import toast from 'react-hot-toast'
+import { downloadResumeFile } from '../../utils/download'
 import {
   APPLICATION_NEXT_STATUSES,
   APPLICATION_STATUS_DESCRIPTIONS,
@@ -101,26 +102,38 @@ export default function EmpApplicants() {
     setStatusNote('')
   }
 
-  const handleResumeDownload = async (applicant) => {
-    if (!applicant?._id) return
+  const handleResumeDownload = async (applicant, fallbackUrl = '') => {
+    const resumeUrl = fallbackUrl || applicant?.profile?.resume?.url
+    const fallbackName = `${[applicant?.firstName, applicant?.lastName, 'resume']
+      .filter(Boolean)
+      .join('-')
+      .toLowerCase()
+      .replace(/[^a-z0-9-]+/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '') || 'resume'}.pdf`
 
-    try {
-      const response = await userAPI.downloadResume(applicant._id)
-      const fallbackName = `${[applicant.firstName, applicant.lastName, 'resume']
-        .filter(Boolean)
-        .join('-')
-        .toLowerCase()
-        .replace(/[^a-z0-9-]+/g, '-')
-        .replace(/-+/g, '-')
-        .replace(/^-|-$/g, '') || 'resume'}.pdf`
-      const filename = getFilenameFromContentDisposition(response.headers?.['content-disposition'], fallbackName)
-      const blob = response.data instanceof Blob
-        ? response.data
-        : new Blob([response.data], { type: response.headers?.['content-type'] || 'application/octet-stream' })
+    if (applicant?._id) {
+      try {
+        const response = await userAPI.downloadResume(applicant._id)
+        const filename = getFilenameFromContentDisposition(response.headers?.['content-disposition'], fallbackName)
+        const blob = response.data instanceof Blob
+          ? response.data
+          : new Blob([response.data], { type: response.headers?.['content-type'] || 'application/pdf' })
 
-      triggerBlobDownload(blob, filename)
-    } catch (err) {
-      toast.error(err?.response?.data?.message || 'Failed to download resume')
+        triggerBlobDownload(blob, filename)
+        return
+      } catch (err) {
+        if (!resumeUrl) {
+          toast.error(err?.response?.data?.message || 'Failed to download resume')
+          return
+        }
+      }
+    }
+
+    if (resumeUrl) {
+      downloadResumeFile(resumeUrl, fallbackName)
+    } else {
+      toast.error('Resume not found')
     }
   }
 
@@ -189,10 +202,10 @@ export default function EmpApplicants() {
                       </div>
                     )}
                     <div className="flex flex-wrap gap-2 mt-3">
-                      {app.applicant?.profile?.resume?.url && (
+                      {(app.applicant?.profile?.resume?.url || app.resume?.url) && (
                         <button
                           type="button"
-                          onClick={() => handleResumeDownload(app.applicant)}
+                          onClick={() => handleResumeDownload(app.applicant, app.resume?.url || app.applicant?.profile?.resume?.url)}
                           className="flex items-center gap-1 text-xs font-semibold text-primary-600 bg-primary-50 dark:bg-primary-900/20 px-3 py-1.5 rounded-full hover:bg-primary-100 transition-colors"
                         >
                           <HiDownload className="w-3.5 h-3.5" /> Download Resume
