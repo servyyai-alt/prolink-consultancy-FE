@@ -7,8 +7,7 @@ import {
 } from 'react-icons/hi'
 import { adminAPI } from '../../services/api'
 import { Badge, Button, EmptyState, Modal, Pagination } from '../../components/ui/index'
-import toast from 'react-hot-toast'
-import { downloadResumeFile } from '../../utils/download'
+import { downloadResumeFile, triggerBlobDownload, detectBlobFormat } from '../../utils/download'
 
 const STATUS_VARIANTS = {
   new:     'blue',
@@ -75,18 +74,21 @@ export default function AdminJobSeekerLeads() {
     try {
       if (lead._id) {
         const response = await adminAPI.downloadJobSeekerLeadResume(lead._id)
-        const isDocx = resumeUrl.toLowerCase().includes('.docx')
-        const ext = isDocx ? '.docx' : '.pdf'
-        const filename = `${(lead.name || 'candidate').replace(/[^a-zA-Z0-9_-]/g, '_')}-Resume${ext}`
-        const blob = response.data instanceof Blob ? response.data : new Blob([response.data], { type: isDocx ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' : 'application/pdf' })
-        const objUrl = window.URL.createObjectURL(blob)
-        const a = document.createElement('a')
-        a.href = objUrl
-        a.download = filename
-        document.body.appendChild(a)
-        a.click()
-        document.body.removeChild(a)
-        setTimeout(() => window.URL.revokeObjectURL(objUrl), 1000)
+        let filename = ''
+        const disposition = response.headers?.['content-disposition'] || ''
+        const match = disposition.match(/filename="?([^";]+)"?/i)
+        if (match && match[1]) {
+          filename = match[1]
+        }
+
+        const rawBlob = response.data instanceof Blob ? response.data : new Blob([response.data])
+        const { ext, mimeType } = await detectBlobFormat(rawBlob, resumeUrl, lead.name)
+        if (!filename) {
+          filename = `${(lead.name || 'candidate').replace(/[^a-zA-Z0-9_-]/g, '_')}-Resume${ext}`
+        }
+
+        const cleanBlob = rawBlob.type === mimeType ? rawBlob : new Blob([rawBlob], { type: mimeType })
+        triggerBlobDownload(cleanBlob, filename)
         return
       }
     } catch {

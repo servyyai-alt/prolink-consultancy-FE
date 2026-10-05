@@ -7,7 +7,7 @@ import { HiSearch, HiDownload, HiCalendar, HiCheckCircle } from 'react-icons/hi'
 import { applicationAPI, jobAPI, userAPI } from '../../services/api'
 import { Pagination, Badge, Modal, EmptyState, Button } from '../../components/ui/index'
 import toast from 'react-hot-toast'
-import { downloadResumeFile } from '../../utils/download'
+import { downloadResumeFile, triggerBlobDownload, detectBlobFormat } from '../../utils/download'
 import {
   APPLICATION_NEXT_STATUSES,
   APPLICATION_STATUS_DESCRIPTIONS,
@@ -17,7 +17,7 @@ import {
   getApplicationStatusLabel,
 } from '../../constants/applicationStatus'
 
-const getFilenameFromContentDisposition = (headerValue, fallbackName) => {
+const getFilenameFromContentDisposition = (headerValue, fallbackName = '') => {
   if (!headerValue) return fallbackName
 
   const utf8Match = headerValue.match(/filename\*\s*=\s*UTF-8''([^;]+)/i)
@@ -30,17 +30,6 @@ const getFilenameFromContentDisposition = (headerValue, fallbackName) => {
   if (plainMatch?.[1]) return plainMatch[1].trim()
 
   return fallbackName
-}
-
-const triggerBlobDownload = (blob, filename) => {
-  const objectUrl = window.URL.createObjectURL(blob)
-  const link = document.createElement('a')
-  link.href = objectUrl
-  link.download = filename
-  document.body.appendChild(link)
-  link.click()
-  link.remove()
-  window.setTimeout(() => window.URL.revokeObjectURL(objectUrl), 1000)
 }
 
 export default function EmpApplicants() {
@@ -104,23 +93,26 @@ export default function EmpApplicants() {
 
   const handleResumeDownload = async (applicant, fallbackUrl = '') => {
     const resumeUrl = fallbackUrl || applicant?.profile?.resume?.url
-    const fallbackName = `${[applicant?.firstName, applicant?.lastName, 'resume']
+    const baseName = [applicant?.firstName, applicant?.lastName, 'resume']
       .filter(Boolean)
       .join('-')
       .toLowerCase()
       .replace(/[^a-z0-9-]+/g, '-')
       .replace(/-+/g, '-')
-      .replace(/^-|-$/g, '') || 'resume'}.pdf`
+      .replace(/^-|-$/g, '') || 'resume'
 
     if (applicant?._id) {
       try {
         const response = await userAPI.downloadResume(applicant._id)
-        const filename = getFilenameFromContentDisposition(response.headers?.['content-disposition'], fallbackName)
-        const blob = response.data instanceof Blob
-          ? response.data
-          : new Blob([response.data], { type: response.headers?.['content-type'] || 'application/pdf' })
+        let filename = getFilenameFromContentDisposition(response.headers?.['content-disposition'], '')
+        const rawBlob = response.data instanceof Blob ? response.data : new Blob([response.data])
+        const { ext, mimeType } = await detectBlobFormat(rawBlob, resumeUrl, baseName)
+        if (!filename) {
+          filename = `${baseName}${ext}`
+        }
 
-        triggerBlobDownload(blob, filename)
+        const cleanBlob = rawBlob.type === mimeType ? rawBlob : new Blob([rawBlob], { type: mimeType })
+        triggerBlobDownload(cleanBlob, filename)
         return
       } catch (err) {
         if (!resumeUrl) {
@@ -131,7 +123,7 @@ export default function EmpApplicants() {
     }
 
     if (resumeUrl) {
-      downloadResumeFile(resumeUrl, fallbackName)
+      downloadResumeFile(resumeUrl, baseName)
     } else {
       toast.error('Resume not found')
     }

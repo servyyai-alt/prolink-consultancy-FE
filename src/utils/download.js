@@ -1,8 +1,8 @@
 /**
  * Utility to download or view resume files cleanly.
- * Ensures the file is saved with the correct extension (.pdf, .docx)
- * so that the operating system and browser open it with the proper application
- * rather than displaying raw text/PDF stream code.
+ * Automatically inspects the file's binary magic bytes (signatures)
+ * so that DOCX, DOC, and PDF files are accurately detected and named,
+ * even when served from extensionless URLs.
  */
 
 import toast from 'react-hot-toast'
@@ -18,22 +18,51 @@ export const triggerBlobDownload = (blob, filename) => {
   setTimeout(() => window.URL.revokeObjectURL(objectUrl), 1000)
 }
 
-export const formatResumeFilename = (name = 'resume', url = '') => {
-  let cleanName = (name || 'resume')
-    .trim()
-    .replace(/[^a-zA-Z0-9_\-\s]/g, '')
-    .replace(/\s+/g, '_')
+/**
+ * Detect file format accurately from binary magic bytes (or filename/url fallback).
+ */
+export const detectBlobFormat = async (blob, fallbackUrl = '', fallbackName = '') => {
+  let ext = '.pdf'
+  let mimeType = 'application/pdf'
 
-  const urlLower = (url || '').toLowerCase()
-  const isDocx = urlLower.includes('.docx') || cleanName.toLowerCase().endsWith('.docx')
-  const isDoc = (urlLower.includes('.doc') && !isDocx) || cleanName.toLowerCase().endsWith('.doc')
-  const ext = isDocx ? '.docx' : isDoc ? '.doc' : '.pdf'
+  try {
+    const header = new Uint8Array(await blob.slice(0, 8).arrayBuffer())
 
-  if (!cleanName.toLowerCase().endsWith('.pdf') && !cleanName.toLowerCase().endsWith('.docx') && !cleanName.toLowerCase().endsWith('.doc')) {
-    cleanName = `${cleanName}${ext}`
+    // 1. Check ZIP / DOCX magic bytes: 0x50, 0x4B (PK\x03\x04)
+    if (header[0] === 0x50 && header[1] === 0x4B) {
+      ext = '.docx'
+      mimeType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+      return { ext, mimeType }
+    }
+
+    // 2. Check OLE2 / Legacy DOC magic bytes: 0xD0, 0xCF (\xD0\xCF\x11\xE0)
+    if (header[0] === 0xD0 && header[1] === 0xCF) {
+      ext = '.doc'
+      mimeType = 'application/msword'
+      return { ext, mimeType }
+    }
+
+    // 3. Check PDF magic bytes: %PDF (0x25, 0x50, 0x44, 0x46)
+    if (header[0] === 0x25 && header[1] === 0x50 && header[2] === 0x44 && header[3] === 0x46) {
+      ext = '.pdf'
+      mimeType = 'application/pdf'
+      return { ext, mimeType }
+    }
+  } catch {
+    // ignore
   }
 
-  return cleanName
+  // Fallback to URL/name inspection
+  const combined = `${fallbackUrl} ${fallbackName}`.toLowerCase()
+  if (combined.includes('.docx')) {
+    ext = '.docx'
+    mimeType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+  } else if (combined.includes('.doc')) {
+    ext = '.doc'
+    mimeType = 'application/msword'
+  }
+
+  return { ext, mimeType }
 }
 
 export const downloadResumeFile = async (url, defaultName = 'resume') => {
@@ -43,30 +72,29 @@ export const downloadResumeFile = async (url, defaultName = 'resume') => {
   }
 
   const toastId = toast.loading('Downloading resume...')
-  const filename = formatResumeFilename(defaultName, url)
-  const isDocx = filename.endsWith('.docx')
-  const isDoc = filename.endsWith('.doc')
-  const mimeType = isDocx
-    ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-    : isDoc
-    ? 'application/msword'
-    : 'application/pdf'
-
   try {
     const res = await fetch(url)
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
     const blob = await res.blob()
+
+    const { ext, mimeType } = await detectBlobFormat(blob, url, defaultName)
+    const cleanBaseName = (defaultName || 'resume')
+      .trim()
+      .replace(/[^a-zA-Z0-9_\-\s]/g, '')
+      .replace(/\s+/g, '_')
+      .replace(/\.(pdf|docx|doc)$/i, '')
+
+    const filename = `${cleanBaseName || 'resume'}${ext}`
     const cleanBlob = blob.type === mimeType ? blob : new Blob([blob], { type: mimeType })
     triggerBlobDownload(cleanBlob, filename)
     toast.success('Resume downloaded!', { id: toastId })
   } catch (err) {
-    // Fallback: direct download link
     try {
       const link = document.createElement('a')
       link.href = url
       link.target = '_blank'
       link.rel = 'noopener noreferrer'
-      link.download = filename
+      link.download = defaultName
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
@@ -80,17 +108,26 @@ export const downloadResumeFile = async (url, defaultName = 'resume') => {
 export const viewResumeFile = async (url, fallbackName = 'resume') => {
   if (!url) return
 
-  const filename = formatResumeFilename(fallbackName, url)
-  const isDoc = filename.endsWith('.docx') || filename.endsWith('.doc')
-  if (isDoc) {
-    // Word files cannot be previewed natively in browser tabs, trigger download
-    return downloadResumeFile(url, filename)
-  }
-
   try {
     const res = await fetch(url)
-    if (!res.ok) throw new Error(`Fetch failed with status ${res.status}`)
+    if (!res.ok) throw new Error(`HTTP ${res.status}`)
     const blob = await res.blob()
+    const { ext, mimeType } = await detectBlobFormat(blob, url, fallbackName)
+
+    if (ext === '.docx' || ext === '.doc') {
+      // Word documents cannot be rendered natively inside browser tabs, download instead
+      const cleanBaseName = (fallbackName || 'resume')
+        .trim()
+        .replace(/[^a-zA-Z0-9_\-\s]/g, '')
+        .replace(/\s+/g, '_')
+        .replace(/\.(pdf|docx|doc)$/i, '')
+      const filename = `${cleanBaseName || 'resume'}${ext}`
+      const cleanBlob = blob.type === mimeType ? blob : new Blob([blob], { type: mimeType })
+      triggerBlobDownload(cleanBlob, filename)
+      toast.success('Word document downloaded for viewing')
+      return
+    }
+
     const pdfBlob = new Blob([blob], { type: 'application/pdf' })
     const objectUrl = window.URL.createObjectURL(pdfBlob)
     window.open(objectUrl, '_blank')

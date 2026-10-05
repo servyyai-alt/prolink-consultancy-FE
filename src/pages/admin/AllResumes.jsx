@@ -7,7 +7,7 @@ import {
 } from 'react-icons/hi'
 import { adminAPI, userAPI } from '../../services/api'
 import { Badge, EmptyState, Pagination } from '../../components/ui/index'
-import { downloadResumeFile } from '../../utils/download'
+import { downloadResumeFile, triggerBlobDownload, detectBlobFormat } from '../../utils/download'
 
 const AVAILABILITY_LABELS = {
   immediate:    'Immediate',
@@ -46,18 +46,21 @@ export default function AdminAllResumes() {
     if (u.userId) {
       try {
         const response = await userAPI.downloadResume(u.userId)
-        const isDocx = u.resumeUrl?.toLowerCase().includes('.docx')
-        const ext = isDocx ? '.docx' : '.pdf'
-        const filename = `${(u.name || 'candidate').replace(/[^a-zA-Z0-9_-]/g, '_')}-Resume${ext}`
-        const blob = response.data instanceof Blob ? response.data : new Blob([response.data], { type: isDocx ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' : 'application/pdf' })
-        const objUrl = window.URL.createObjectURL(blob)
-        const a = document.createElement('a')
-        a.href = objUrl
-        a.download = filename
-        document.body.appendChild(a)
-        a.click()
-        document.body.removeChild(a)
-        setTimeout(() => window.URL.revokeObjectURL(objUrl), 1000)
+        let filename = ''
+        const disposition = response.headers?.['content-disposition'] || ''
+        const match = disposition.match(/filename="?([^";]+)"?/i)
+        if (match && match[1]) {
+          filename = match[1]
+        }
+
+        const rawBlob = response.data instanceof Blob ? response.data : new Blob([response.data])
+        const { ext, mimeType } = await detectBlobFormat(rawBlob, u.resumeUrl, u.name)
+        if (!filename) {
+          filename = `${(u.name || 'candidate').replace(/[^a-zA-Z0-9_-]/g, '_')}-Resume${ext}`
+        }
+
+        const cleanBlob = rawBlob.type === mimeType ? rawBlob : new Blob([rawBlob], { type: mimeType })
+        triggerBlobDownload(cleanBlob, filename)
         return
       } catch (err) {
         console.warn('API resume download failed, falling back to direct download', err)
