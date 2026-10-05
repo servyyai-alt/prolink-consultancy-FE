@@ -5,6 +5,8 @@
  * rather than displaying raw text/PDF stream code.
  */
 
+import toast from 'react-hot-toast'
+
 export const triggerBlobDownload = (blob, filename) => {
   const objectUrl = window.URL.createObjectURL(blob)
   const link = document.createElement('a')
@@ -35,8 +37,12 @@ export const formatResumeFilename = (name = 'resume', url = '') => {
 }
 
 export const downloadResumeFile = async (url, defaultName = 'resume') => {
-  if (!url) return
+  if (!url) {
+    toast.error('Resume URL not available')
+    return
+  }
 
+  const toastId = toast.loading('Downloading resume...')
   const filename = formatResumeFilename(defaultName, url)
   const isDocx = filename.endsWith('.docx')
   const isDoc = filename.endsWith('.doc')
@@ -48,20 +54,26 @@ export const downloadResumeFile = async (url, defaultName = 'resume') => {
 
   try {
     const res = await fetch(url)
-    if (!res.ok) throw new Error(`Fetch failed with status ${res.status}`)
+    if (!res.ok) throw new Error(`HTTP ${res.status}`)
     const blob = await res.blob()
     const cleanBlob = blob.type === mimeType ? blob : new Blob([blob], { type: mimeType })
     triggerBlobDownload(cleanBlob, filename)
-  } catch {
+    toast.success('Resume downloaded!', { id: toastId })
+  } catch (err) {
     // Fallback: direct download link
-    const link = document.createElement('a')
-    link.href = url
-    link.target = '_blank'
-    link.rel = 'noopener noreferrer'
-    link.download = filename
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
+    try {
+      const link = document.createElement('a')
+      link.href = url
+      link.target = '_blank'
+      link.rel = 'noopener noreferrer'
+      link.download = filename
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      toast.dismiss(toastId)
+    } catch {
+      toast.error('Failed to download resume', { id: toastId })
+    }
   }
 }
 

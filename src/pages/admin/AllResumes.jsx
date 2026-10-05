@@ -5,7 +5,7 @@ import {
   HiSearch, HiDownload, HiDocumentText, HiUser,
   HiFilter, HiExternalLink,
 } from 'react-icons/hi'
-import { adminAPI } from '../../services/api'
+import { adminAPI, userAPI } from '../../services/api'
 import { Badge, EmptyState, Pagination } from '../../components/ui/index'
 import { downloadResumeFile } from '../../utils/download'
 
@@ -41,6 +41,33 @@ export default function AdminAllResumes() {
 
   const users      = data?.data?.data || []
   const pagination = data?.data?.pagination
+
+  const handleDownloadResume = async (u) => {
+    if (u.userId) {
+      try {
+        const response = await userAPI.downloadResume(u.userId)
+        const isDocx = u.resumeUrl?.toLowerCase().includes('.docx')
+        const ext = isDocx ? '.docx' : '.pdf'
+        const filename = `${(u.name || 'candidate').replace(/[^a-zA-Z0-9_-]/g, '_')}-Resume${ext}`
+        const blob = response.data instanceof Blob ? response.data : new Blob([response.data], { type: isDocx ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' : 'application/pdf' })
+        const objUrl = window.URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = objUrl
+        a.download = filename
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        setTimeout(() => window.URL.revokeObjectURL(objUrl), 1000)
+        return
+      } catch (err) {
+        console.warn('API resume download failed, falling back to direct download', err)
+      }
+    }
+
+    if (u.resumeUrl) {
+      downloadResumeFile(u.resumeUrl, `${u.name}-Resume`)
+    }
+  }
 
   return (
     <>
@@ -155,7 +182,7 @@ export default function AdminAllResumes() {
                         {u.resumeUrl ? (
                           <button
                             type="button"
-                            onClick={() => downloadResumeFile(u.resumeUrl, `${u.name}-Resume`)}
+                            onClick={() => handleDownloadResume(u)}
                             title="Download Resume"
                             className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-primary-50 text-primary-700 hover:bg-primary-100 dark:bg-primary-900/20 dark:text-primary-400 transition-colors"
                           >
